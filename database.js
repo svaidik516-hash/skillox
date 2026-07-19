@@ -9,6 +9,7 @@ const { sql } = require('@vercel/postgres');
  */
 async function initDb() {
     try {
+        await sql`
             CREATE TABLE IF NOT EXISTS users (
                 id SERIAL PRIMARY KEY,
                 name VARCHAR(255) NOT NULL,
