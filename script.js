@@ -139,7 +139,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Intercept clicks on protected resource links if not logged in (using event delegation for dynamic elements)
     document.body.addEventListener('click', (e) => {
         // Find if we clicked on a protected link or inside it
-        const link = e.target.closest('.nav-links a, .mobile-menu a:not(#mobile-auth-btn):not(#mobile-signup-btn), .btn-primary:not(#nav-auth-btn):not(#nav-signup-btn):not(#mobile-auth-btn):not(#mobile-signup-btn), .content-card, .pdf-card');
+        const link = e.target.closest('.nav-links a, .mobile-menu a:not(#mobile-auth-btn):not(#mobile-signup-btn), a.btn-primary:not(#nav-auth-btn):not(#nav-signup-btn):not(#mobile-auth-btn):not(#mobile-signup-btn), .content-card, .pdf-card');
         
         if (link) {
             // Allow email/phone buttons to work normally
