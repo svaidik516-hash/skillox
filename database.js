@@ -9,7 +9,6 @@ const { sql } = require('@vercel/postgres');
  */
 async function initDb() {
     try {
-        await sql`
             CREATE TABLE IF NOT EXISTS users (
                 id SERIAL PRIMARY KEY,
                 name VARCHAR(255) NOT NULL,
@@ -18,6 +17,17 @@ async function initDb() {
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 last_login TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 login_count INTEGER DEFAULT 1
+            );
+        `;
+
+        await sql`
+            CREATE TABLE IF NOT EXISTS otp_requests (
+                email VARCHAR(255) PRIMARY KEY,
+                otp VARCHAR(10) NOT NULL,
+                name VARCHAR(255),
+                password VARCHAR(255),
+                type VARCHAR(20) NOT NULL,
+                expires_at BIGINT NOT NULL
             );
         `;
 
@@ -190,6 +200,53 @@ async function getStats() {
     }
 }
 
+/**
+ * Save OTP request (Serverless safe)
+ */
+async function saveOtpRequest(email, otp, name, password, type, expiresAt) {
+    try {
+        await sql`
+            INSERT INTO otp_requests (email, otp, name, password, type, expires_at)
+            VALUES (${email}, ${otp}, ${name || ''}, ${password || ''}, ${type}, ${expiresAt})
+            ON CONFLICT (email) DO UPDATE 
+            SET otp = EXCLUDED.otp, 
+                name = EXCLUDED.name, 
+                password = EXCLUDED.password, 
+                type = EXCLUDED.type, 
+                expires_at = EXCLUDED.expires_at;
+        `;
+    } catch (error) {
+        console.error('Error in saveOtpRequest:', error);
+        throw error;
+    }
+}
+
+/**
+ * Get OTP request
+ */
+async function getOtpRequest(email, type) {
+    try {
+        const result = await sql`
+            SELECT * FROM otp_requests WHERE email = ${email} AND type = ${type}
+        `;
+        return result.rows[0];
+    } catch (error) {
+        console.error('Error in getOtpRequest:', error);
+        throw error;
+    }
+}
+
+/**
+ * Delete OTP request
+ */
+async function deleteOtpRequest(email) {
+    try {
+        await sql`DELETE FROM otp_requests WHERE email = ${email}`;
+    } catch (error) {
+        console.error('Error in deleteOtpRequest:', error);
+    }
+}
+
 module.exports = {
     initDb,
     createUser,
@@ -199,5 +256,8 @@ module.exports = {
     logLogin,
     getAllUsers,
     getLoginLogs,
-    getStats
+    getStats,
+    saveOtpRequest,
+    getOtpRequest,
+    deleteOtpRequest
 };

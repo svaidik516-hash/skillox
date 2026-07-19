@@ -5,7 +5,7 @@ const bcrypt = require('bcryptjs');
 const nodemailer = require('nodemailer');
 require('dotenv').config();
 
-const { initDb, createUser, getUserByEmail, updateUserPassword, recordLoginSuccess, logLogin, getAllUsers, getLoginLogs, getStats } = require('./database');
+const { initDb, createUser, getUserByEmail, updateUserPassword, recordLoginSuccess, logLogin, getAllUsers, getLoginLogs, getStats, saveOtpRequest, getOtpRequest, deleteOtpRequest } = require('./database');
 
 const app = express();
 
@@ -53,8 +53,7 @@ function getClientIP(req) {
         || 'unknown';
 }
 
-// Temporary in-memory store for OTPs (In a real app, use Redis or a Database)
-const otpStore = new Map();
+// Removed in-memory otpStore to support Serverless environments
 
 // Helper to create Nodemailer transport
 async function createTransporter() {
@@ -98,8 +97,8 @@ app.post('/api/signup-request', async (req, res) => {
         }
 
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
-        // Temporarily store the password in memory along with OTP (not ideal for prod without encryption, but fine for this scope)
-        otpStore.set(email, { otp, name, password, expiresAt: Date.now() + 5 * 60 * 1000 });
+        const expiresAt = Date.now() + 5 * 60 * 1000; // 5 minutes
+        await saveOtpRequest(email, otp, name, password, 'signup', expiresAt);
 
         const transporter = await createTransporter();
         const info = await transporter.sendMail({
@@ -137,14 +136,14 @@ app.post('/api/signup-verify', async (req, res) => {
         return res.status(400).json({ error: 'Email and OTP are required' });
     }
 
-    const record = otpStore.get(email);
+    const record = await getOtpRequest(email, 'signup');
 
     if (!record) {
         return res.status(400).json({ error: 'No signup request found for this email or it has expired' });
     }
 
-    if (Date.now() > record.expiresAt) {
-        otpStore.delete(email);
+    if (Date.now() > Number(record.expires_at)) {
+        await deleteOtpRequest(email);
         return res.status(400).json({ error: 'OTP has expired' });
     }
 
@@ -154,7 +153,7 @@ app.post('/api/signup-verify', async (req, res) => {
             const hash = await bcrypt.hash(record.password, 10);
             await createUser(record.name, email, hash);
             
-            otpStore.delete(email);
+            await deleteOtpRequest(email);
             await recordLoginSuccess(email);
             await logLogin(email, ip, 'success');
             
@@ -184,8 +183,8 @@ app.post('/api/forgot-password-request', async (req, res) => {
         }
 
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
-        // Store just the OTP and expiry in memory for this email
-        otpStore.set(email + '_reset', { otp, expiresAt: Date.now() + 10 * 60 * 1000 });
+        const expiresAt = Date.now() + 10 * 60 * 1000; // 10 minutes
+        await saveOtpRequest(email, otp, null, null, 'reset', expiresAt);
 
         const transporter = await createTransporter();
         const info = await transporter.sendMail({
@@ -222,14 +221,14 @@ app.post('/api/forgot-password-reset', async (req, res) => {
         return res.status(400).json({ error: 'Email, OTP, and new password are required' });
     }
 
-    const record = otpStore.get(email + '_reset');
+    const record = await getOtpRequest(email, 'reset');
 
     if (!record) {
         return res.status(400).json({ error: 'No reset request found or it has expired' });
     }
 
-    if (Date.now() > record.expiresAt) {
-        otpStore.delete(email + '_reset');
+    if (Date.now() > Number(record.expires_at)) {
+        await deleteOtpRequest(email);
         return res.status(400).json({ error: 'OTP has expired' });
     }
 
@@ -237,7 +236,7 @@ app.post('/api/forgot-password-reset', async (req, res) => {
         try {
             const hash = await bcrypt.hash(newPassword, 10);
             await updateUserPassword(email, hash);
-            otpStore.delete(email + '_reset');
+            await deleteOtpRequest(email);
             res.json({ success: true, message: 'Password reset successfully' });
         } catch (error) {
             console.error('Password Reset error:', error);

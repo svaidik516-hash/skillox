@@ -136,21 +136,21 @@ document.addEventListener('DOMContentLoaded', () => {
         updateAuthButtons();
     }
 
-    // Intercept clicks on protected resource links if not logged in
-    const protectedLinks = document.querySelectorAll('.nav-links a, .mobile-menu a:not(#mobile-auth-btn):not(#mobile-signup-btn), .btn-primary:not(#nav-auth-btn):not(#nav-signup-btn):not(#mobile-auth-btn):not(#mobile-signup-btn), .content-card');
-    
-    protectedLinks.forEach(link => {
-        link.addEventListener('click', (e) => {
+    // Intercept clicks on protected resource links if not logged in (using event delegation for dynamic elements)
+    document.body.addEventListener('click', (e) => {
+        // Find if we clicked on a protected link or inside it
+        const link = e.target.closest('.nav-links a, .mobile-menu a:not(#mobile-auth-btn):not(#mobile-signup-btn), .btn-primary:not(#nav-auth-btn):not(#nav-signup-btn):not(#mobile-auth-btn):not(#mobile-signup-btn), .content-card, .pdf-card');
+        
+        if (link) {
             // Allow email/phone buttons to work normally
-            if (link.href.includes('mailto:') || link.href.includes('tel:')) return;
-            // Allow the explore resources button to just scroll to the section if it's the hero button (optional, but let's protect everything for now)
+            if (link.href && (link.href.includes('mailto:') || link.href.includes('tel:'))) return;
 
             if (!isLoggedIn) {
                 e.preventDefault();
                 showCustomToast('Please log in to access this premium educational content.', 'error');
                 setTimeout(() => window.location.href = 'login.html', 1500);
             }
-        });
+        }
     });
 
     // ---- Auth Flow (Signup / Login) ----
