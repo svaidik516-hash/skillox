@@ -1092,10 +1092,10 @@ img { max-width: 100%; height: auto; }
 }
 
 /* OTP Inputs */
-.otp-group {
+.otp-container {
     display: flex;
     gap: 12px;
-    justify-content: space-between;
+    justify-content: center;
     margin-bottom: 32px;
 }
 
