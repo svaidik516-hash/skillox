@@ -366,8 +366,20 @@
 </head>
 <body>
 
-    <!-- Top Bar -->
-    <div class="topbar">
+    <!-- Admin Login Screen (Solid background, hides everything else) -->
+    <div id="admin-auth-overlay" style="position:fixed; top:0; left:0; right:0; bottom:0; background:var(--bg-page); z-index:9999; display:flex; justify-content:center; align-items:center;">
+        <div style="background:var(--bg-card); padding:32px; border-radius:var(--radius-lg); width:90%; max-width:400px; text-align:center; box-shadow:var(--shadow-card); border:1px solid var(--border-color);">
+            <div style="width:48px; height:48px; background:var(--primary-light); color:var(--primary); border-radius:12px; display:flex; justify-content:center; align-items:center; font-size:24px; margin:0 auto 16px;">🔒</div>
+            <h2 style="margin-bottom:8px;">Admin Access</h2>
+            <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:24px;">Please enter the master password.</p>
+            <input type="password" id="admin-password-input" class="search-box" style="width:100%; margin-bottom:16px; padding:12px;" placeholder="Admin Password" autofocus>
+            <button id="btn-admin-login" class="btn-refresh" style="width:100%; justify-content:center; padding:12px;">Unlock Dashboard</button>
+            <p id="admin-error" style="color:var(--danger); font-size:0.85rem; margin-top:12px; display:none;">Incorrect password</p>
+        </div>
+    </div>
+
+    <!-- Top Bar (Hidden by default) -->
+    <div class="topbar" id="admin-topbar" style="display: none;">
         <div class="topbar-left">
             <div class="topbar-logo">S</div>
             <span class="topbar-title">Skillox</span>
@@ -382,7 +394,7 @@
         </div>
     </div>
 
-    <div class="main">
+    <div class="main" id="admin-main" style="display: none;">
 
         <!-- Stats Cards -->
         <div class="stats-grid" id="stats-grid">
@@ -498,11 +510,14 @@
         // Store raw data for filtering
         let allUsers = [];
         let allLogs = [];
+        let adminPassword = sessionStorage.getItem('skillox_admin_pwd') || '';
 
         // Load Stats
         async function loadStats() {
             try {
-                const res = await fetch(API_BASE_URL + '/api/admin/stats');
+                const res = await fetch(API_BASE_URL + '/api/admin/stats', {
+                    headers: { 'x-admin-password': adminPassword }
+                });
                 const data = await res.json();
                 if (data.success) {
                     const s = data.stats;
@@ -524,7 +539,9 @@
         // Load Users
         async function loadUsers() {
             try {
-                const res = await fetch(API_BASE_URL + '/api/admin/users');
+                const res = await fetch(API_BASE_URL + '/api/admin/users', {
+                    headers: { 'x-admin-password': adminPassword }
+                });
                 const data = await res.json();
                 if (data.success) {
                     allUsers = data.users;
@@ -556,7 +573,9 @@
         // Load Logs
         async function loadLogs() {
             try {
-                const res = await fetch(API_BASE_URL + '/api/admin/logs?limit=500');
+                const res = await fetch(API_BASE_URL + '/api/admin/logs?limit=500', {
+                    headers: { 'x-admin-password': adminPassword }
+                });
                 const data = await res.json();
                 if (data.success) {
                     allLogs = data.logs;
@@ -621,22 +640,70 @@
         // Load all data
         async function loadAllData() {
             const btn = document.getElementById('btn-refresh');
-            btn.classList.add('spinning');
-            btn.disabled = true;
+            if(btn) {
+                btn.classList.add('spinning');
+                btn.disabled = true;
+            }
 
             await Promise.all([loadStats(), loadUsers(), loadLogs()]);
 
-            setTimeout(() => {
-                btn.classList.remove('spinning');
-                btn.disabled = false;
-            }, 500);
+            if(btn) {
+                setTimeout(() => {
+                    btn.classList.remove('spinning');
+                    btn.disabled = false;
+                }, 500);
+            }
         }
 
-        // Auto-load on page open
-        loadAllData();
+        // Admin Auth Flow
+        function initAdminAuth() {
+            if (adminPassword) {
+                document.getElementById('admin-auth-overlay').style.display = 'none';
+                document.getElementById('admin-topbar').style.display = 'flex';
+                document.getElementById('admin-main').style.display = 'block';
+                loadAllData();
+                setInterval(loadAllData, 30000);
+            } else {
+                document.getElementById('admin-password-input').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') handleAdminLogin();
+                });
+                document.getElementById('btn-admin-login').addEventListener('click', handleAdminLogin);
+            }
+        }
 
-        // Auto-refresh every 30 seconds
-        setInterval(loadAllData, 30000);
+        async function handleAdminLogin() {
+            const pwd = document.getElementById('admin-password-input').value;
+            if (!pwd) return;
+            
+            const btn = document.getElementById('btn-admin-login');
+            btn.textContent = 'Verifying...';
+            
+            try {
+                const res = await fetch(API_BASE_URL + '/api/admin/stats', {
+                    headers: { 'x-admin-password': pwd }
+                });
+                
+                if (res.ok) {
+                    adminPassword = pwd;
+                    sessionStorage.setItem('skillox_admin_pwd', pwd);
+                    document.getElementById('admin-auth-overlay').style.display = 'none';
+                    document.getElementById('admin-topbar').style.display = 'flex';
+                    document.getElementById('admin-main').style.display = 'block';
+                    loadAllData();
+                    setInterval(loadAllData, 30000);
+                } else {
+                    document.getElementById('admin-error').style.display = 'block';
+                    btn.textContent = 'Unlock Dashboard';
+                }
+            } catch (err) {
+                document.getElementById('admin-error').style.display = 'block';
+                document.getElementById('admin-error').textContent = 'Connection error';
+                btn.textContent = 'Unlock Dashboard';
+            }
+        }
+
+        // Initialize Authentication Overlay
+        initAdminAuth();
     </script>
 
 </body>
