@@ -1,0 +1,80 @@
+{
+  "coaching-notes": {},
+  "revision": {},
+  "sample-papers": {},
+  "textbooks": {
+    "Class_1": {
+      "English": {},
+      "EVS": {},
+      "Hindi": {},
+      "Maths": {}
+    },
+    "Class_10": {
+      "Biology": {},
+      "Chemistry": {},
+      "Maths": {},
+      "Physics": {}
+    },
+    "Class_11": {
+      "Arts": {},
+      "Commerce": {},
+      "PCB": {},
+      "PCM": {}
+    },
+    "Class_12": {
+      "Arts": {},
+      "Commerce": {},
+      "PCB": {},
+      "PCM": {}
+    },
+    "Class_2": {
+      "English": {},
+      "EVS": {},
+      "Hindi": {},
+      "Maths": {}
+    },
+    "Class_3": {
+      "English": {},
+      "EVS": {},
+      "Hindi": {},
+      "Maths": {}
+    },
+    "Class_4": {
+      "English": {},
+      "EVS": {},
+      "Hindi": {},
+      "Maths": {}
+    },
+    "Class_5": {
+      "English": {},
+      "EVS": {},
+      "Hindi": {},
+      "Maths": {}
+    },
+    "Class_6": {
+      "Computers": {},
+      "Sanskrit": {},
+      "Science": {},
+      "SST": {}
+    },
+    "Class_7": {
+      "Computers": {},
+      "Sanskrit": {},
+      "Science": {},
+      "SST": {}
+    },
+    "Class_8": {
+      "Computers": {},
+      "Sanskrit": {},
+      "Science": {},
+      "SST": {}
+    },
+    "Class_9": {
+      "Biology": {},
+      "Chemistry": {},
+      "Maths": {},
+      "Physics": {}
+    }
+  },
+  "worksheets": {}
+}
