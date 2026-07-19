@@ -137,7 +137,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Intercept clicks on protected resource links if not logged in
-    const protectedLinks = document.querySelectorAll('.nav-links a, .mobile-menu a:not(#mobile-auth-btn):not(#mobile-signup-btn), .btn-primary:not(#nav-auth-btn):not(#nav-signup-btn):not(#mobile-auth-btn):not(#mobile-signup-btn)');
+    const protectedLinks = document.querySelectorAll('.nav-links a, .mobile-menu a:not(#mobile-auth-btn):not(#mobile-signup-btn), .btn-primary:not(#nav-auth-btn):not(#nav-signup-btn):not(#mobile-auth-btn):not(#mobile-signup-btn), .content-card');
     
     protectedLinks.forEach(link => {
         link.addEventListener('click', (e) => {
@@ -638,5 +638,38 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (forgotSubtitle) forgotSubtitle.textContent = "Reset your password to regain access.";
             }, 50);
         });
+    }
+
+    // ---- Dynamic PDF Loading ----
+    if (document.querySelector('.pdf-grid')) {
+        fetch('pdf-list.json')
+            .then(res => res.json())
+            .then(data => {
+                const renderCategory = (categoryId, categoryData) => {
+                    const container = document.getElementById(`pdf-grid-${categoryId}`);
+                    if (!container) return;
+                    
+                    if (!categoryData || !categoryData._files || categoryData._files.length === 0) {
+                        return;
+                    }
+
+                    container.innerHTML = categoryData._files.map(pdf => `
+                        <a href="viewer.html?file=${encodeURIComponent(pdf.url)}" target="_blank" class="pdf-card">
+                            <div class="pdf-icon">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                            </div>
+                            <div class="pdf-title">${pdf.title}</div>
+                            <div class="pdf-meta">View Document</div>
+                        </a>
+                    `).join('');
+                };
+
+                // Textbooks has its own dedicated page
+                renderCategory('sample-papers', data['sample-papers'] || {});
+                renderCategory('worksheets', data['worksheets'] || {});
+                renderCategory('coaching-notes', data['coaching-notes'] || {});
+                renderCategory('revision', data['revision'] || {});
+            })
+            .catch(err => console.error('Failed to load PDF list:', err));
     }
 });
