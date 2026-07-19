@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure PDF Viewer | Skillox</title>
+    <style>
+        body { 
+            margin: 0; 
+            padding: 0; 
+            background-color: #1a1a1a; 
+            text-align: center; 
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+        #pdf-container { 
+            position: relative; 
+            display: inline-block; 
+            margin-top: 20px; 
+            margin-bottom: 80px; /* Space for controls */
+        }
+        canvas { 
+            display: block; 
+            margin: 0 auto; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8); 
+            border-radius: 4px;
+        }
+        .watermark { 
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            pointer-events: none; 
+            z-index: 999; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            opacity: 0.08; 
+            color: #000; 
+            font-size: 8vw; 
+            font-weight: bold; 
+            transform: rotate(-45deg); 
+            user-select: none; 
+        }
+        .controls { 
+            position: fixed; 
+            bottom: 20px; 
+            left: 50%; 
+            transform: translateX(-50%); 
+            background: rgba(30, 30, 30, 0.95); 
+            color: white; 
+            padding: 12px 24px; 
+            border-radius: 40px; 
+            display: flex; 
+            gap: 20px; 
+            align-items: center; 
+            z-index: 1000;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+        }
+        .controls button { 
+            background: #f59e0b; 
+            border: none; 
+            color: white; 
+            padding: 8px 20px; 
+            border-radius: 20px; 
+            cursor: pointer; 
+            font-weight: 600; 
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+        }
+        .controls button:hover:not(:disabled) { 
+            background: #d97706; 
+            transform: translateY(-2px);
+        }
+        .controls button:disabled { 
+            background: #555; 
+            color: #aaa;
+            cursor: not-allowed; 
+        }
+        .page-info {
+            font-size: 0.95rem;
+            font-weight: 500;
+            min-width: 100px;
+        }
+        .loader { 
+            color: white; 
+            margin-top: 30vh; 
+        }
+        .close-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.6);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .close-btn:hover {
+            background: rgba(244, 63, 94, 0.8);
+        }
+    </style>
+</head>
+<body oncontextmenu="return false;">
+    <button class="close-btn" onclick="window.close()" title="Close Viewer">×</button>
+    <div id="loader" class="loader"><h2>Loading Document...</h2></div>
+    
+    <div id="pdf-container">
+        <!-- Canvases will be injected here -->
+        <div class="watermark">SKILLOX PREMIUM</div>
+    </div>
+    
+    <div class="controls" id="controls" style="display: none;">
+        <button id="prev-page" disabled>Previous</button>
+        <span class="page-info">Page <span id="page-num">1</span> of <span id="page-count">?</span></span>
+        <button id="next-page">Next</button>
+    </div>
+
+    <!-- PDF.js library via CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>
+        // Security: Prevent saving, printing, and inspecting
+        document.addEventListener('keydown', function(e) {
+            // Prevent Ctrl+S, Ctrl+P, Ctrl+U, F12
+            if (e.ctrlKey && ['s', 'p', 'u'].includes(e.key.toLowerCase())) {
+                e.preventDefault();
+                alert('Downloading and printing are disabled for premium content.');
+            }
+            if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && e.key === 'I')) {
+                e.preventDefault();
+            }
+        });
+
+        // Setup PDF.js worker
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+        // Get file from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const file = urlParams.get('file');
+
+        if (!file) {
+            document.getElementById('loader').innerHTML = '<h2>Error: No file specified.</h2><p>Please select a document from the main website.</p>';
+        } else {
+            let pdfDoc = null,
+                pageNum = 1,
+                pageIsRendering = false,
+                pageNumIsPending = null;
+
+            // Responsive scale based on screen width
+            const scale = window.innerWidth < 768 ? 1.0 : 1.5;
+            
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            document.getElementById('pdf-container').insertBefore(canvas, document.querySelector('.watermark'));
+
+            const renderPage = num => {
+                pageIsRendering = true;
+                
+                pdfDoc.getPage(num).then(page => {
+                    const viewport = page.getViewport({ scale });
+                    canvas.height = viewport.height;
+                    canvas.width = viewport.width;
+
+                    const renderCtx = {
+                        canvasContext: ctx,
+                        viewport: viewport
+                    };
+
+                    page.render(renderCtx).promise.then(() => {
+                        pageIsRendering = false;
+                        if (pageNumIsPending !== null) {
+                            renderPage(pageNumIsPending);
+                            pageNumIsPending = null;
+                        }
+                    });
+
+                    document.getElementById('page-num').textContent = num;
+                    document.getElementById('prev-page').disabled = num <= 1;
+                    document.getElementById('next-page').disabled = num >= pdfDoc.numPages;
+                });
+            };
+
+            const queueRenderPage = num => {
+                if (pageIsRendering) {
+                    pageNumIsPending = num;
+                } else {
+                    renderPage(num);
+                }
+            };
+
+            const showPrevPage = () => {
+                if (pageNum <= 1) return;
+                pageNum--;
+                queueRenderPage(pageNum);
+            };
+
+            const showNextPage = () => {
+                if (pageNum >= pdfDoc.numPages) return;
+                pageNum++;
+                queueRenderPage(pageNum);
+            };
+
+            document.getElementById('prev-page').addEventListener('click', showPrevPage);
+            document.getElementById('next-page').addEventListener('click', showNextPage);
+
+            // Load the document
+            pdfjsLib.getDocument(file).promise.then(pdfDoc_ => {
+                pdfDoc = pdfDoc_;
+                document.getElementById('page-count').textContent = pdfDoc.numPages;
+                document.getElementById('loader').style.display = 'none';
+                document.getElementById('controls').style.display = 'flex';
+                renderPage(pageNum);
+            }).catch(err => {
+                document.getElementById('loader').innerHTML = '<h2>Error loading document.</h2><p>Make sure the file exists and you have internet connection.</p>';
+            });
+        }
+    </script>
+</body>
+</html>
