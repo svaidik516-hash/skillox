@@ -1,0 +1,642 @@
+/* =============================================
+   SKILLOX — Main JavaScript
+   ============================================= */
+
+document.addEventListener('DOMContentLoaded', () => {
+
+    // ---- Custom Toast Notification ----
+    window.showCustomToast = function(message, type = 'error') {
+        let toastContainer = document.getElementById('toast-container');
+        if (!toastContainer) {
+            toastContainer = document.createElement('div');
+            toastContainer.id = 'toast-container';
+            document.body.appendChild(toastContainer);
+        }
+        
+        const toast = document.createElement('div');
+        toast.className = `custom-toast toast-${type}`;
+        
+        const icon = type === 'error' 
+            ? `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>`
+            : `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>`;
+
+        toast.innerHTML = `
+            <div class="toast-icon">${icon}</div>
+            <div class="toast-message">${message}</div>
+        `;
+        
+        toastContainer.appendChild(toast);
+        
+        // Trigger reflow for animation
+        toast.offsetHeight;
+        toast.classList.add('show');
+        
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => {
+                toast.remove();
+            }, 400);
+        }, 4000);
+    };
+
+    // ---- Scroll Animations (IntersectionObserver) ----
+    const scrollObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('is-visible');
+                scrollObserver.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.12 });
+
+    document.querySelectorAll('.scroll-anim').forEach(el => {
+        scrollObserver.observe(el);
+    });
+
+    // ---- Navbar scroll effect ----
+    const navbar = document.getElementById('navbar');
+    if (navbar) {
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        }, { passive: true });
+    }
+
+    // ---- Hamburger / Mobile Menu ----
+    const hamburger = document.getElementById('hamburger');
+    const mobileMenu = document.getElementById('mobileMenu');
+
+    if (hamburger && mobileMenu) {
+        hamburger.addEventListener('click', () => {
+            hamburger.classList.toggle('active');
+            mobileMenu.classList.toggle('open');
+        });
+
+        // Close mobile menu when a link is clicked
+        mobileMenu.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                hamburger.classList.remove('active');
+                mobileMenu.classList.remove('open');
+            });
+        });
+    }
+
+    // ---- Check Auth State & Protect Content ----
+    const isLoggedIn = localStorage.getItem('skillox_is_logged_in') === 'true';
+    const authEmail = localStorage.getItem('skillox_auth_email');
+    
+    // Update Auth Buttons in Navbar
+    const navAuthBtn = document.getElementById('nav-auth-btn');
+    const mobileAuthBtn = document.getElementById('mobile-auth-btn');
+    const navSignupBtn = document.getElementById('nav-signup-btn');
+    const mobileSignupBtn = document.getElementById('mobile-signup-btn');
+
+    function updateAuthButtons() {
+        const btnText = isLoggedIn ? 'Log Out' : 'Log In';
+        const btnHref = isLoggedIn ? '#' : 'login.html';
+        
+        if (navSignupBtn) {
+            navSignupBtn.style.display = isLoggedIn ? 'none' : 'inline-block';
+        }
+        if (mobileSignupBtn) {
+            mobileSignupBtn.style.display = isLoggedIn ? 'none' : 'inline-block';
+        }
+
+        if (navAuthBtn) {
+            navAuthBtn.textContent = btnText;
+            navAuthBtn.href = btnHref;
+            if (isLoggedIn) {
+                navAuthBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    localStorage.removeItem('skillox_is_logged_in');
+                    localStorage.removeItem('skillox_auth_email');
+                    window.location.reload();
+                });
+            }
+        }
+        
+        if (mobileAuthBtn) {
+            mobileAuthBtn.textContent = btnText;
+            mobileAuthBtn.href = btnHref;
+            if (isLoggedIn) {
+                mobileAuthBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    localStorage.removeItem('skillox_is_logged_in');
+                    localStorage.removeItem('skillox_auth_email');
+                    window.location.reload();
+                });
+            }
+        }
+    }
+    // Only run this if we are on a page that has these buttons
+    if (navAuthBtn || mobileAuthBtn) {
+        updateAuthButtons();
+    }
+
+    // Intercept clicks on protected resource links if not logged in
+    const protectedLinks = document.querySelectorAll('.nav-links a, .mobile-menu a:not(#mobile-auth-btn):not(#mobile-signup-btn), .btn-primary:not(#nav-auth-btn):not(#nav-signup-btn):not(#mobile-auth-btn):not(#mobile-signup-btn)');
+    
+    protectedLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+            // Allow email/phone buttons to work normally
+            if (link.href.includes('mailto:') || link.href.includes('tel:')) return;
+            // Allow the explore resources button to just scroll to the section if it's the hero button (optional, but let's protect everything for now)
+
+            if (!isLoggedIn) {
+                e.preventDefault();
+                showCustomToast('Please log in to access this premium educational content.', 'error');
+                setTimeout(() => window.location.href = 'login.html', 1500);
+            }
+        });
+    });
+
+    // ---- Auth Flow (Signup / Login) ----
+    const signupForm = document.getElementById('signup-form');
+    const loginForm = document.getElementById('login-form');
+    const signupPassword = document.getElementById('signup-password');
+    const signupBtn = document.getElementById('signup-btn');
+    const stepSignup = document.getElementById('step-signup');
+    const stepVerify = document.getElementById('step-verify');
+    const btnBack = document.getElementById('btn-back');
+    const authSubtitle = document.getElementById('auth-subtitle');
+    const otpForm = document.getElementById('otp-form');
+    let currentSignupEmail = '';
+
+    // Toggle Password Visibility
+    const togglePasswordBtns = document.querySelectorAll('.toggle-password');
+    togglePasswordBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const wrapper = btn.closest('.password-wrapper');
+            const input = wrapper.querySelector('input');
+            const eyeOpen = btn.querySelector('.eye-open');
+            const eyeClosed = btn.querySelector('.eye-closed');
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                eyeOpen.style.display = 'none';
+                eyeClosed.style.display = 'block';
+            } else {
+                input.type = 'password';
+                eyeOpen.style.display = 'block';
+                eyeClosed.style.display = 'none';
+            }
+        });
+    });
+
+    // Password Strength Logic
+    if (signupPassword && signupBtn) {
+        const strengthBar = document.getElementById('strength-bar');
+        const strengthText = document.getElementById('strength-text');
+
+        signupPassword.addEventListener('input', (e) => {
+            const val = e.target.value;
+            let strength = 0;
+            
+            if (val.length >= 8) strength += 1;
+            if (val.match(/[a-z]+/)) strength += 1;
+            if (val.match(/[A-Z]+/)) strength += 1;
+            if (val.match(/[0-9]+/)) strength += 1;
+            if (val.match(/[$@#&!*?%^+=\-_()]+/)) strength += 1;
+
+            if (val.length === 0) {
+                strengthBar.style.width = '0%';
+                strengthText.textContent = '';
+                signupBtn.disabled = true;
+            } else if (strength < 3) {
+                strengthBar.style.width = '33%';
+                strengthBar.style.background = '#ef4444'; // Red
+                strengthText.textContent = 'Weak';
+                strengthText.style.color = '#ef4444';
+                signupBtn.disabled = true;
+            } else if (strength === 3 || strength === 4) {
+                strengthBar.style.width = '66%';
+                strengthBar.style.background = '#f59e0b'; // Yellow
+                strengthText.textContent = 'Medium';
+                strengthText.style.color = '#f59e0b';
+                signupBtn.disabled = false;
+            } else {
+                strengthBar.style.width = '100%';
+                strengthBar.style.background = '#10b981'; // Green
+                strengthText.textContent = 'Strong';
+                strengthText.style.color = '#10b981';
+                signupBtn.disabled = false;
+            }
+        });
+    }
+
+    // Signup Request (Step 1)
+    if (signupForm) {
+        signupForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = signupForm.querySelector('button[type="submit"]');
+            const originalText = btn.textContent;
+            
+            const name = document.getElementById('signup-name').value;
+            const email = document.getElementById('signup-email').value;
+            const password = document.getElementById('signup-password').value;
+
+            btn.textContent = "Sending OTP...";
+            btn.disabled = true;
+            btn.style.opacity = '0.8';
+
+            try {
+                const response = await fetch((typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : '') + '/api/signup-request', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    currentSignupEmail = email;
+                    stepSignup.classList.remove('active');
+                    stepSignup.classList.add('hidden');
+
+                    setTimeout(() => {
+                        stepVerify.classList.remove('hidden');
+                        stepVerify.classList.add('active');
+                        if (authSubtitle) authSubtitle.textContent = "Verify Your Email";
+                        
+                        const verifyText = stepVerify.querySelector('p strong');
+                        if (verifyText) verifyText.textContent = email;
+
+                        const firstOtp = document.querySelector('.otp-input');
+                        if (firstOtp) firstOtp.focus();
+                    }, 50);
+                } else {
+                    showCustomToast(data.error || 'Failed to send OTP', 'error');
+                    btn.textContent = originalText;
+                    btn.disabled = false;
+                    btn.style.opacity = '1';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showCustomToast('An error occurred. Please try again.', 'error');
+                btn.textContent = originalText;
+                btn.disabled = false;
+                btn.style.opacity = '1';
+            }
+        });
+    }
+
+    // Signup Verify (OTP form - Step 2)
+    if (otpForm) {
+        otpForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = otpForm.querySelector('button[type="submit"]');
+            const originalText = btn.textContent;
+            
+            const otpInputs = document.querySelectorAll('.otp-input');
+            let otpValue = '';
+            otpInputs.forEach(input => otpValue += input.value);
+            
+            if (otpValue.length !== 6) {
+                showCustomToast("Please enter all 6 digits", "error");
+                return;
+            }
+
+            btn.textContent = "Verifying & Creating...";
+            btn.style.opacity = '0.8';
+            btn.disabled = true;
+
+            try {
+                const response = await fetch((typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : '') + '/api/signup-verify', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: currentSignupEmail, otp: otpValue })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    btn.textContent = "✓ Account Created!";
+                    btn.style.background = "#10b981";
+                    
+                    localStorage.setItem('skillox_is_logged_in', 'true');
+                    localStorage.setItem('skillox_auth_email', currentSignupEmail);
+
+                    setTimeout(() => {
+                        window.location.href = "index.html";
+                    }, 1000);
+                } else {
+                    showCustomToast(data.error || "Invalid OTP", "error");
+                    btn.textContent = originalText;
+                    btn.style.opacity = '1';
+                    btn.disabled = false;
+                }
+            } catch (error) {
+                console.error("Verification error:", error);
+                showCustomToast("An error occurred during verification.", "error");
+                btn.textContent = originalText;
+                btn.style.opacity = '1';
+                btn.disabled = false;
+            }
+        });
+
+        // OTP auto-focus logic
+        const otpInputs = document.querySelectorAll('.otp-input');
+        otpInputs.forEach((input, index) => {
+            input.addEventListener('input', (e) => {
+                e.target.value = e.target.value.replace(/[^0-9]/g, '');
+                if (e.target.value.length === 1 && index < otpInputs.length - 1) {
+                    otpInputs[index + 1].focus();
+                }
+            });
+
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Backspace' && !e.target.value && index > 0) {
+                    otpInputs[index - 1].focus();
+                }
+            });
+
+            input.addEventListener('paste', (e) => {
+                e.preventDefault();
+                const pasteData = (e.clipboardData || window.clipboardData).getData('text').replace(/[^0-9]/g, '');
+                if (pasteData.length > 0) {
+                    for (let i = 0; i < Math.min(pasteData.length, otpInputs.length - index); i++) {
+                        otpInputs[index + i].value = pasteData[i];
+                    }
+                    const nextIndex = Math.min(index + pasteData.length, otpInputs.length - 1);
+                    otpInputs[nextIndex].focus();
+                }
+            });
+        });
+    }
+
+    if (btnBack) {
+        btnBack.addEventListener('click', () => {
+            stepVerify.classList.remove('active');
+            stepVerify.classList.add('hidden');
+
+            setTimeout(() => {
+                stepSignup.classList.remove('hidden');
+                stepSignup.classList.add('active');
+                if (authSubtitle) authSubtitle.textContent = "Create an account to access premium notes.";
+            }, 50);
+        });
+    }
+
+    if (loginForm) {
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = loginForm.querySelector('button[type="submit"]');
+            const originalText = btn.textContent;
+            
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+
+            btn.textContent = "Logging in...";
+            btn.disabled = true;
+            btn.style.opacity = '0.8';
+
+            try {
+                const response = await fetch((typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : '') + '/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    btn.textContent = "✓ Logged In!";
+                    btn.style.background = "#10b981";
+                    
+                    localStorage.setItem('skillox_is_logged_in', 'true');
+                    localStorage.setItem('skillox_auth_email', email);
+
+                    setTimeout(() => {
+                        window.location.href = "index.html";
+                    }, 1000);
+                } else {
+                    showCustomToast(data.error || 'Invalid email or password', 'error');
+                    btn.textContent = originalText;
+                    btn.disabled = false;
+                    btn.style.opacity = '1';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showCustomToast('An error occurred. Please try again.', 'error');
+                btn.textContent = originalText;
+                btn.disabled = false;
+                btn.style.opacity = '1';
+            }
+        });
+    }
+
+    // ---- Forgot Password Flow ----
+    const forgotRequestForm = document.getElementById('forgot-request-form');
+    const forgotResetForm = document.getElementById('forgot-reset-form');
+    const stepForgotRequest = document.getElementById('step-forgot-request');
+    const stepForgotReset = document.getElementById('step-forgot-reset');
+    const forgotSubtitle = document.getElementById('forgot-subtitle');
+    const btnForgotBack = document.getElementById('btn-forgot-back');
+    const forgotNewPassword = document.getElementById('forgot-new-password');
+    const forgotConfirmPassword = document.getElementById('forgot-confirm-password');
+    const forgotResetBtn = document.getElementById('forgot-reset-btn');
+    
+    let currentForgotEmail = '';
+    let forgotPasswordStrength = 0;
+
+    // Forgot Password Strength & Confirmation Logic
+    function checkForgotPasswords() {
+        if (!forgotNewPassword || !forgotConfirmPassword || !forgotResetBtn) return;
+        
+        const pwd = forgotNewPassword.value;
+        const confirm = forgotConfirmPassword.value;
+        
+        let strength = 0;
+        if (pwd.length >= 8) strength += 1;
+        if (pwd.match(/[a-z]+/)) strength += 1;
+        if (pwd.match(/[A-Z]+/)) strength += 1;
+        if (pwd.match(/[0-9]+/)) strength += 1;
+        if (pwd.match(/[$@#&!*?%^+=\-_()]+/)) strength += 1;
+        
+        forgotPasswordStrength = strength;
+
+        const strengthBar = document.getElementById('forgot-strength-bar');
+        const strengthText = document.getElementById('forgot-strength-text');
+
+        if (pwd.length === 0) {
+            strengthBar.style.width = '0%';
+            strengthText.textContent = '';
+        } else if (strength < 3) {
+            strengthBar.style.width = '33%';
+            strengthBar.style.background = '#ef4444';
+            strengthText.textContent = 'Weak';
+            strengthText.style.color = '#ef4444';
+        } else if (strength === 3 || strength === 4) {
+            strengthBar.style.width = '66%';
+            strengthBar.style.background = '#f59e0b';
+            strengthText.textContent = 'Medium';
+            strengthText.style.color = '#f59e0b';
+        } else {
+            strengthBar.style.width = '100%';
+            strengthBar.style.background = '#10b981';
+            strengthText.textContent = 'Strong';
+            strengthText.style.color = '#10b981';
+        }
+
+        // Enable button only if strength >= 3 and passwords match
+        if (strength >= 3 && pwd === confirm && pwd.length > 0) {
+            forgotResetBtn.disabled = false;
+        } else {
+            forgotResetBtn.disabled = true;
+        }
+    }
+
+    if (forgotNewPassword) forgotNewPassword.addEventListener('input', checkForgotPasswords);
+    if (forgotConfirmPassword) forgotConfirmPassword.addEventListener('input', checkForgotPasswords);
+
+    // Request Reset OTP
+    if (forgotRequestForm) {
+        forgotRequestForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = forgotRequestForm.querySelector('button[type="submit"]');
+            const originalText = btn.textContent;
+            const email = document.getElementById('forgot-email').value;
+
+            btn.textContent = "Sending...";
+            btn.disabled = true;
+            btn.style.opacity = '0.8';
+
+            try {
+                const response = await fetch((typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : '') + '/api/forgot-password-request', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    currentForgotEmail = email;
+                    stepForgotRequest.classList.remove('active');
+                    stepForgotRequest.classList.add('hidden');
+
+                    setTimeout(() => {
+                        stepForgotReset.classList.remove('hidden');
+                        stepForgotReset.classList.add('active');
+                        if (forgotSubtitle) forgotSubtitle.textContent = "Check your email for the reset code.";
+                        
+                        const firstOtp = document.querySelector('.forgot-otp');
+                        if (firstOtp) firstOtp.focus();
+                    }, 50);
+                } else {
+                    showCustomToast(data.error || 'Failed to request reset', 'error');
+                    btn.textContent = originalText;
+                    btn.disabled = false;
+                    btn.style.opacity = '1';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showCustomToast('An error occurred. Please try again.', 'error');
+                btn.textContent = originalText;
+                btn.disabled = false;
+                btn.style.opacity = '1';
+            }
+        });
+    }
+
+    // Verify OTP & Reset Password
+    if (forgotResetForm) {
+        forgotResetForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = forgotResetForm.querySelector('button[type="submit"]');
+            const originalText = btn.textContent;
+            
+            const otpInputs = document.querySelectorAll('.forgot-otp');
+            let otpValue = '';
+            otpInputs.forEach(input => otpValue += input.value);
+            
+            if (otpValue.length !== 6) {
+                showCustomToast("Please enter all 6 digits of the OTP", "error");
+                return;
+            }
+
+            const newPassword = document.getElementById('forgot-new-password').value;
+
+            btn.textContent = "Resetting Password...";
+            btn.style.opacity = '0.8';
+            btn.disabled = true;
+
+            try {
+                const response = await fetch((typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : '') + '/api/forgot-password-reset', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: currentForgotEmail, otp: otpValue, newPassword })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    btn.textContent = "✓ Password Reset!";
+                    btn.style.background = "#10b981";
+                    
+                    showCustomToast("Password successfully reset! Please log in.", "success");
+
+                    setTimeout(() => {
+                        window.location.href = "login.html";
+                    }, 1500);
+                } else {
+                    showCustomToast(data.error || "Failed to reset password", "error");
+                    btn.textContent = originalText;
+                    btn.style.opacity = '1';
+                    btn.disabled = false;
+                }
+            } catch (error) {
+                console.error("Reset error:", error);
+                showCustomToast("An error occurred. Please try again.", "error");
+                btn.textContent = originalText;
+                btn.style.opacity = '1';
+                btn.disabled = false;
+            }
+        });
+
+        // OTP auto-focus logic for forgot password
+        const otpInputs = document.querySelectorAll('.forgot-otp');
+        otpInputs.forEach((input, index) => {
+            input.addEventListener('input', (e) => {
+                e.target.value = e.target.value.replace(/[^0-9]/g, '');
+                if (e.target.value.length === 1 && index < otpInputs.length - 1) {
+                    otpInputs[index + 1].focus();
+                }
+            });
+
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Backspace' && !e.target.value && index > 0) {
+                    otpInputs[index - 1].focus();
+                }
+            });
+
+            input.addEventListener('paste', (e) => {
+                e.preventDefault();
+                const pasteData = (e.clipboardData || window.clipboardData).getData('text').replace(/[^0-9]/g, '');
+                if (pasteData.length > 0) {
+                    for (let i = 0; i < Math.min(pasteData.length, otpInputs.length - index); i++) {
+                        otpInputs[index + i].value = pasteData[i];
+                    }
+                    const nextIndex = Math.min(index + pasteData.length, otpInputs.length - 1);
+                    otpInputs[nextIndex].focus();
+                }
+            });
+        });
+    }
+
+    if (btnForgotBack) {
+        btnForgotBack.addEventListener('click', () => {
+            stepForgotReset.classList.remove('active');
+            stepForgotReset.classList.add('hidden');
+
+            setTimeout(() => {
+                stepForgotRequest.classList.remove('hidden');
+                stepForgotRequest.classList.add('active');
+                if (forgotSubtitle) forgotSubtitle.textContent = "Reset your password to regain access.";
+            }, 50);
+        });
+    }
+});
