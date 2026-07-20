@@ -28,7 +28,8 @@ async function initDb() {
                 name VARCHAR(255),
                 password VARCHAR(255),
                 type VARCHAR(20) NOT NULL,
-                expires_at BIGINT NOT NULL
+                expires_at BIGINT NOT NULL,
+                attempts INTEGER DEFAULT 0
             );
         `;
 
@@ -48,6 +49,8 @@ async function initDb() {
         // Handle migration if table existed before without name/password_hash columns
         try { await sql`ALTER TABLE users ADD COLUMN name VARCHAR(255) NOT NULL DEFAULT 'User'`; } catch (e) {}
         try { await sql`ALTER TABLE users ADD COLUMN password_hash VARCHAR(255) NOT NULL DEFAULT 'none'`; } catch (e) {}
+        // Migration: Add attempts column to otp_requests
+        try { await sql`ALTER TABLE otp_requests ADD COLUMN attempts INTEGER DEFAULT 0`; } catch (e) {}
 
         console.log('✓ Vercel Postgres Database initialized');
     } catch (error) {
@@ -207,14 +210,15 @@ async function getStats() {
 async function saveOtpRequest(email, otp, name, password, type, expiresAt) {
     try {
         await sql`
-            INSERT INTO otp_requests (email, otp, name, password, type, expires_at)
-            VALUES (${email}, ${otp}, ${name || ''}, ${password || ''}, ${type}, ${expiresAt})
+            INSERT INTO otp_requests (email, otp, name, password, type, expires_at, attempts)
+            VALUES (${email}, ${otp}, ${name || ''}, ${password || ''}, ${type}, ${expiresAt}, 0)
             ON CONFLICT (email) DO UPDATE 
             SET otp = EXCLUDED.otp, 
                 name = EXCLUDED.name, 
                 password = EXCLUDED.password, 
                 type = EXCLUDED.type, 
-                expires_at = EXCLUDED.expires_at;
+                expires_at = EXCLUDED.expires_at,
+                attempts = 0;
         `;
     } catch (error) {
         console.error('Error in saveOtpRequest:', error);
@@ -248,6 +252,23 @@ async function deleteOtpRequest(email) {
     }
 }
 
+/**
+ * Increment OTP attempt counter. Returns the new attempt count.
+ */
+async function incrementOtpAttempts(email) {
+    try {
+        const result = await sql`
+            UPDATE otp_requests SET attempts = attempts + 1
+            WHERE email = ${email}
+            RETURNING attempts;
+        `;
+        return result.rows[0]?.attempts || 0;
+    } catch (error) {
+        console.error('Error in incrementOtpAttempts:', error);
+        return 0;
+    }
+}
+
 module.exports = {
     initDb,
     createUser,
@@ -260,5 +281,6 @@ module.exports = {
     getStats,
     saveOtpRequest,
     getOtpRequest,
-    deleteOtpRequest
+    deleteOtpRequest,
+    incrementOtpAttempts
 };
