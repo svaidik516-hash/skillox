@@ -60,15 +60,17 @@
   "textbooks": {
     "Class_1": {
       "English": {},
-      "EVS": {},
       "Hindi": {},
-      "Maths": {}
+      "Maths": {},
+      "Science": {},
+      "Social Science": {}
     },
     "Class_10": {
-      "Biology": {},
-      "Chemistry": {},
+      "English": {},
+      "Hindi": {},
       "Maths": {},
-      "Physics": {}
+      "Science": {},
+      "Social Science": {}
     },
     "Class_11": {
       "Arts": {},
@@ -84,51 +86,59 @@
     },
     "Class_2": {
       "English": {},
-      "EVS": {},
       "Hindi": {},
-      "Maths": {}
+      "Maths": {},
+      "Science": {},
+      "Social Science": {}
     },
     "Class_3": {
       "English": {},
-      "EVS": {},
       "Hindi": {},
-      "Maths": {}
+      "Maths": {},
+      "Science": {},
+      "Social Science": {}
     },
     "Class_4": {
       "English": {},
-      "EVS": {},
       "Hindi": {},
-      "Maths": {}
+      "Maths": {},
+      "Science": {},
+      "Social Science": {}
     },
     "Class_5": {
       "English": {},
-      "EVS": {},
       "Hindi": {},
-      "Maths": {}
+      "Maths": {},
+      "Science": {},
+      "Social Science": {}
     },
     "Class_6": {
-      "Computers": {},
-      "Sanskrit": {},
+      "English": {},
+      "Hindi": {},
+      "Maths": {},
       "Science": {},
-      "SST": {}
+      "Social Science": {}
     },
     "Class_7": {
-      "Computers": {},
-      "Sanskrit": {},
+      "English": {},
+      "Hindi": {},
+      "Maths": {},
       "Science": {},
-      "SST": {}
+      "Social Science": {}
     },
     "Class_8": {
-      "Computers": {},
-      "Sanskrit": {},
+      "English": {},
+      "Hindi": {},
+      "Maths": {},
       "Science": {},
-      "SST": {}
+      "Social Science": {}
     },
     "Class_9": {
-      "Biology": {},
-      "Chemistry": {},
+      "English": {},
+      "Hindi": {},
       "Maths": {},
-      "Physics": {}
+      "Science": {},
+      "Social Science": {}
     }
   },
   "worksheets": {}
