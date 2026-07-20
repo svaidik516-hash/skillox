@@ -3,18 +3,43 @@ const cors = require('cors');
 const path = require('path');
 const bcrypt = require('bcryptjs');
 const nodemailer = require('nodemailer');
+const crypto = require('crypto');
+const rateLimit = require('express-rate-limit');
+const compression = require('compression');
 require('dotenv').config();
 
-const { initDb, createUser, getUserByEmail, updateUserPassword, recordLoginSuccess, logLogin, getAllUsers, getLoginLogs, getStats, saveOtpRequest, getOtpRequest, deleteOtpRequest } = require('./database');
+const { initDb, createUser, getUserByEmail, updateUserPassword, recordLoginSuccess, logLogin, getAllUsers, getLoginLogs, getStats, saveOtpRequest, getOtpRequest, deleteOtpRequest, incrementOtpAttempts } = require('./database');
 
 const app = express();
 
 // Initialize Vercel Postgres tables (safe to call multiple times)
 initDb();
 
-// CORS — allow Vercel frontend + local development
+/* =============================================
+   SECURITY MIDDLEWARE & OPTIMIZATIONS
+   ============================================= */
+
+// Enable gzip compression for better performance
+app.use(compression());
+
+// Security Headers — protect against XSS, clickjacking, MIME sniffing, etc.
+app.use((req, res, next) => {
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('X-Frame-Options', 'DENY');
+    res.setHeader('X-XSS-Protection', '1; mode=block');
+    res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+    res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+    // HSTS — only on production (HTTPS)
+    if (req.secure || req.headers['x-forwarded-proto'] === 'https') {
+        res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+    }
+    next();
+});
+
+// CORS — allow Vercel frontend + local development (FIXED: actually reject unknown origins)
 app.use(cors({
     origin: function (origin, callback) {
+        // Allow requests with no origin (server-to-server, mobile apps, curl)
         if (!origin) return callback(null, true);
         const allowed = [
             /^https?:\/\/localhost(:\d+)?$/,
@@ -25,32 +50,104 @@ app.use(cors({
         if (allowed.some(pattern => pattern.test(origin))) {
             return callback(null, true);
         }
-        return callback(null, true);
+        return callback(new Error('Not allowed by CORS'));
     },
     credentials: true
 }));
 
-app.use(express.json());
-// Serve static frontend files
-app.use(express.static(path.join(__dirname)));
+// Body parser with size limit (prevents DoS via large payloads)
+app.use(express.json({ limit: '16kb' }));
+
+// Serve static frontend files with caching for better performance
+app.use(express.static(path.join(__dirname), { maxAge: '1d' }));
+
+/* =============================================
+   RATE LIMITERS
+   ============================================= */
+
+// General auth rate limiter (login)
+const loginLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 10, // 10 login attempts per 15 min per IP
+    message: { error: 'Too many login attempts. Please try again in 15 minutes.' },
+    standardHeaders: true,
+    legacyHeaders: false,
+    keyGenerator: (req) => getClientIP(req)
+});
+
+// Strict rate limiter for OTP-sending endpoints (prevents SMTP abuse)
+const otpRequestLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 5, // 5 OTP requests per 15 min per IP
+    message: { error: 'Too many OTP requests. Please try again in 15 minutes.' },
+    standardHeaders: true,
+    legacyHeaders: false,
+    keyGenerator: (req) => getClientIP(req)
+});
+
+// Rate limiter for OTP verification (prevents brute-force)
+const otpVerifyLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 10, // 10 OTP verify attempts per 15 min per IP
+    message: { error: 'Too many verification attempts. Please try again in 15 minutes.' },
+    standardHeaders: true,
+    legacyHeaders: false,
+    keyGenerator: (req) => getClientIP(req)
+});
+
+// Rate limiter for admin endpoints
+const adminLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 30,
+    message: { error: 'Too many admin requests. Please slow down.' },
+    standardHeaders: true,
+    legacyHeaders: false,
+    keyGenerator: (req) => getClientIP(req)
+});
+
+/* =============================================
+   HELPERS
+   ============================================= */
 
 // Health check — verify the backend is reachable
 app.get('/api/health', (req, res) => {
     res.json({
         status: 'ok',
         server: 'Skillox Backend',
-        timestamp: new Date().toISOString(),
-        uptime: process.uptime()
+        timestamp: new Date().toISOString()
+        // NOTE: uptime removed for security — exposes server restart patterns
     });
 });
 
 const PORT = process.env.PORT || 3000;
+const MAX_OTP_ATTEMPTS = 5;
 
 // Helper to get client IP
 function getClientIP(req) {
     return req.headers['x-forwarded-for']?.split(',')[0]?.trim()
         || req.socket?.remoteAddress
         || 'unknown';
+}
+
+// Generate cryptographically secure 6-digit OTP
+function generateSecureOTP() {
+    return crypto.randomInt(100000, 999999).toString();
+}
+
+// Validate email format
+function isValidEmail(email) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return typeof email === 'string' && emailRegex.test(email) && email.length <= 255;
+}
+
+// Validate password strength (server-side enforcement)
+function isValidPassword(password) {
+    return typeof password === 'string' && password.length >= 8 && password.length <= 128;
+}
+
+// Validate name
+function isValidName(name) {
+    return typeof name === 'string' && name.trim().length >= 1 && name.length <= 100;
 }
 
 // Removed in-memory otpStore to support Serverless environments
@@ -81,24 +178,43 @@ async function createTransporter() {
     }
 }
 
+/* =============================================
+   AUTH ENDPOINTS
+   ============================================= */
+
 // Endpoint to Request Signup (Sends OTP)
-app.post('/api/signup-request', async (req, res) => {
+app.post('/api/signup-request', otpRequestLimiter, async (req, res) => {
     const { name, email, password } = req.body;
 
+    // Input validation
     if (!name || !email || !password) {
         return res.status(400).json({ error: 'Name, email, and password are required' });
+    }
+    if (!isValidName(name)) {
+        return res.status(400).json({ error: 'Name must be between 1 and 100 characters' });
+    }
+    if (!isValidEmail(email)) {
+        return res.status(400).json({ error: 'Please enter a valid email address' });
+    }
+    if (!isValidPassword(password)) {
+        return res.status(400).json({ error: 'Password must be between 8 and 128 characters' });
     }
 
     try {
         // Check if user already exists
         const existing = await getUserByEmail(email);
         if (existing) {
-            return res.status(400).json({ error: 'An account with this email already exists' });
+            // SECURITY FIX: Don't reveal whether an email is registered
+            // Return the same success message to prevent email enumeration
+            return res.json({ success: true, message: 'If this email is available, an OTP has been sent.' });
         }
 
-        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        const otp = generateSecureOTP();
         const expiresAt = Date.now() + 5 * 60 * 1000; // 5 minutes
-        await saveOtpRequest(email, otp, name, password, 'signup', expiresAt);
+
+        // SECURITY FIX: Hash password BEFORE storing in otp_requests
+        const hashedPassword = await bcrypt.hash(password, 10);
+        await saveOtpRequest(email, otp, name, hashedPassword, 'signup', expiresAt);
 
         const transporter = await createTransporter();
         const info = await transporter.sendMail({
@@ -128,7 +244,7 @@ app.post('/api/signup-request', async (req, res) => {
 });
 
 // Endpoint to Verify Signup (Creates Account)
-app.post('/api/signup-verify', async (req, res) => {
+app.post('/api/signup-verify', otpVerifyLimiter, async (req, res) => {
     const { email, otp } = req.body;
     const ip = getClientIP(req);
 
@@ -136,7 +252,13 @@ app.post('/api/signup-verify', async (req, res) => {
         return res.status(400).json({ error: 'Email and OTP are required' });
     }
 
-    const record = await getOtpRequest(email, 'signup');
+    let record;
+    try {
+        record = await getOtpRequest(email, 'signup');
+    } catch (err) {
+        console.error('Error fetching OTP request:', err);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
 
     if (!record) {
         return res.status(400).json({ error: 'No signup request found for this email or it has expired' });
@@ -147,11 +269,17 @@ app.post('/api/signup-verify', async (req, res) => {
         return res.status(400).json({ error: 'OTP has expired' });
     }
 
+    // SECURITY FIX: Check OTP attempt count before verifying
+    const attempts = await incrementOtpAttempts(email);
+    if (attempts > MAX_OTP_ATTEMPTS) {
+        await deleteOtpRequest(email);
+        return res.status(429).json({ error: 'Too many failed OTP attempts. Please request a new code.' });
+    }
+
     if (record.otp === otp) {
-        // Success
+        // Success — password is already hashed from signup-request
         try {
-            const hash = await bcrypt.hash(record.password, 10);
-            await createUser(record.name, email, hash);
+            await createUser(record.name, email, record.password);
             
             await deleteOtpRequest(email);
             await recordLoginSuccess(email);
@@ -163,16 +291,20 @@ app.post('/api/signup-verify', async (req, res) => {
             res.status(500).json({ error: 'Failed to create account in database' });
         }
     } else {
-        return res.status(400).json({ error: 'Invalid OTP' });
+        return res.status(400).json({ error: `Invalid OTP. ${MAX_OTP_ATTEMPTS - attempts} attempts remaining.` });
     }
 });
 
 // Endpoint to Request Forgot Password OTP
-app.post('/api/forgot-password-request', async (req, res) => {
+app.post('/api/forgot-password-request', otpRequestLimiter, async (req, res) => {
     const { email } = req.body;
 
     if (!email) {
         return res.status(400).json({ error: 'Email is required' });
+    }
+
+    if (!isValidEmail(email)) {
+        return res.status(400).json({ error: 'Please enter a valid email address' });
     }
 
     try {
@@ -182,7 +314,7 @@ app.post('/api/forgot-password-request', async (req, res) => {
             return res.json({ success: true, message: 'If that email is registered, an OTP was sent.' });
         }
 
-        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        const otp = generateSecureOTP();
         const expiresAt = Date.now() + 10 * 60 * 1000; // 10 minutes
         await saveOtpRequest(email, otp, null, null, 'reset', expiresAt);
 
@@ -214,14 +346,24 @@ app.post('/api/forgot-password-request', async (req, res) => {
 });
 
 // Endpoint to Reset Password
-app.post('/api/forgot-password-reset', async (req, res) => {
+app.post('/api/forgot-password-reset', otpVerifyLimiter, async (req, res) => {
     const { email, otp, newPassword } = req.body;
 
     if (!email || !otp || !newPassword) {
         return res.status(400).json({ error: 'Email, OTP, and new password are required' });
     }
 
-    const record = await getOtpRequest(email, 'reset');
+    if (!isValidPassword(newPassword)) {
+        return res.status(400).json({ error: 'Password must be between 8 and 128 characters' });
+    }
+
+    let record;
+    try {
+        record = await getOtpRequest(email, 'reset');
+    } catch (err) {
+        console.error('Error fetching reset request:', err);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
 
     if (!record) {
         return res.status(400).json({ error: 'No reset request found or it has expired' });
@@ -230,6 +372,13 @@ app.post('/api/forgot-password-reset', async (req, res) => {
     if (Date.now() > Number(record.expires_at)) {
         await deleteOtpRequest(email);
         return res.status(400).json({ error: 'OTP has expired' });
+    }
+
+    // SECURITY FIX: Check OTP attempt count before verifying
+    const attempts = await incrementOtpAttempts(email);
+    if (attempts > MAX_OTP_ATTEMPTS) {
+        await deleteOtpRequest(email);
+        return res.status(429).json({ error: 'Too many failed OTP attempts. Please request a new code.' });
     }
 
     if (record.otp === otp) {
@@ -243,12 +392,12 @@ app.post('/api/forgot-password-reset', async (req, res) => {
             res.status(500).json({ error: 'Failed to update password' });
         }
     } else {
-        return res.status(400).json({ error: 'Invalid OTP' });
+        return res.status(400).json({ error: `Invalid OTP. ${MAX_OTP_ATTEMPTS - attempts} attempts remaining.` });
     }
 });
 
 // Endpoint to Login
-app.post('/api/login', async (req, res) => {
+app.post('/api/login', loginLimiter, async (req, res) => {
     const { email, password } = req.body;
     const ip = getClientIP(req);
 
@@ -290,7 +439,7 @@ app.post('/api/login', async (req, res) => {
    ADMIN API ENDPOINTS
    ============================================= */
 
-// Admin Authentication Middleware
+// Admin Authentication Middleware — uses constant-time comparison
 function verifyAdmin(req, res, next) {
     const provided = req.headers['x-admin-password'];
     const expected = process.env.ADMIN_PASSWORD;
@@ -298,14 +447,22 @@ function verifyAdmin(req, res, next) {
     if (!expected) {
         return res.status(500).json({ error: 'ADMIN_PASSWORD not configured on server' });
     }
-    if (provided !== expected) {
+    if (!provided) {
+        return res.status(401).json({ error: 'Unauthorized: Admin password required' });
+    }
+
+    // SECURITY FIX: Use constant-time comparison to prevent timing attacks
+    const providedBuf = Buffer.from(String(provided));
+    const expectedBuf = Buffer.from(String(expected));
+
+    if (providedBuf.length !== expectedBuf.length || !crypto.timingSafeEqual(providedBuf, expectedBuf)) {
         return res.status(401).json({ error: 'Unauthorized: Invalid Admin Password' });
     }
     next();
 }
 
 // Get all registered users
-app.get('/api/admin/users', verifyAdmin, async (req, res) => {
+app.get('/api/admin/users', adminLimiter, verifyAdmin, async (req, res) => {
     try {
         const users = await getAllUsers();
         // Remove password hashes from response
@@ -325,9 +482,10 @@ app.get('/api/admin/users', verifyAdmin, async (req, res) => {
 });
 
 // Get login logs
-app.get('/api/admin/logs', verifyAdmin, async (req, res) => {
+app.get('/api/admin/logs', adminLimiter, verifyAdmin, async (req, res) => {
     try {
-        const limit = parseInt(req.query.limit) || 200;
+        // SECURITY FIX: Cap the limit to prevent database abuse
+        const limit = Math.min(parseInt(req.query.limit) || 200, 500);
         const logs = await getLoginLogs(limit);
         res.json({ success: true, logs });
     } catch (error) {
@@ -337,7 +495,7 @@ app.get('/api/admin/logs', verifyAdmin, async (req, res) => {
 });
 
 // Get summary stats
-app.get('/api/admin/stats', verifyAdmin, async (req, res) => {
+app.get('/api/admin/stats', adminLimiter, verifyAdmin, async (req, res) => {
     try {
         const stats = await getStats();
         res.json({ success: true, stats });

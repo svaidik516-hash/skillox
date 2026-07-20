@@ -415,6 +415,10 @@
                 <div class="stat-value" id="stat-rate">—</div>
             </div>
             <div class="stat-card">
+                <div class="stat-label"><span class="stat-icon rate">❌</span> Failed Logins</div>
+                <div class="stat-value" id="stat-failed">—</div>
+            </div>
+            <div class="stat-card">
                 <div class="stat-label"><span class="stat-icon today">📅</span> Logins Today</div>
                 <div class="stat-value" id="stat-today">—</div>
             </div>
@@ -427,13 +431,17 @@
                     👤 Registered Users
                     <span class="panel-count" id="users-count">0</span>
                 </div>
-                <input type="text" class="search-box" id="search-users" placeholder="Search users..." oninput="filterTable('users')">
+                <div style="display: flex; gap: 8px;">
+                    <input type="text" class="search-box" id="search-users" placeholder="Search users..." oninput="filterTable('users')">
+                    <button class="btn-refresh" onclick="exportCSV('users')" style="padding: 8px 12px; font-size: 0.85rem;">⬇️ Export</button>
+                </div>
             </div>
             <div class="table-wrap">
                 <table id="users-table">
                     <thead>
                         <tr>
                             <th>#</th>
+                            <th>Name</th>
                             <th>Email</th>
                             <th>First Login</th>
                             <th>Last Login</th>
@@ -458,10 +466,13 @@
         <div class="panel">
             <div class="panel-header">
                 <div class="panel-title">
-                    📋 Login Activity Log
+                    📋 Recent Login Activity
                     <span class="panel-count" id="logs-count">0</span>
                 </div>
-                <input type="text" class="search-box" id="search-logs" placeholder="Search logs..." oninput="filterTable('logs')">
+                <div style="display: flex; gap: 8px;">
+                    <input type="text" class="search-box" id="search-logs" placeholder="Search IP or email..." oninput="filterTable('logs')">
+                    <button class="btn-refresh" onclick="exportCSV('logs')" style="padding: 8px 12px; font-size: 0.85rem;">⬇️ Export</button>
+                </div>
             </div>
             <div class="table-wrap">
                 <table id="logs-table">
@@ -524,6 +535,7 @@
                     document.getElementById('stat-users').textContent = s.total_users.toLocaleString();
                     document.getElementById('stat-attempts').textContent = s.total_attempts.toLocaleString();
                     document.getElementById('stat-success').textContent = s.successful_logins.toLocaleString();
+                    document.getElementById('stat-failed').textContent = s.failed_logins.toLocaleString();
                     document.getElementById('stat-today').textContent = s.logins_today.toLocaleString();
 
                     const rate = s.total_attempts > 0
@@ -562,6 +574,7 @@
             body.innerHTML = users.map((u, i) => `
                 <tr>
                     <td style="color: var(--text-muted); font-size: 0.82rem;">${i + 1}</td>
+                    <td style="font-weight: 500;">${escapeHtml(u.name)}</td>
                     <td class="email-cell">${escapeHtml(u.email)}</td>
                     <td class="date-cell">${formatDate(u.created_at)}</td>
                     <td class="date-cell">${formatDate(u.last_login)}</td>
@@ -635,6 +648,44 @@
             const div = document.createElement('div');
             div.textContent = str;
             return div.innerHTML;
+        }
+
+        // Export CSV logic
+        function exportCSV(type) {
+            let csvContent = "data:text/csv;charset=utf-8,";
+            
+            if (type === 'users') {
+                csvContent += "Name,Email,First Login,Last Login,Total Logins\n";
+                allUsers.forEach(u => {
+                    const row = [
+                        `"${(u.name || '').replace(/"/g, '""')}"`,
+                        `"${u.email}"`,
+                        `"${u.created_at || ''}"`,
+                        `"${u.last_login || ''}"`,
+                        u.login_count
+                    ];
+                    csvContent += row.join(",") + "\n";
+                });
+            } else if (type === 'logs') {
+                csvContent += "Email,IP Address,Status,Date\n";
+                allLogs.forEach(l => {
+                    const row = [
+                        `"${l.email}"`,
+                        `"${l.ip_address}"`,
+                        `"${l.status}"`,
+                        `"${l.created_at || ''}"`
+                    ];
+                    csvContent += row.join(",") + "\n";
+                });
+            }
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `skillox_${type}_export.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
 
         // Load all data
