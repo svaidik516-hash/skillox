@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CBSE Sample Papers | Skillox</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .hub-container {
+            display: flex;
+            max-width: 1200px;
+            margin: 40px auto 100px;
+            gap: 30px;
+            padding: 0 20px;
+        }
+        
+        /* Sidebar for Classes */
+        .class-sidebar {
+            width: 250px;
+            flex-shrink: 0;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            height: fit-content;
+            position: sticky;
+            top: 100px;
+        }
+        .class-sidebar h3 {
+            margin-bottom: 15px;
+            font-family: 'Outfit', sans-serif;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+        .class-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .class-btn {
+            background: transparent;
+            border: none;
+            text-align: left;
+            padding: 12px 15px;
+            border-radius: var(--radius-md);
+            font-weight: 500;
+            color: var(--text-dark);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .class-btn:hover {
+            background: rgba(232, 116, 12, 0.05);
+            color: var(--primary);
+        }
+        .class-btn.active {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 12px rgba(232, 116, 12, 0.3);
+        }
+        
+        /* Main Area */
+        .hub-main {
+            flex-grow: 1;
+        }
+        
+        /* Subject Pills */
+        .subject-pills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .subject-pill {
+            padding: 8px 20px;
+            border-radius: 30px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+        .subject-pill:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+        .subject-pill.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        
+        /* Empty State */
+        .empty-hub {
+            text-align: center;
+            padding: 60px 20px;
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            border: 1px dashed var(--border-color);
+            color: var(--text-muted);
+        }
+        
+        @media (max-width: 768px) {
+            .hub-container {
+                flex-direction: column;
+            }
+            .class-sidebar {
+                width: 100%;
+                position: relative;
+                top: 0;
+            }
+            .class-list {
+                flex-direction: row;
+                overflow-x: auto;
+                padding-bottom: 10px;
+            }
+            .class-btn {
+                white-space: nowrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar" id="navbar">
+        <a href="index.html" class="logo">
+            <div class="logo-icon">S</div>
+            <h2>Skillox</h2>
+        </a>
+        <ul class="nav-links">
+            <li><a href="index.html#textbooks">Textbooks</a></li>
+            <li><a href="index.html#sample-papers" class="active">Sample Papers</a></li>
+            <li><a href="index.html#worksheets">Worksheets</a></li>
+            <li><a href="index.html#coaching-notes">Coaching Notes</a></li>
+            <li><a href="index.html#revision">Quick Revision</a></li>
+        </ul>
+        <div class="nav-actions">
+            <a href="login.html" id="nav-auth-btn" class="btn btn-outline btn-sm">Log In</a>
+            <a href="signup.html" id="nav-signup-btn" class="btn btn-primary btn-sm" style="margin-left: 10px;">Sign Up</a>
+        </div>
+    </nav>
+
+    <div style="padding-top: 120px; text-align: center; margin-bottom: 20px;">
+        <span class="section-tag">📝 Sample Papers</span>
+        <h1 style="font-family: 'Outfit', sans-serif; margin-top: 15px; font-size: 3rem; color: var(--primary);">CBSE Board</h1>
+        <p style="color: var(--text-muted); font-size: 1.1rem; margin-top: 10px;">Select your class to view question banks and previous year papers</p>
+    </div>
+
+    <div class="hub-container">
+        <!-- Sidebar -->
+        <aside class="class-sidebar">
+            <h3>Classes</h3>
+            <div class="class-list" id="class-list">
+                <div style="padding: 20px; text-align: center; color: var(--text-muted);">Loading classes...</div>
+            </div>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="hub-main">
+            <div class="subject-pills" id="subject-list">
+                <!-- Subjects injected via JS -->
+            </div>
+            
+            <div class="pdf-grid" id="pdf-grid">
+                <!-- PDFs injected via JS -->
+            </div>
+        </main>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="script.js"></script>
+    <script src="board-pages.js"></script>
+</body>
+</html>

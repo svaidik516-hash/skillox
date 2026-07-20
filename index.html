@@ -153,7 +153,7 @@
 
             <div class="board-cards scroll-anim">
                 <!-- CBSE -->
-                <div class="board-card">
+                <a href="cbse.html" class="board-card" style="text-decoration: none; color: inherit; display: block;">
                     <div class="board-badge cbse">CBSE</div>
                     <h3>Central Board of Secondary Education</h3>
                     <p>Latest pattern sample papers with marking schemes, solutions, and important questions for all subjects.</p>
@@ -175,11 +175,11 @@
                             Class 9, 10, 11 & 12
                         </li>
                     </ul>
-                    <a href="#contact" class="btn btn-primary btn-block">Get CBSE Papers</a>
-                </div>
+                    <div class="btn btn-primary btn-block">Get CBSE Papers</div>
+                </a>
 
                 <!-- ICSE -->
-                <div class="board-card featured">
+                <a href="icse.html" class="board-card featured" style="text-decoration: none; color: inherit; display: block;">
                     <div class="featured-label">Most Popular</div>
                     <div class="board-badge icse">ICSE</div>
                     <h3>Indian Certificate of Secondary Education</h3>
@@ -202,11 +202,11 @@
                             Class 9, 10, 11 & 12
                         </li>
                     </ul>
-                    <a href="#contact" class="btn btn-primary btn-block">Get ICSE Papers</a>
-                </div>
+                    <div class="btn btn-primary btn-block">Get ICSE Papers</div>
+                </a>
 
                 <!-- UP Board -->
-                <div class="board-card">
+                <a href="up-board.html" class="board-card" style="text-decoration: none; color: inherit; display: block;">
                     <div class="board-badge upboard">UP Board</div>
                     <h3>Uttar Pradesh Board of Education</h3>
                     <p>Hindi-medium and English-medium sample papers aligned with the UP Board curriculum and exam format.</p>
@@ -228,12 +228,9 @@
                             Class 9, 10, 11 & 12
                         </li>
                     </ul>
-                    <a href="#contact" class="btn btn-primary btn-block">Get UP Board Papers</a>
-                </div>
+                    <div class="btn btn-primary btn-block">Get UP Board Papers</div>
+                </a>
             </div>
-
-            <!-- Dynamic PDFs will load here -->
-            <div class="pdf-grid" id="pdf-grid-sample-papers"></div>
         </div>
     </section>
 
@@ -341,31 +338,93 @@
                 </div>
 
                 <div class="coaching-visual">
-                    <div class="mock-note">
-                        <div class="mock-note-header">
-                            <div class="mock-dots">
-                                <span style="background:#ef4444;"></span>
-                                <span style="background:#f59e0b;"></span>
-                                <span style="background:#22c55e;"></span>
+                    <div class="flashcard-carousel-container">
+                        <button class="flashcard-nav-btn prev-btn" aria-label="Previous Flashcard">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                        </button>
+                        
+                        <div class="flashcard-carousel">
+                            <div class="flashcard-track" id="flashcard-track">
+                                <!-- Card 1: Science -->
+                                <div class="mock-note">
+                                    <div class="mock-note-header">
+                                        <div class="mock-dots">
+                                            <span style="background:#ef4444;"></span>
+                                            <span style="background:#f59e0b;"></span>
+                                            <span style="background:#22c55e;"></span>
+                                        </div>
+                                        <span class="mock-title">Science — Ecosystems</span>
+                                    </div>
+                                    <div class="mock-note-body" style="padding: 0;">
+                                        <img src="assets/images/science_ecosystems_1784526237175.png" alt="Food Web Diagram" style="width: 100%; height: auto; display: block;">
+                                    </div>
+                                </div>
+
+                                <!-- Card 2: Biology -->
+                                <div class="mock-note">
+                                    <div class="mock-note-header">
+                                        <div class="mock-dots">
+                                            <span style="background:#ef4444;"></span>
+                                            <span style="background:#f59e0b;"></span>
+                                            <span style="background:#22c55e;"></span>
+                                        </div>
+                                        <span class="mock-title">Biology — Cell Structure</span>
+                                    </div>
+                                    <div class="mock-note-body" style="padding: 0;">
+                                        <img src="assets/images/biology_cell_1784526253491.png" alt="Mitochondria Diagram" style="width: 100%; height: auto; display: block;">
+                                    </div>
+                                </div>
+
+                                <!-- Card 3: Physics -->
+                                <div class="mock-note">
+                                    <div class="mock-note-header">
+                                        <div class="mock-dots">
+                                            <span style="background:#ef4444;"></span>
+                                            <span style="background:#f59e0b;"></span>
+                                            <span style="background:#22c55e;"></span>
+                                        </div>
+                                        <span class="mock-title">Physics — Forces & Motion</span>
+                                    </div>
+                                    <div class="mock-note-body" style="padding: 0;">
+                                        <img src="assets/images/physics_forces_1784526269639.png" alt="Forces Diagram" style="width: 100%; height: auto; display: block;">
+                                    </div>
+                                </div>
+
+                                <!-- Card 4: Maths -->
+                                <div class="mock-note">
+                                    <div class="mock-note-header">
+                                        <div class="mock-dots">
+                                            <span style="background:#ef4444;"></span>
+                                            <span style="background:#f59e0b;"></span>
+                                            <span style="background:#22c55e;"></span>
+                                        </div>
+                                        <span class="mock-title">Maths — Trigonometry</span>
+                                    </div>
+                                    <div class="mock-note-body" style="padding: 0;">
+                                        <img src="assets/images/maths_trigonometry_1784526286348.png" alt="Trigonometry Diagram" style="width: 100%; height: auto; display: block;">
+                                    </div>
+                                </div>
+
+                                <!-- Card 5: Chemistry -->
+                                <div class="mock-note">
+                                    <div class="mock-note-header">
+                                        <div class="mock-dots">
+                                            <span style="background:#ef4444;"></span>
+                                            <span style="background:#f59e0b;"></span>
+                                            <span style="background:#22c55e;"></span>
+                                        </div>
+                                        <span class="mock-title">Chemistry — Acids & Bases</span>
+                                    </div>
+                                    <div class="mock-note-body" style="padding: 0;">
+                                        <img src="assets/images/chemistry_acids_1784526300994.png" alt="Chemistry Diagram" style="width: 100%; height: auto; display: block;">
+                                    </div>
+                                </div>
                             </div>
-                            <span class="mock-title">Chapter 3 — Forces & Motion</span>
                         </div>
-                        <div class="mock-note-body">
-                            <div class="mock-line w-80"></div>
-                            <div class="mock-line w-60"></div>
-                            <div class="mock-line w-90"></div>
-                            <div class="mock-diagram">
-                                <span>F = m × a</span>
-                            </div>
-                            <div class="mock-line w-70"></div>
-                            <div class="mock-line w-85"></div>
-                            <div class="mock-highlight">
-                                <div class="mock-line w-90" style="background: rgba(232,116,12,0.2);"></div>
-                                <div class="mock-line w-75" style="background: rgba(232,116,12,0.2);"></div>
-                            </div>
-                            <div class="mock-line w-60"></div>
-                            <div class="mock-line w-80"></div>
-                        </div>
+
+                        <button class="flashcard-nav-btn next-btn" aria-label="Next Flashcard">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                        </button>
                     </div>
                 </div>
             </div>

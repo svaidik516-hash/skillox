@@ -186,6 +186,103 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // ---- Flashcard Carousel Logic ----
+    const flashcardTrack = document.getElementById('flashcard-track');
+    if (flashcardTrack) {
+        const prevBtn = document.querySelector('.flashcard-nav-btn.prev-btn');
+        const nextBtn = document.querySelector('.flashcard-nav-btn.next-btn');
+        let currentIndex = 0;
+        const totalCards = 5;
+
+        function updateCarousel() {
+            flashcardTrack.style.transform = `translateX(-${currentIndex * (100 / totalCards)}%)`;
+            
+            if (prevBtn) prevBtn.disabled = currentIndex === 0;
+            if (nextBtn) nextBtn.disabled = currentIndex === totalCards - 1;
+        }
+
+        if (prevBtn) {
+            prevBtn.addEventListener('click', () => {
+                if (currentIndex > 0) {
+                    currentIndex--;
+                    updateCarousel();
+                }
+            });
+        }
+
+        if (nextBtn) {
+            nextBtn.addEventListener('click', () => {
+                if (currentIndex < totalCards - 1) {
+                    currentIndex++;
+                    updateCarousel();
+                }
+            });
+        }
+
+        // Touch/Mouse Drag Support
+        let startX = 0;
+        let isDragging = false;
+
+        function getPositionX(event) {
+            return event.type.includes('mouse') ? event.pageX : event.touches[0].clientX;
+        }
+
+        function touchStart(event) {
+            isDragging = true;
+            startX = getPositionX(event);
+        }
+
+        function touchMove(event) {
+            if (isDragging) {
+                const currentPosition = getPositionX(event);
+                const diff = currentPosition - startX;
+                
+                if (diff < -50 && currentIndex < totalCards - 1) {
+                    currentIndex++;
+                    updateCarousel();
+                    isDragging = false;
+                } else if (diff > 50 && currentIndex > 0) {
+                    currentIndex--;
+                    updateCarousel();
+                    isDragging = false;
+                }
+            }
+        }
+
+        function touchEnd() {
+            isDragging = false;
+        }
+
+        flashcardTrack.addEventListener('touchstart', touchStart, { passive: true });
+        flashcardTrack.addEventListener('touchmove', touchMove, { passive: true });
+        flashcardTrack.addEventListener('touchend', touchEnd);
+        
+        flashcardTrack.addEventListener('mousedown', touchStart);
+        flashcardTrack.addEventListener('mousemove', touchMove);
+        flashcardTrack.addEventListener('mouseup', touchEnd);
+        flashcardTrack.addEventListener('mouseleave', touchEnd);
+
+        // Trackpad (Wheel) Support
+        let wheelTimeout;
+        flashcardTrack.addEventListener('wheel', (e) => {
+            if (Math.abs(e.deltaX) > 20) {
+                e.preventDefault();
+                if (!wheelTimeout) {
+                    if (e.deltaX > 0 && currentIndex < totalCards - 1) {
+                        currentIndex++;
+                        updateCarousel();
+                    } else if (e.deltaX < 0 && currentIndex > 0) {
+                        currentIndex--;
+                        updateCarousel();
+                    }
+                    wheelTimeout = setTimeout(() => { wheelTimeout = null; }, 500);
+                }
+            }
+        }, { passive: false });
+
+        updateCarousel();
+    }
+
     // Password Strength Logic
     if (signupPassword && signupBtn) {
         const strengthBar = document.getElementById('strength-bar');
@@ -641,7 +738,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ---- Dynamic PDF Loading ----
-    if (document.querySelector('.pdf-grid')) {
+    if (document.querySelector('.pdf-grid') || document.querySelector('#sample-papers-dynamic-grid')) {
         fetch('pdf-list.json')
             .then(res => res.json())
             .then(data => {
@@ -664,8 +761,29 @@ document.addEventListener('DOMContentLoaded', () => {
                     `).join('');
                 };
 
-                // Textbooks has its own dedicated page
-                renderCategory('sample-papers', data['sample-papers'] || {});
+                // Render Dynamic Sample Paper Category Cards
+                const samplePapersGrid = document.getElementById('sample-papers-dynamic-grid');
+                if (samplePapersGrid && data['sample-papers']) {
+                    const folders = Object.keys(data['sample-papers']).filter(k => k !== '_files');
+                    if (folders.length > 0) {
+                        samplePapersGrid.innerHTML = folders.map((folder, index) => {
+                            const folderName = folder.replace(/-/g, ' ').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+                            const bg = ['linear-gradient(135deg, #e8740c, #f59e0b)', 'linear-gradient(135deg, #f59e0b, #fbbf24)', 'linear-gradient(135deg, #ea580c, #f97316)', 'linear-gradient(135deg, #f97316, #fb923c)'][index % 4];
+                            return `
+                            <a href="sample-papers.html?category=${encodeURIComponent(folder)}" class="content-card" style="text-decoration: none; color: inherit; display: block;">
+                                <div class="card-icon" style="background: ${bg};">
+                                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                                </div>
+                                <h3>${folderName}</h3>
+                                <p>Explore our comprehensive collection of ${folderName.toLowerCase()} for all subjects.</p>
+                            </a>`;
+                        }).join('');
+                    } else {
+                        samplePapersGrid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 20px;">No categories found. Add folders to the sample-papers directory.</div>';
+                    }
+                }
+
+                // Render other direct PDFs
                 renderCategory('worksheets', data['worksheets'] || {});
                 renderCategory('coaching-notes', data['coaching-notes'] || {});
                 renderCategory('revision', data['revision'] || {});

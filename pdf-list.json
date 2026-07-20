@@ -1,7 +1,62 @@
 {
   "coaching-notes": {},
   "revision": {},
-  "sample-papers": {},
+  "sample-papers": {
+    "CBSE": {
+      "Class_10": {
+        "Chapterwise_Question_Banks": {},
+        "Previous_Yr_Questions": {}
+      },
+      "Class_11": {
+        "Chapterwise_Question_Banks": {},
+        "Previous_Yr_Questions": {}
+      },
+      "Class_12": {
+        "Chapterwise_Question_Banks": {},
+        "Previous_Yr_Questions": {}
+      },
+      "Class_9": {
+        "Chapterwise_Question_Banks": {},
+        "Previous_Yr_Questions": {}
+      }
+    },
+    "ICSE": {
+      "Class_10": {
+        "Chapterwise_Question_Banks": {},
+        "Previous_Yr_Questions": {}
+      },
+      "Class_11": {
+        "Chapterwise_Question_Banks": {},
+        "Previous_Yr_Questions": {}
+      },
+      "Class_12": {
+        "Chapterwise_Question_Banks": {},
+        "Previous_Yr_Questions": {}
+      },
+      "Class_9": {
+        "Chapterwise_Question_Banks": {},
+        "Previous_Yr_Questions": {}
+      }
+    },
+    "UP_Board": {
+      "Class_10": {
+        "Chapterwise_Question_Banks": {},
+        "Previous_Yr_Questions": {}
+      },
+      "Class_11": {
+        "Chapterwise_Question_Banks": {},
+        "Previous_Yr_Questions": {}
+      },
+      "Class_12": {
+        "Chapterwise_Question_Banks": {},
+        "Previous_Yr_Questions": {}
+      },
+      "Class_9": {
+        "Chapterwise_Question_Banks": {},
+        "Previous_Yr_Questions": {}
+      }
+    }
+  },
   "textbooks": {
     "Class_1": {
       "English": {},

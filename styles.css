@@ -554,6 +554,13 @@ img { max-width: 100%; height: auto; }
     position: relative;
     overflow: hidden;
     box-shadow: var(--shadow-card);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.board-card .btn-block {
+    margin-top: auto;
 }
 
 .board-card:hover {
@@ -758,6 +765,69 @@ img { max-width: 100%; height: auto; }
 .coaching-visual {
     display: flex;
     justify-content: center;
+    padding: 0 10px;
+    width: 100%;
+}
+
+.flashcard-carousel-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    width: 100%;
+    max-width: 520px;
+}
+
+.flashcard-carousel {
+    overflow: hidden;
+    width: 100%;
+    border-radius: var(--radius-lg);
+    padding: 20px 0;
+}
+
+.flashcard-track {
+    display: flex;
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    width: 500%;
+}
+
+.flashcard-track .mock-note {
+    width: 20%;
+    flex-shrink: 0;
+    margin: 0;
+    max-width: none;
+}
+
+.flashcard-nav-btn {
+    background: white;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--primary);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+    z-index: 10;
+}
+
+.flashcard-nav-btn:hover {
+    background: var(--primary);
+    color: white;
+    transform: scale(1.1);
+}
+
+.flashcard-nav-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: white;
+    color: #ccc;
+    transform: none;
 }
 
 .mock-note {
@@ -768,12 +838,12 @@ img { max-width: 100%; height: auto; }
     border-radius: var(--radius-lg);
     overflow: hidden;
     box-shadow: var(--shadow-card);
-    transform: perspective(800px) rotateY(-5deg) rotateX(3deg);
-    transition: transform 0.5s ease;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .mock-note:hover {
-    transform: perspective(800px) rotateY(0deg) rotateX(0deg);
+    transform: scale(1.05) translateY(-5px);
+    box-shadow: 0 15px 35px rgba(232, 116, 12, 0.15);
 }
 
 .mock-note-header {
