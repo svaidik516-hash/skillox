@@ -542,7 +542,7 @@ img { max-width: 100%; height: auto; }
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
     gap: 28px;
-    align-items: start;
+    align-items: stretch;
 }
 
 .board-card {
