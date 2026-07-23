@@ -15,8 +15,18 @@ const { initDb, createUser, getUserByEmail, updateUserPassword, recordLoginSucce
 
 const app = express();
 
+// Vercel Debugging: Check if environment variables are loaded (prints true/false, hides actual secret)
+console.log("Vercel Startup - SUPABASE_URL exists:", !!process.env.SUPABASE_URL);
+console.log("Vercel Startup - SUPABASE_KEY exists:", !!process.env.SUPABASE_KEY);
+console.log("Vercel Startup - JWT_SECRET exists:", !!process.env.JWT_SECRET);
+
 // Initialize Supabase Client
-const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
+let supabase;
+try {
+    supabase = createClient(process.env.SUPABASE_URL || 'https://placeholder.supabase.co', process.env.SUPABASE_KEY || 'placeholder_key');
+} catch (e) {
+    console.error("Failed to initialize Supabase client on startup:", e.message);
+}
 
 app.use(cookieParser());
 
