@@ -15,10 +15,23 @@ const { initDb, createUser, getUserByEmail, updateUserPassword, recordLoginSucce
 
 const app = express();
 
-// Vercel Debugging: Check if environment variables are loaded (prints true/false, hides actual secret)
-console.log("Vercel Startup - SUPABASE_URL exists:", !!process.env.SUPABASE_URL);
-console.log("Vercel Startup - SUPABASE_KEY exists:", !!process.env.SUPABASE_KEY);
-console.log("Vercel Startup - JWT_SECRET exists:", !!process.env.JWT_SECRET);
+// Helper to sanitize user input for safe HTML email embedding
+function sanitizeForHtml(str) {
+    if (!str) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+// Helper to mask email for safe logging (e.g., v***@gmail.com)
+function maskEmail(email) {
+    if (!email || !email.includes('@')) return '***';
+    const [local, domain] = email.split('@');
+    return local[0] + '***@' + domain;
+}
 
 // Initialize Supabase Client
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
@@ -243,11 +256,12 @@ app.post('/api/signup-request', otpRequestLimiter, async (req, res) => {
         }
 
         const otp = generateSecureOTP();
+        const hashedOtp = await bcrypt.hash(otp, 10);
         const expiresAt = Date.now() + 5 * 60 * 1000; // 5 minutes
 
         // SECURITY FIX: Hash password BEFORE storing in otp_requests
         const hashedPassword = await bcrypt.hash(password, 10);
-        await saveOtpRequest(email, otp, name, hashedPassword, 'signup', expiresAt);
+        await saveOtpRequest(email, hashedOtp, name, hashedPassword, 'signup', expiresAt);
 
         const transporter = await createTransporter();
         const info = await transporter.sendMail({
@@ -268,7 +282,7 @@ app.post('/api/signup-request', otpRequestLimiter, async (req, res) => {
             `
         });
 
-        console.log(`📧 Signup OTP sent to ${email}`);
+        console.log(`📧 Signup OTP sent to ${maskEmail(email)}`);
         res.json({ success: true, message: 'OTP sent to email' });
     } catch (error) {
         console.error('Signup Request error:', error);
@@ -309,7 +323,7 @@ app.post('/api/signup-verify', otpVerifyLimiter, async (req, res) => {
         return res.status(429).json({ error: 'Too many failed OTP attempts. Please request a new code.' });
     }
 
-    if (record.otp === otp) {
+    if (await bcrypt.compare(otp, record.otp)) {
         // Success — password is already hashed from signup-request
         try {
             await createUser(record.name, email, record.password);
@@ -319,7 +333,8 @@ app.post('/api/signup-verify', otpVerifyLimiter, async (req, res) => {
             await logLogin(email, ip, 'success');
             
             const token = jwt.sign({ email }, process.env.JWT_SECRET, { expiresIn: '7d' });
-            res.cookie('skillox_token', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'strict', maxAge: 7 * 24 * 60 * 60 * 1000 });
+            const isSecure = req.secure || req.headers['x-forwarded-proto'] === 'https';
+            res.cookie('skillox_token', token, { httpOnly: true, secure: isSecure, sameSite: 'strict', maxAge: 7 * 24 * 60 * 60 * 1000 });
             
             res.json({ success: true, message: 'Account created successfully' });
         } catch (error) {
@@ -351,8 +366,9 @@ app.post('/api/forgot-password-request', otpRequestLimiter, async (req, res) => 
         }
 
         const otp = generateSecureOTP();
+        const hashedOtp = await bcrypt.hash(otp, 10);
         const expiresAt = Date.now() + 10 * 60 * 1000; // 10 minutes
-        await saveOtpRequest(email, otp, null, null, 'reset', expiresAt);
+        await saveOtpRequest(email, hashedOtp, null, null, 'reset', expiresAt);
 
         const transporter = await createTransporter();
         const info = await transporter.sendMail({
@@ -373,7 +389,7 @@ app.post('/api/forgot-password-request', otpRequestLimiter, async (req, res) => 
             `
         });
 
-        console.log(`📧 Password reset OTP sent to ${email}`);
+        console.log(`📧 Password reset OTP sent to ${maskEmail(email)}`);
         res.json({ success: true, message: 'OTP sent to email' });
     } catch (error) {
         console.error('Forgot Password Request error:', error);
@@ -417,7 +433,7 @@ app.post('/api/forgot-password-reset', otpVerifyLimiter, async (req, res) => {
         return res.status(429).json({ error: 'Too many failed OTP attempts. Please request a new code.' });
     }
 
-    if (record.otp === otp) {
+    if (await bcrypt.compare(otp, record.otp)) {
         try {
             const hash = await bcrypt.hash(newPassword, 10);
             await updateUserPassword(email, hash);
@@ -461,7 +477,8 @@ app.post('/api/login', loginLimiter, async (req, res) => {
         await logLogin(email, ip, 'success');
         
         const token = jwt.sign({ email: user.email }, process.env.JWT_SECRET, { expiresIn: '7d' });
-        res.cookie('skillox_token', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'strict', maxAge: 7 * 24 * 60 * 60 * 1000 });
+        const isSecure = req.secure || req.headers['x-forwarded-proto'] === 'https';
+        res.cookie('skillox_token', token, { httpOnly: true, secure: isSecure, sameSite: 'strict', maxAge: 7 * 24 * 60 * 60 * 1000 });
         
         res.json({ 
             success: true, 
@@ -494,8 +511,11 @@ app.get('/api/pdf-url', async (req, res) => {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         
         // Generate signed URL from Supabase (expires in 5 minutes)
-        // Ensure file path doesn't have leading slash if we're storing it like 'textbooks/math.pdf'
+        // SECURITY FIX: Block path traversal attacks (e.g., ../../private/secret.pdf)
         const safePath = file.startsWith('/') ? file.slice(1) : file;
+        if (safePath.includes('..') || safePath.includes('\\') || safePath.startsWith('/')) {
+            return res.status(400).json({ error: 'Invalid file path' });
+        }
         
         const { data, error } = await supabase.storage.from('Skillox').createSignedUrl(safePath, 300);
         
@@ -632,12 +652,12 @@ app.post('/api/contact', contactLimiter, async (req, res) => {
             html: `
                 <div style="font-family: Arial, sans-serif; padding: 20px;">
                     <h2>New Message from Skillox Contact Form</h2>
-                    <p><strong>Name:</strong> ${name}</p>
-                    <p><strong>Email:</strong> ${email}</p>
-                    <p><strong>Subject:</strong> ${subject}</p>
+                    <p><strong>Name:</strong> ${sanitizeForHtml(name)}</p>
+                    <p><strong>Email:</strong> ${sanitizeForHtml(email)}</p>
+                    <p><strong>Subject:</strong> ${sanitizeForHtml(subject)}</p>
                     <hr>
                     <p><strong>Message:</strong></p>
-                    <p style="white-space: pre-wrap;">${message}</p>
+                    <p style="white-space: pre-wrap;">${sanitizeForHtml(message)}</p>
                 </div>
             `
         });
