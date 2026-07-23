@@ -492,7 +492,7 @@ app.get('/api/pdf-url', async (req, res) => {
         // Ensure file path doesn't have leading slash if we're storing it like 'textbooks/math.pdf'
         const safePath = file.startsWith('/') ? file.slice(1) : file;
         
-        const { data, error } = await supabase.storage.from('skillox-pdfs').createSignedUrl(safePath, 300);
+        const { data, error } = await supabase.storage.from('Skillox').createSignedUrl(safePath, 300);
         
         if (error) {
             console.error('Supabase signed URL error:', error);

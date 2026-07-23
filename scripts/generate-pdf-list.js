@@ -12,7 +12,7 @@ if (!supabaseUrl || !supabaseKey) {
 }
 
 const supabase = createClient(supabaseUrl, supabaseKey);
-const bucketName = 'skillox-pdfs';
+const bucketName = 'Skillox';
 const outputFile = path.join(__dirname, '..', 'pdf-list.json');
 
 // Recursively fetch all files from Supabase bucket
@@ -54,8 +54,32 @@ async function listAllFiles(prefix = '') {
 
 // Convert a flat list of paths into a nested tree structure
 function buildTree(paths) {
-    const tree = {};
+    // Pre-populate standard structure so tabs always show up even if empty!
+    const tree = {
+        textbooks: {},
+        revision: {},
+        "coaching-notes": {},
+        "sample-papers": {},
+        worksheets: {}
+    };
 
+    const standardSubjects = ['Mathematics', 'Science', 'English', 'Social Science', 'Hindi'];
+    const higherSubjects = ['Physics', 'Chemistry', 'Mathematics', 'Biology', 'English', 'Accountancy', 'Business Studies', 'Economics'];
+
+    // Create Class 1-12 and their subjects
+    for (const category of Object.keys(tree)) {
+        for (let i = 1; i <= 12; i++) {
+            const clsKey = `Class_${i}`;
+            tree[category][clsKey] = {};
+            
+            const subjects = i >= 11 ? higherSubjects : standardSubjects;
+            subjects.forEach(sub => {
+                tree[category][clsKey][sub] = { _files: [] };
+            });
+        }
+    }
+
+    // Now populate the actual files found in Supabase
     paths.forEach(filePath => {
         const parts = filePath.split('/');
         const fileName = parts.pop(); 

@@ -12,7 +12,7 @@ if (!supabaseUrl || !supabaseKey) {
 }
 
 const supabase = createClient(supabaseUrl, supabaseKey);
-const bucketName = 'skillox-pdfs';
+const bucketName = 'Skillox';
 
 // The local folder where your PDFs are stored
 const localPdfsFolder = path.join(__dirname, '..', 'pdfs');
