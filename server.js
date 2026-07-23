@@ -6,11 +6,19 @@ const nodemailer = require('nodemailer');
 const crypto = require('crypto');
 const rateLimit = require('express-rate-limit');
 const compression = require('compression');
+const cookieParser = require('cookie-parser');
+const jwt = require('jsonwebtoken');
+const { createClient } = require('@supabase/supabase-js');
 require('dotenv').config();
 
 const { initDb, createUser, getUserByEmail, updateUserPassword, recordLoginSuccess, logLogin, getAllUsers, getLoginLogs, getStats, saveOtpRequest, getOtpRequest, deleteOtpRequest, incrementOtpAttempts, saveContactMessage, getContactMessages, markMessageRead } = require('./database');
 
 const app = express();
+
+// Initialize Supabase Client
+const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
+
+app.use(cookieParser());
 
 // Initialize Vercel Postgres tables (safe to call multiple times)
 initDb();
@@ -305,6 +313,9 @@ app.post('/api/signup-verify', otpVerifyLimiter, async (req, res) => {
             await recordLoginSuccess(email);
             await logLogin(email, ip, 'success');
             
+            const token = jwt.sign({ email }, process.env.JWT_SECRET, { expiresIn: '7d' });
+            res.cookie('skillox_token', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'strict', maxAge: 7 * 24 * 60 * 60 * 1000 });
+            
             res.json({ success: true, message: 'Account created successfully' });
         } catch (error) {
             console.error('Signup Verify error:', error);
@@ -444,6 +455,9 @@ app.post('/api/login', loginLimiter, async (req, res) => {
         await recordLoginSuccess(email);
         await logLogin(email, ip, 'success');
         
+        const token = jwt.sign({ email: user.email }, process.env.JWT_SECRET, { expiresIn: '7d' });
+        res.cookie('skillox_token', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'strict', maxAge: 7 * 24 * 60 * 60 * 1000 });
+        
         res.json({ 
             success: true, 
             message: 'Logged in successfully',
@@ -452,6 +466,43 @@ app.post('/api/login', loginLimiter, async (req, res) => {
     } catch (error) {
         console.error('Login error:', error);
         res.status(500).json({ error: 'An error occurred during login' });
+    }
+});
+
+/* =============================================
+   SECURE PDF ENDPOINT (SUPABASE)
+   ============================================= */
+app.get('/api/pdf-url', async (req, res) => {
+    const { file } = req.query;
+    const token = req.cookies.skillox_token;
+
+    if (!file) {
+        return res.status(400).json({ error: 'File parameter is required' });
+    }
+
+    if (!token) {
+        return res.status(401).json({ error: 'Unauthorized: No session cookie' });
+    }
+
+    try {
+        // Verify JWT token
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        
+        // Generate signed URL from Supabase (expires in 5 minutes)
+        // Ensure file path doesn't have leading slash if we're storing it like 'textbooks/math.pdf'
+        const safePath = file.startsWith('/') ? file.slice(1) : file;
+        
+        const { data, error } = await supabase.storage.from('skillox-pdfs').createSignedUrl(safePath, 300);
+        
+        if (error) {
+            console.error('Supabase signed URL error:', error);
+            return res.status(500).json({ error: 'Failed to generate secure link' });
+        }
+        
+        res.json({ success: true, url: data.signedUrl });
+    } catch (err) {
+        console.error('PDF URL generation error:', err);
+        return res.status(401).json({ error: 'Unauthorized: Invalid or expired session' });
     }
 });
 

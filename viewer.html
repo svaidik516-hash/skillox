@@ -215,9 +215,27 @@
             // Store canvases for page jump
             const canvases = [];
 
-            // Load the document
-            pdfjsLib.getDocument(file).promise.then(async pdfDoc => {
-                document.getElementById('loader').style.display = 'none';
+            // Securely fetch the signed URL from the backend
+            fetch(`/api/pdf-url?file=${encodeURIComponent(file)}`)
+                .then(response => {
+                    if (response.status === 401) {
+                        throw new Error('Unauthorized. Please log in to view premium content.');
+                    }
+                    if (!response.ok) {
+                        throw new Error('Failed to secure PDF access.');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (!data.success) {
+                        throw new Error(data.error || 'Failed to secure PDF access.');
+                    }
+                    
+                    // Load the document using the secure, temporary Supabase URL
+                    return pdfjsLib.getDocument(data.url).promise;
+                })
+                .then(async pdfDoc => {
+                    document.getElementById('loader').style.display = 'none';
                 
                 // Show top bar and set total pages
                 document.getElementById('top-bar').style.display = 'flex';
@@ -287,7 +305,11 @@
                     await page.render(renderCtx).promise;
                 }
             }).catch(err => {
-                document.getElementById('loader').innerHTML = '<h2>Error loading document.</h2><p>Make sure the file exists and you have internet connection.</p>';
+                const loader = document.getElementById('loader');
+                loader.innerHTML = `<h2>Error loading document.</h2><p>${err.message || 'Make sure the file exists and you have an internet connection.'}</p>`;
+                if (err.message && err.message.includes('log in')) {
+                     loader.innerHTML += '<br><button onclick="window.close()" style="padding: 10px 20px; background: #e8740c; color: white; border: none; border-radius: 5px; cursor: pointer;">Close & Login</button>';
+                }
                 console.error(err);
             });
         }
