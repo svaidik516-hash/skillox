@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us | Skillox</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .contact-container {
+            max-width: 600px;
+            margin: 100px auto;
+            padding: 20px;
+        }
+        .contact-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 40px;
+            box-shadow: var(--shadow-card);
+        }
+        .contact-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .contact-header h2 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 2rem;
+            margin-bottom: 10px;
+            color: var(--text-dark);
+        }
+        .contact-header p {
+            color: var(--text-muted);
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        textarea.form-control {
+            min-height: 120px;
+            resize: vertical;
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-glow bg-glow-1"></div>
+    <div class="bg-glow bg-glow-2"></div>
+
+    <!-- Navbar -->
+    <nav class="navbar" id="navbar">
+        <a href="index.html" class="logo">
+            <div class="logo-icon">S</div>
+            <h2>Skillox</h2>
+        </a>
+        <ul class="nav-links">
+            <li><a href="index.html#textbooks">Textbooks</a></li>
+            <li><a href="index.html#sample-papers">Sample Papers</a></li>
+            <li><a href="index.html#worksheets">Worksheets</a></li>
+            <li><a href="index.html#coaching-notes">Coaching Notes</a></li>
+            <li><a href="revision.html">Quick Revision</a></li>
+            <li><a href="contact.html">Contact Us</a></li>
+        </ul>
+        <div class="nav-actions">
+            <a href="login.html" id="nav-auth-btn" class="btn btn-outline btn-sm">Log In</a>
+        </div>
+        <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+            <span></span><span></span><span></span>
+        </button>
+    </nav>
+
+    <!-- Mobile Menu -->
+    <div class="mobile-menu" id="mobileMenu">
+        <ul>
+            <li><a href="index.html#textbooks">Textbooks</a></li>
+            <li><a href="index.html#sample-papers">Sample Papers</a></li>
+            <li><a href="index.html#worksheets">Worksheets</a></li>
+            <li><a href="index.html#coaching-notes">Coaching Notes</a></li>
+            <li><a href="revision.html">Quick Revision</a></li>
+            <li><a href="contact.html">Contact Us</a></li>
+            <li><a href="login.html" id="mobile-auth-btn" class="btn btn-outline" style="display:inline-block; margin-top:10px;">Log In</a></li>
+        </ul>
+    </div>
+
+    <!-- Contact Form -->
+    <div class="contact-container">
+        <div class="contact-card anim-slide-up">
+            <div class="contact-header">
+                <h2>Get in Touch</h2>
+                <p>Have a question or feedback? We'd love to hear from you.</p>
+            </div>
+            <form id="contact-form">
+                <div class="form-group">
+                    <label for="contact-name">Full Name</label>
+                    <input type="text" id="contact-name" class="form-control" placeholder="John Doe" required>
+                </div>
+                <div class="form-group">
+                    <label for="contact-email">Email Address</label>
+                    <input type="email" id="contact-email" class="form-control" placeholder="you@example.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="contact-subject">Subject</label>
+                    <input type="text" id="contact-subject" class="form-control" placeholder="How can we help you?" required>
+                </div>
+                <div class="form-group">
+                    <label for="contact-message">Message</label>
+                    <textarea id="contact-message" class="form-control" placeholder="Type your message here..." required></textarea>
+                </div>
+                <button type="submit" id="contact-submit" class="btn btn-primary btn-block" style="margin-top: 10px;">Send Message</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast">Message</div>
+
+    <script src="config.js"></script>
+    <script src="script.js"></script>
+    <script src="contact.js"></script>
+</body>
+</html>

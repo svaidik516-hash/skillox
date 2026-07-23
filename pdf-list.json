@@ -1,6 +1,103 @@
 {
   "coaching-notes": {},
-  "revision": {},
+  "revision": {
+    "Class_1": {
+      "Diagram_Collections": {},
+      "Formula_Sheets": {},
+      "Key_Points_and_Definitions": {},
+      "Mind_Maps": {},
+      "One_Page_Summaries": {},
+      "Solved_Examples": {}
+    },
+    "Class_10": {
+      "Diagram_Collections": {},
+      "Formula_Sheets": {},
+      "Key_Points_and_Definitions": {},
+      "Mind_Maps": {},
+      "One_Page_Summaries": {},
+      "Solved_Examples": {}
+    },
+    "Class_11": {
+      "Diagram_Collections": {},
+      "Formula_Sheets": {},
+      "Key_Points_and_Definitions": {},
+      "Mind_Maps": {},
+      "One_Page_Summaries": {},
+      "Solved_Examples": {}
+    },
+    "Class_12": {
+      "Diagram_Collections": {},
+      "Formula_Sheets": {},
+      "Key_Points_and_Definitions": {},
+      "Mind_Maps": {},
+      "One_Page_Summaries": {},
+      "Solved_Examples": {}
+    },
+    "Class_2": {
+      "Diagram_Collections": {},
+      "Formula_Sheets": {},
+      "Key_Points_and_Definitions": {},
+      "Mind_Maps": {},
+      "One_Page_Summaries": {},
+      "Solved_Examples": {}
+    },
+    "Class_3": {
+      "Diagram_Collections": {},
+      "Formula_Sheets": {},
+      "Key_Points_and_Definitions": {},
+      "Mind_Maps": {},
+      "One_Page_Summaries": {},
+      "Solved_Examples": {}
+    },
+    "Class_4": {
+      "Diagram_Collections": {},
+      "Formula_Sheets": {},
+      "Key_Points_and_Definitions": {},
+      "Mind_Maps": {},
+      "One_Page_Summaries": {},
+      "Solved_Examples": {}
+    },
+    "Class_5": {
+      "Diagram_Collections": {},
+      "Formula_Sheets": {},
+      "Key_Points_and_Definitions": {},
+      "Mind_Maps": {},
+      "One_Page_Summaries": {},
+      "Solved_Examples": {}
+    },
+    "Class_6": {
+      "Diagram_Collections": {},
+      "Formula_Sheets": {},
+      "Key_Points_and_Definitions": {},
+      "Mind_Maps": {},
+      "One_Page_Summaries": {},
+      "Solved_Examples": {}
+    },
+    "Class_7": {
+      "Diagram_Collections": {},
+      "Formula_Sheets": {},
+      "Key_Points_and_Definitions": {},
+      "Mind_Maps": {},
+      "One_Page_Summaries": {},
+      "Solved_Examples": {}
+    },
+    "Class_8": {
+      "Diagram_Collections": {},
+      "Formula_Sheets": {},
+      "Key_Points_and_Definitions": {},
+      "Mind_Maps": {},
+      "One_Page_Summaries": {},
+      "Solved_Examples": {}
+    },
+    "Class_9": {
+      "Diagram_Collections": {},
+      "Formula_Sheets": {},
+      "Key_Points_and_Definitions": {},
+      "Mind_Maps": {},
+      "One_Page_Summaries": {},
+      "Solved_Examples": {}
+    }
+  },
   "sample-papers": {
     "CBSE": {
       "Class_10": {
@@ -126,7 +223,15 @@
       "Hindi": {},
       "Maths": {},
       "Science": {},
-      "Social Science": {}
+      "Social Science": {
+        "_files": [
+          {
+            "filename": "SST-Class-7-WB-PART 2-CH-1-24-2-26 (1).pdf",
+            "title": "SST Class 7 WB PART 2 CH 1 24 2 26 (1)",
+            "url": "pdfs/textbooks/Class_7/Social Science/SST-Class-7-WB-PART 2-CH-1-24-2-26 (1).pdf"
+          }
+        ]
+      }
     },
     "Class_8": {
       "English": {},

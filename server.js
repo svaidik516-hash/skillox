@@ -8,7 +8,7 @@ const rateLimit = require('express-rate-limit');
 const compression = require('compression');
 require('dotenv').config();
 
-const { initDb, createUser, getUserByEmail, updateUserPassword, recordLoginSuccess, logLogin, getAllUsers, getLoginLogs, getStats, saveOtpRequest, getOtpRequest, deleteOtpRequest, incrementOtpAttempts } = require('./database');
+const { initDb, createUser, getUserByEmail, updateUserPassword, recordLoginSuccess, logLogin, getAllUsers, getLoginLogs, getStats, saveOtpRequest, getOtpRequest, deleteOtpRequest, incrementOtpAttempts, saveContactMessage, getContactMessages, markMessageRead } = require('./database');
 
 const app = express();
 
@@ -59,7 +59,17 @@ app.use(cors({
 app.use(express.json({ limit: '16kb' }));
 
 // Serve static frontend files with caching for better performance
-app.use(express.static(path.join(__dirname), { maxAge: '1d' }));
+app.use(express.static(path.join(__dirname), {
+    setHeaders: (res, filePath) => {
+        if (filePath.endsWith('.json') || filePath.endsWith('.html')) {
+            // Do not cache JSON data and HTML files to ensure fresh content
+            res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+        } else {
+            // Cache assets like images, css for 1 day
+            res.setHeader('Cache-Control', 'public, max-age=86400');
+        }
+    }
+}));
 
 /* =============================================
    RATE LIMITERS
@@ -100,6 +110,16 @@ const adminLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 30,
     message: { error: 'Too many admin requests. Please slow down.' },
+    standardHeaders: true,
+    legacyHeaders: false,
+    keyGenerator: (req) => getClientIP(req)
+});
+
+// Rate limiter for contact form
+const contactLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000, // 1 hour
+    max: 5, // 5 messages per hour per IP
+    message: { error: 'You have sent too many messages. Please try again later.' },
     standardHeaders: true,
     legacyHeaders: false,
     keyGenerator: (req) => getClientIP(req)
@@ -502,6 +522,74 @@ app.get('/api/admin/stats', adminLimiter, verifyAdmin, async (req, res) => {
     } catch (error) {
         console.error('Error fetching stats:', error);
         res.status(500).json({ error: 'Failed to fetch stats' });
+    }
+});
+
+// Get contact messages
+app.get('/api/admin/messages', adminLimiter, verifyAdmin, async (req, res) => {
+    try {
+        const messages = await getContactMessages(100);
+        res.json({ success: true, messages });
+    } catch (error) {
+        console.error('Error fetching messages:', error);
+        res.status(500).json({ error: 'Failed to fetch messages' });
+    }
+});
+
+// Mark message as read
+app.post('/api/admin/messages/:id/read', adminLimiter, verifyAdmin, async (req, res) => {
+    try {
+        await markMessageRead(req.params.id);
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error marking message as read:', error);
+        res.status(500).json({ error: 'Failed to update message' });
+    }
+});
+
+/* =============================================
+   CONTACT ENDPOINT
+   ============================================= */
+app.post('/api/contact', contactLimiter, async (req, res) => {
+    const { name, email, subject, message } = req.body;
+
+    if (!name || !email || !subject || !message) {
+        return res.status(400).json({ error: 'All fields are required' });
+    }
+
+    if (!isValidEmail(email)) {
+        return res.status(400).json({ error: 'Please enter a valid email address' });
+    }
+
+    try {
+        // Save to DB
+        await saveContactMessage(name, email, subject, message);
+
+        // Send Email Alert
+        const transporter = await createTransporter();
+        const adminEmail = process.env.SMTP_USER || 'admin@skillox.com';
+        
+        await transporter.sendMail({
+            from: '"Skillox Contact" <noreply@skillox.com>',
+            to: adminEmail,
+            subject: `New Contact Form Submission: ${subject}`,
+            html: `
+                <div style="font-family: Arial, sans-serif; padding: 20px;">
+                    <h2>New Message from Skillox Contact Form</h2>
+                    <p><strong>Name:</strong> ${name}</p>
+                    <p><strong>Email:</strong> ${email}</p>
+                    <p><strong>Subject:</strong> ${subject}</p>
+                    <hr>
+                    <p><strong>Message:</strong></p>
+                    <p style="white-space: pre-wrap;">${message}</p>
+                </div>
+            `
+        });
+
+        res.json({ success: true, message: 'Your message has been sent successfully!' });
+    } catch (error) {
+        console.error('Contact Form Error:', error);
+        res.status(500).json({ error: 'Failed to send message. Please try again later.' });
     }
 });
 

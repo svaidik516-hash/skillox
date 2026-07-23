@@ -204,29 +204,41 @@ document.addEventListener('DOMContentLoaded', () => {
         const nextBtn = document.querySelector('.flashcard-nav-btn.next-btn');
         let currentIndex = 0;
         const totalCards = 5;
+        let autoSlideInterval = null;
 
         function updateCarousel() {
             flashcardTrack.style.transform = `translateX(-${currentIndex * (100 / totalCards)}%)`;
             
-            if (prevBtn) prevBtn.disabled = currentIndex === 0;
-            if (nextBtn) nextBtn.disabled = currentIndex === totalCards - 1;
+            // Buttons are always enabled because we loop infinitely
+            if (prevBtn) prevBtn.disabled = false;
+            if (nextBtn) nextBtn.disabled = false;
         }
+
+        function startAutoSlide() {
+            if (window.innerWidth <= 768 && !autoSlideInterval) {
+                autoSlideInterval = setInterval(() => {
+                    currentIndex = (currentIndex < totalCards - 1) ? currentIndex + 1 : 0;
+                    updateCarousel();
+                }, 3000);
+            } else if (window.innerWidth > 768 && autoSlideInterval) {
+                clearInterval(autoSlideInterval);
+                autoSlideInterval = null;
+            }
+        }
+        
+        window.addEventListener('resize', startAutoSlide);
 
         if (prevBtn) {
             prevBtn.addEventListener('click', () => {
-                if (currentIndex > 0) {
-                    currentIndex--;
-                    updateCarousel();
-                }
+                currentIndex = (currentIndex > 0) ? currentIndex - 1 : totalCards - 1;
+                updateCarousel();
             });
         }
 
         if (nextBtn) {
             nextBtn.addEventListener('click', () => {
-                if (currentIndex < totalCards - 1) {
-                    currentIndex++;
-                    updateCarousel();
-                }
+                currentIndex = (currentIndex < totalCards - 1) ? currentIndex + 1 : 0;
+                updateCarousel();
             });
         }
 
@@ -241,6 +253,10 @@ document.addEventListener('DOMContentLoaded', () => {
         function touchStart(event) {
             isDragging = true;
             startX = getPositionX(event);
+            if (autoSlideInterval) {
+                clearInterval(autoSlideInterval);
+                autoSlideInterval = null;
+            }
         }
 
         function touchMove(event) {
@@ -248,12 +264,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 const currentPosition = getPositionX(event);
                 const diff = currentPosition - startX;
                 
-                if (diff < -50 && currentIndex < totalCards - 1) {
-                    currentIndex++;
+                if (diff < -50) {
+                    currentIndex = (currentIndex < totalCards - 1) ? currentIndex + 1 : 0;
                     updateCarousel();
                     isDragging = false;
-                } else if (diff > 50 && currentIndex > 0) {
-                    currentIndex--;
+                } else if (diff > 50) {
+                    currentIndex = (currentIndex > 0) ? currentIndex - 1 : totalCards - 1;
                     updateCarousel();
                     isDragging = false;
                 }
@@ -262,6 +278,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         function touchEnd() {
             isDragging = false;
+            if (window.innerWidth <= 768) {
+                startAutoSlide();
+            }
         }
 
         flashcardTrack.addEventListener('touchstart', touchStart, { passive: true });
@@ -279,11 +298,11 @@ document.addEventListener('DOMContentLoaded', () => {
             if (Math.abs(e.deltaX) > 20) {
                 e.preventDefault();
                 if (!wheelTimeout) {
-                    if (e.deltaX > 0 && currentIndex < totalCards - 1) {
-                        currentIndex++;
+                    if (e.deltaX > 0) {
+                        currentIndex = (currentIndex < totalCards - 1) ? currentIndex + 1 : 0;
                         updateCarousel();
-                    } else if (e.deltaX < 0 && currentIndex > 0) {
-                        currentIndex--;
+                    } else if (e.deltaX < 0) {
+                        currentIndex = (currentIndex > 0) ? currentIndex - 1 : totalCards - 1;
                         updateCarousel();
                     }
                     wheelTimeout = setTimeout(() => { wheelTimeout = null; }, 500);
@@ -292,6 +311,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }, { passive: false });
 
         updateCarousel();
+        startAutoSlide();
     }
 
     // Password Strength Logic

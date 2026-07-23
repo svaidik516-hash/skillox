@@ -499,6 +499,46 @@
             </div>
         </div>
 
+        <!-- Messages Table -->
+        <div class="panel">
+            <div class="panel-header">
+                <div class="panel-title">
+                    ✉️ Contact Messages
+                    <span class="panel-count" id="messages-count">0</span>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <input type="text" class="search-box" id="search-messages" placeholder="Search messages..." oninput="filterTable('messages')">
+                    <button class="btn-refresh" onclick="exportCSV('messages')" style="padding: 8px 12px; font-size: 0.85rem;">⬇️ Export</button>
+                </div>
+            </div>
+            <div class="table-wrap">
+                <table id="messages-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Subject</th>
+                            <th>Message</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="messages-body">
+                        <tr>
+                            <td colspan="8">
+                                <div class="empty-state">
+                                    <div class="empty-state-icon">📭</div>
+                                    <p>No messages yet.</p>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
     </div>
 
     <script src="config.js"></script>
@@ -521,6 +561,7 @@
         // Store raw data for filtering
         let allUsers = [];
         let allLogs = [];
+        let allMessages = [];
         let adminPassword = sessionStorage.getItem('skillox_admin_pwd') || '';
 
         // Load Stats
@@ -621,6 +662,63 @@
             `).join('');
         }
 
+        // Load Messages
+        async function loadMessages() {
+            try {
+                const res = await fetch(API_BASE_URL + '/api/admin/messages', {
+                    headers: { 'x-admin-password': adminPassword }
+                });
+                const data = await res.json();
+                if (data.success) {
+                    allMessages = data.messages;
+                    renderMessages(allMessages);
+                    document.getElementById('messages-count').textContent = allMessages.filter(m => m.status === 'unread').length; // Show unread count
+                }
+            } catch (err) {
+                console.error('Failed to load messages:', err);
+            }
+        }
+
+        function renderMessages(messages) {
+            const body = document.getElementById('messages-body');
+            if (messages.length === 0) {
+                body.innerHTML = `<tr><td colspan="8"><div class="empty-state"><div class="empty-state-icon">📭</div><p>No messages yet.</p></div></td></tr>`;
+                return;
+            }
+            body.innerHTML = messages.map((m, i) => `
+                <tr style="${m.status === 'unread' ? 'background: rgba(232,116,12,0.05); font-weight: 600;' : ''}">
+                    <td style="color: var(--text-muted); font-size: 0.82rem;">${i + 1}</td>
+                    <td>${escapeHtml(m.name)}</td>
+                    <td class="email-cell">${escapeHtml(m.email)}</td>
+                    <td>${escapeHtml(m.subject)}</td>
+                    <td style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${escapeHtml(m.message)}">${escapeHtml(m.message)}</td>
+                    <td>
+                        <span class="status-badge" style="${m.status === 'unread' ? 'background: var(--primary); color: white;' : 'background: #e5e7eb; color: #6b7280;'}">
+                            ${m.status}
+                        </span>
+                    </td>
+                    <td class="date-cell">${formatDate(m.created_at)}</td>
+                    <td>
+                        ${m.status === 'unread' ? `<button onclick="markAsRead(${m.id})" class="btn-refresh" style="padding: 4px 8px; font-size: 0.75rem;">Mark Read</button>` : ''}
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        async function markAsRead(id) {
+            try {
+                const res = await fetch(API_BASE_URL + '/api/admin/messages/' + id + '/read', {
+                    method: 'POST',
+                    headers: { 'x-admin-password': adminPassword }
+                });
+                if (res.ok) {
+                    loadMessages();
+                }
+            } catch (err) {
+                console.error('Failed to mark as read:', err);
+            }
+        }
+
         // Filter tables
         function filterTable(type) {
             const query = document.getElementById(`search-${type}`).value.toLowerCase().trim();
@@ -639,6 +737,16 @@
                       )
                     : allLogs;
                 renderLogs(filtered);
+            } else if (type === 'messages') {
+                const filtered = query
+                    ? allMessages.filter(m =>
+                        m.name.toLowerCase().includes(query) ||
+                        m.email.toLowerCase().includes(query) ||
+                        m.subject.toLowerCase().includes(query) ||
+                        m.message.toLowerCase().includes(query)
+                      )
+                    : allMessages;
+                renderMessages(filtered);
             }
         }
 
@@ -677,6 +785,19 @@
                     ];
                     csvContent += row.join(",") + "\n";
                 });
+            } else if (type === 'messages') {
+                csvContent += "Name,Email,Subject,Message,Status,Date\n";
+                allMessages.forEach(m => {
+                    const row = [
+                        `"${(m.name || '').replace(/"/g, '""')}"`,
+                        `"${m.email}"`,
+                        `"${(m.subject || '').replace(/"/g, '""')}"`,
+                        `"${(m.message || '').replace(/"/g, '""')}"`,
+                        `"${m.status}"`,
+                        `"${m.created_at || ''}"`
+                    ];
+                    csvContent += row.join(",") + "\n";
+                });
             }
 
             const encodedUri = encodeURI(csvContent);
@@ -696,7 +817,7 @@
                 btn.disabled = true;
             }
 
-            await Promise.all([loadStats(), loadUsers(), loadLogs()]);
+            await Promise.all([loadStats(), loadUsers(), loadLogs(), loadMessages()]);
 
             if(btn) {
                 setTimeout(() => {

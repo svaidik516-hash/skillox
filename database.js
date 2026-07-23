@@ -46,6 +46,19 @@ async function initDb() {
         await sql`CREATE INDEX IF NOT EXISTS idx_login_logs_email ON login_logs(email);`;
         await sql`CREATE INDEX IF NOT EXISTS idx_login_logs_created ON login_logs(created_at);`;
 
+        await sql`
+            CREATE TABLE IF NOT EXISTS contact_messages (
+                id SERIAL PRIMARY KEY,
+                name VARCHAR(255) NOT NULL,
+                email VARCHAR(255) NOT NULL,
+                subject VARCHAR(255) NOT NULL,
+                message TEXT NOT NULL,
+                status VARCHAR(20) DEFAULT 'unread',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `;
+        await sql`CREATE INDEX IF NOT EXISTS idx_contact_msgs_created ON contact_messages(created_at);`;
+
         // Handle migration if table existed before without name/password_hash columns
         try { await sql`ALTER TABLE users ADD COLUMN name VARCHAR(255) NOT NULL DEFAULT 'User'`; } catch (e) {}
         try { await sql`ALTER TABLE users ADD COLUMN password_hash VARCHAR(255) NOT NULL DEFAULT 'none'`; } catch (e) {}
@@ -269,6 +282,51 @@ async function incrementOtpAttempts(email) {
     }
 }
 
+/* =============================================
+   CONTACT MESSAGES
+   ============================================= */
+
+async function saveContactMessage(name, email, subject, message) {
+    try {
+        const result = await sql`
+            INSERT INTO contact_messages (name, email, subject, message)
+            VALUES (${name}, ${email}, ${subject}, ${message})
+            RETURNING id;
+        `;
+        return result.rows[0].id;
+    } catch (error) {
+        console.error('Error in saveContactMessage:', error);
+        throw error;
+    }
+}
+
+async function getContactMessages(limit = 100) {
+    try {
+        const result = await sql`
+            SELECT * FROM contact_messages 
+            ORDER BY created_at DESC 
+            LIMIT ${limit};
+        `;
+        return result.rows;
+    } catch (error) {
+        console.error('Error in getContactMessages:', error);
+        throw error;
+    }
+}
+
+async function markMessageRead(id) {
+    try {
+        await sql`
+            UPDATE contact_messages 
+            SET status = 'read' 
+            WHERE id = ${id};
+        `;
+    } catch (error) {
+        console.error('Error in markMessageRead:', error);
+        throw error;
+    }
+}
+
 module.exports = {
     initDb,
     createUser,
@@ -282,5 +340,8 @@ module.exports = {
     saveOtpRequest,
     getOtpRequest,
     deleteOtpRequest,
-    incrementOtpAttempts
+    incrementOtpAttempts,
+    saveContactMessage,
+    getContactMessages,
+    markMessageRead
 };

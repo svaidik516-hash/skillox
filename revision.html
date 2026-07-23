@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CBSE Sample Papers | Skillox</title>
+    <title>Quick Revision Hub | Skillox</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
     <style>
@@ -74,18 +74,20 @@
         .subject-pills {
             display: flex;
             flex-wrap: wrap;
-            gap: 12px;
+            gap: 8px;
             margin-bottom: 30px;
             padding-bottom: 20px;
             border-bottom: 1px solid var(--border-color);
         }
         .subject-pill {
-            padding: 8px 20px;
+            padding: 6px 14px;
             border-radius: 30px;
             background: var(--bg-card);
             border: 1px solid var(--border-color);
             cursor: pointer;
             font-weight: 500;
+            font-size: 0.9rem;
+            white-space: nowrap;
             transition: all 0.2s ease;
         }
         .subject-pill:hover {
@@ -136,11 +138,10 @@
         </a>
         <ul class="nav-links">
             <li><a href="index.html#textbooks">Textbooks</a></li>
-            <li><a href="index.html#sample-papers" class="active">Sample Papers</a></li>
+            <li><a href="index.html#sample-papers">Sample Papers</a></li>
             <li><a href="index.html#worksheets">Worksheets</a></li>
             <li><a href="index.html#coaching-notes">Coaching Notes</a></li>
-            <li><a href="index.html#revision">Quick Revision</a></li>
-            <li><a href="contact.html">Contact Us</a></li>
+            <li><a href="index.html#revision" class="active">Quick Revision</a></li>
         </ul>
         <div class="nav-actions">
             <a href="login.html" id="nav-auth-btn" class="btn btn-outline btn-sm">Log In</a>
@@ -148,10 +149,9 @@
         </div>
     </nav>
 
-    <div style="padding-top: 120px; text-align: center; margin-bottom: 20px;">
-        <span class="section-tag">📝 Sample Papers</span>
-        <h1 style="font-family: 'Outfit', sans-serif; margin-top: 15px; font-size: 3rem; color: var(--primary);">CBSE Board</h1>
-        <p style="color: var(--text-muted); font-size: 1.1rem; margin-top: 10px;">Select your class to view question banks and previous year papers</p>
+    <div style="padding-top: 120px; text-align: center; margin-bottom: -10px;">
+        <span class="section-tag">⚡ Quick Revision Hub</span>
+        <h2 style="font-family: 'Outfit', sans-serif; margin-top: 10px;">Select your class to find revision materials</h2>
     </div>
 
     <div class="hub-container">
@@ -165,8 +165,8 @@
         
         <!-- Main Content -->
         <main class="hub-main">
-            <div class="subject-pills" id="subject-list">
-                <!-- Subjects injected via JS -->
+            <div class="subject-pills" id="category-list">
+                <!-- Categories injected via JS -->
             </div>
             
             <div class="pdf-grid" id="pdf-grid">
@@ -177,6 +177,6 @@
 
     <script src="config.js?v=3"></script>
     <script src="script.js?v=3"></script>
-    <script src="board-pages.js?v=3"></script>
+    <script src="revision.js?v=3"></script>
 </body>
 </html>

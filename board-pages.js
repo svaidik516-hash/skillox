@@ -12,6 +12,29 @@ document.addEventListener('DOMContentLoaded', () => {
     let sectionData = {};
     let currentClass = null;
     let currentSubject = null;
+    let isPopState = false;
+    let isInitialLoad = true;
+
+    window.addEventListener('popstate', () => {
+        isPopState = true;
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlClass = urlParams.get('class');
+        const urlSubject = urlParams.get('subject');
+        
+        if (urlClass && sectionData[urlClass]) {
+            selectClass(urlClass, urlSubject);
+        } else {
+            const classes = Object.keys(sectionData).filter(k => k !== '_files').sort((a, b) => {
+                const numA = parseInt(a.replace('Class_', ''));
+                const numB = parseInt(b.replace('Class_', ''));
+                return numA - numB;
+            });
+            if (classes.length > 0) {
+                selectClass(classes[0], null);
+            }
+        }
+        isPopState = false;
+    });
     
     // Determine the current board from the filename
     const path = window.location.pathname;
@@ -19,7 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (path.includes('icse.html')) boardKey = 'ICSE';
     else if (path.includes('up-board.html')) boardKey = 'UP_Board';
 
-    fetch('pdf-list.json')
+    fetch(`pdf-list.json?t=${new Date().getTime()}`)
         .then(res => res.json())
         .then(data => {
             sectionData = data['sample-papers']?.[boardKey] || {};
@@ -27,9 +50,10 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const urlParams = new URLSearchParams(window.location.search);
             const initialClass = urlParams.get('class');
+            const initialSubject = urlParams.get('subject');
             
             if (initialClass && sectionData[initialClass]) {
-                selectClass(initialClass);
+                selectClass(initialClass, initialSubject);
             } else {
                 const classes = Object.keys(sectionData).filter(k => k !== '_files').sort((a, b) => {
                     const numA = parseInt(a.replace('Class_', ''));
@@ -38,7 +62,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
                 
                 if (classes.length > 0) {
-                    selectClass(classes[0]);
+                    selectClass(classes[0], initialSubject);
                 } else {
                     classListContainer.innerHTML = '<div style="padding: 20px; color: var(--text-muted);">No classes found.</div>';
                 }
@@ -70,7 +94,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    function selectClass(cls) {
+    function selectClass(cls, preferredSubject = null) {
         currentClass = cls;
         
         document.querySelectorAll('.class-btn').forEach(btn => {
@@ -86,14 +110,17 @@ document.addEventListener('DOMContentLoaded', () => {
         
         if (subfolders.length > 0) {
             renderSubjects(subfolders);
-            selectSubject(subfolders[0]);
+            if (preferredSubject && subfolders.includes(preferredSubject)) {
+                selectSubject(preferredSubject);
+            } else {
+                selectSubject(subfolders[0]);
+            }
         } else {
             subjectListContainer.innerHTML = '';
             renderPDFs(classContent._files || []);
+            currentSubject = null;
+            updateUrl();
         }
-        
-        const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?class=' + encodeURIComponent(cls);
-        window.history.pushState({path:newUrl}, '', newUrl);
     }
 
     function renderSubjects(subfolders) {
@@ -119,8 +146,30 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        const subjectData = sectionData[currentClass][sub] || {};
+        const subjectData = sectionData[currentClass]?.[sub] || {};
         renderPDFs(subjectData._files || []);
+        updateUrl();
+    }
+
+    function updateUrl() {
+        if (isPopState) return;
+        
+        let newSearch = '?class=' + encodeURIComponent(currentClass);
+        if (currentSubject) {
+            newSearch += '&subject=' + encodeURIComponent(currentSubject);
+        }
+        
+        const currentSearch = window.location.search;
+        if (currentSearch !== newSearch) {
+            if (isInitialLoad) {
+                window.history.replaceState(null, '', newSearch);
+                isInitialLoad = false;
+            } else {
+                window.history.pushState(null, '', newSearch);
+            }
+        } else {
+            isInitialLoad = false;
+        }
     }
 
     function renderPDFs(files) {

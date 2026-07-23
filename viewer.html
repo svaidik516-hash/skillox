@@ -13,85 +13,129 @@
             font-family: 'Inter', sans-serif;
             overflow-x: hidden;
         }
-        #pdf-container { 
-            position: relative; 
-            display: inline-block; 
-            margin-top: 20px; 
-            margin-bottom: 80px; /* Space for controls */
-        }
-        canvas { 
-            display: block; 
-            margin: 0 auto; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.8); 
-            border-radius: 4px;
-        }
-        .watermark { 
-            position: absolute; 
-            top: 0; 
-            left: 0; 
-            width: 100%; 
-            height: 100%; 
-            pointer-events: none; 
-            z-index: 999; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            opacity: 0.08; 
-            color: #000; 
-            font-size: 8vw; 
-            font-weight: bold; 
-            transform: rotate(-45deg); 
-            user-select: none; 
-        }
-        .controls { 
-            position: fixed; 
-            bottom: 20px; 
-            left: 50%; 
-            transform: translateX(-50%); 
-            background: rgba(30, 30, 30, 0.95); 
-            color: white; 
-            padding: 12px 24px; 
-            border-radius: 40px; 
-            display: flex; 
-            gap: 20px; 
-            align-items: center; 
-            z-index: 1000;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-            border: 1px solid rgba(255,255,255,0.1);
+        .top-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 60px;
+            background: rgba(30, 30, 30, 0.95);
             backdrop-filter: blur(10px);
+            z-index: 1001;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
         }
-        .controls button { 
+        .page-jump {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: white;
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+        .page-jump input {
+            width: 60px;
+            padding: 6px 10px;
+            border: 1px solid rgba(255,255,255,0.2);
+            background: rgba(0,0,0,0.3);
+            color: white;
+            border-radius: 6px;
+            text-align: center;
+            font-size: 0.95rem;
+            outline: none;
+        }
+        .page-jump input:focus {
+            border-color: #f59e0b;
+        }
+        .page-jump button {
             background: #f59e0b; 
             border: none; 
             color: white; 
-            padding: 8px 20px; 
+            padding: 6px 16px; 
             border-radius: 20px; 
             cursor: pointer; 
             font-weight: 600; 
             font-size: 0.9rem;
             transition: all 0.2s ease;
         }
-        .controls button:hover:not(:disabled) { 
+        .page-jump button:hover {
             background: #d97706; 
             transform: translateY(-2px);
         }
-        .controls button:disabled { 
-            background: #555; 
-            color: #aaa;
-            cursor: not-allowed; 
+        #pdf-container { 
+            position: relative; 
+            display: flex; 
+            flex-direction: column;
+            align-items: center;
+            margin-top: 80px; 
+            margin-bottom: 20px; 
         }
-        .page-info {
-            font-size: 0.95rem;
+        canvas { 
+            display: block; 
+            margin: 0 auto 20px auto; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8); 
+            border-radius: 4px;
+            max-width: 95vw;
+            height: auto;
+        }
+        .watermark { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100vw; 
+            height: 100vh; 
+            pointer-events: none; 
+            z-index: 999; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            user-select: none; 
+        }
+        .watermark-content {
+            display: flex; 
+            flex-direction: column;
+            align-items: center; 
+            justify-content: center; 
+            opacity: 0.15; 
+            color: #000; 
+            font-size: 5vw; 
+            font-weight: bold; 
+            transform: rotate(-45deg); 
+            text-shadow: 1px 1px 0 #fff, -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff;
+        }
+        .watermark-sub {
+            font-size: 1.5vw;
+            margin-top: -2px;
             font-weight: 500;
-            min-width: 100px;
+        }
+        .page-indicator {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(30, 30, 30, 0.9);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            z-index: 1000;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255,255,255,0.1);
+            display: none;
         }
         .loader { 
             color: white; 
             margin-top: 30vh; 
         }
         .close-btn {
-            position: fixed;
-            top: 20px;
+            position: absolute;
+            top: 10px;
             right: 20px;
             background: rgba(0,0,0,0.6);
             color: white;
@@ -112,18 +156,27 @@
     </style>
 </head>
 <body oncontextmenu="return false;">
-    <button class="close-btn" onclick="window.close()" title="Close Viewer">×</button>
+    <div class="top-bar" id="top-bar" style="display: none;">
+        <div class="page-jump">
+            <span>Jump to Page:</span>
+            <input type="number" id="page-input" min="1" placeholder="1">
+            <span id="total-pages">/ ?</span>
+            <button id="jump-btn">Go</button>
+        </div>
+        <button class="close-btn" onclick="window.close()" title="Close Viewer">×</button>
+    </div>
+
+    <div class="page-indicator" id="page-indicator">Page 1 / ?</div>
     <div id="loader" class="loader"><h2>Loading Document...</h2></div>
     
+    <div class="watermark">
+        <div class="watermark-content">
+            <div>SKILLOX</div>
+            <div class="watermark-sub" id="watermark-email"></div>
+        </div>
+    </div>
     <div id="pdf-container">
         <!-- Canvases will be injected here -->
-        <div class="watermark">SKILLOX PREMIUM</div>
-    </div>
-    
-    <div class="controls" id="controls" style="display: none;">
-        <button id="prev-page" disabled>Previous</button>
-        <span class="page-info">Page <span id="page-num">1</span> of <span id="page-count">?</span></span>
-        <button id="next-page">Next</button>
     </div>
 
     <!-- PDF.js library via CDN -->
@@ -144,6 +197,10 @@
         // Setup PDF.js worker
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
+        // Get user email for watermark
+        const userEmail = localStorage.getItem('skillox_auth_email') || 'Guest';
+        document.getElementById('watermark-email').textContent = userEmail;
+
         // Get file from URL
         const urlParams = new URLSearchParams(window.location.search);
         const file = urlParams.get('file');
@@ -151,77 +208,87 @@
         if (!file) {
             document.getElementById('loader').innerHTML = '<h2>Error: No file specified.</h2><p>Please select a document from the main website.</p>';
         } else {
-            let pdfDoc = null,
-                pageNum = 1,
-                pageIsRendering = false,
-                pageNumIsPending = null;
-
             // Responsive scale based on screen width
             const scale = window.innerWidth < 768 ? 1.0 : 1.5;
-            
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-            document.getElementById('pdf-container').insertBefore(canvas, document.querySelector('.watermark'));
+            const container = document.getElementById('pdf-container');
 
-            const renderPage = num => {
-                pageIsRendering = true;
-                
-                pdfDoc.getPage(num).then(page => {
-                    const viewport = page.getViewport({ scale });
-                    canvas.height = viewport.height;
-                    canvas.width = viewport.width;
-
-                    const renderCtx = {
-                        canvasContext: ctx,
-                        viewport: viewport
-                    };
-
-                    page.render(renderCtx).promise.then(() => {
-                        pageIsRendering = false;
-                        if (pageNumIsPending !== null) {
-                            renderPage(pageNumIsPending);
-                            pageNumIsPending = null;
-                        }
-                    });
-
-                    document.getElementById('page-num').textContent = num;
-                    document.getElementById('prev-page').disabled = num <= 1;
-                    document.getElementById('next-page').disabled = num >= pdfDoc.numPages;
-                });
-            };
-
-            const queueRenderPage = num => {
-                if (pageIsRendering) {
-                    pageNumIsPending = num;
-                } else {
-                    renderPage(num);
-                }
-            };
-
-            const showPrevPage = () => {
-                if (pageNum <= 1) return;
-                pageNum--;
-                queueRenderPage(pageNum);
-            };
-
-            const showNextPage = () => {
-                if (pageNum >= pdfDoc.numPages) return;
-                pageNum++;
-                queueRenderPage(pageNum);
-            };
-
-            document.getElementById('prev-page').addEventListener('click', showPrevPage);
-            document.getElementById('next-page').addEventListener('click', showNextPage);
+            // Store canvases for page jump
+            const canvases = [];
 
             // Load the document
-            pdfjsLib.getDocument(file).promise.then(pdfDoc_ => {
-                pdfDoc = pdfDoc_;
-                document.getElementById('page-count').textContent = pdfDoc.numPages;
+            pdfjsLib.getDocument(file).promise.then(async pdfDoc => {
                 document.getElementById('loader').style.display = 'none';
-                document.getElementById('controls').style.display = 'flex';
-                renderPage(pageNum);
+                
+                // Show top bar and set total pages
+                document.getElementById('top-bar').style.display = 'flex';
+                document.getElementById('total-pages').textContent = '/ ' + pdfDoc.numPages;
+                document.getElementById('page-input').max = pdfDoc.numPages;
+                
+                // Setup page indicator
+                const pageIndicator = document.getElementById('page-indicator');
+                pageIndicator.style.display = 'block';
+                pageIndicator.textContent = 'Page 1 / ' + pdfDoc.numPages;
+                
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            const pageId = entry.target.id.replace('page-', '');
+                            pageIndicator.textContent = `Page ${pageId} / ${pdfDoc.numPages}`;
+                            document.getElementById('page-input').placeholder = pageId;
+                        }
+                    });
+                }, {
+                    root: null,
+                    rootMargin: '-50% 0px -50% 0px', 
+                    threshold: 0
+                });
+
+                // Page jump functionality
+                const jumpBtn = document.getElementById('jump-btn');
+                const pageInput = document.getElementById('page-input');
+                
+                const jumpToPage = () => {
+                    let num = parseInt(pageInput.value);
+                    if (num >= 1 && num <= pdfDoc.numPages) {
+                        if (canvases[num - 1]) {
+                            // Scroll to the canvas, accounting for the 60px top bar + 20px padding
+                            const y = canvases[num - 1].getBoundingClientRect().top + window.scrollY - 80;
+                            window.scrollTo({ top: y, behavior: 'smooth' });
+                        }
+                    } else {
+                        alert('Please enter a valid page number between 1 and ' + pdfDoc.numPages);
+                    }
+                };
+                
+                jumpBtn.addEventListener('click', jumpToPage);
+                pageInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') jumpToPage();
+                });
+                
+                // Render all pages sequentially
+                for (let pageNum = 1; pageNum <= pdfDoc.numPages; pageNum++) {
+                    const canvas = document.createElement('canvas');
+                    canvas.id = 'page-' + pageNum;
+                    canvases.push(canvas);
+                    container.appendChild(canvas);
+                    observer.observe(canvas);
+                    
+                    const page = await pdfDoc.getPage(pageNum);
+                    const viewport = page.getViewport({ scale });
+                    
+                    canvas.height = viewport.height;
+                    canvas.width = viewport.width;
+                    
+                    const renderCtx = {
+                        canvasContext: canvas.getContext('2d'),
+                        viewport: viewport
+                    };
+                    
+                    await page.render(renderCtx).promise;
+                }
             }).catch(err => {
                 document.getElementById('loader').innerHTML = '<h2>Error loading document.</h2><p>Make sure the file exists and you have internet connection.</p>';
+                console.error(err);
             });
         }
     </script>
