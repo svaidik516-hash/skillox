@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
             submitBtn.disabled = true;
             
             try {
-                const response = await fetch(`${API_BASE_URL}/contact`, {
+                const response = await fetch(`${API_BASE_URL}/api/contact`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -27,14 +27,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 const data = await response.json();
                 
                 if (response.ok) {
-                    showToast('Success', data.message || 'Your message has been sent!', 'success');
+                    showCustomToast(data.message || 'Your message has been sent!', 'success');
                     contactForm.reset();
                 } else {
-                    showToast('Error', data.error || 'Failed to send message.', 'error');
+                    showCustomToast(data.error || 'Failed to send message.', 'error');
                 }
             } catch (error) {
                 console.error('Contact error:', error);
-                showToast('Error', 'An unexpected error occurred. Please try again.', 'error');
+                showCustomToast('An unexpected error occurred. Please try again.', 'error');
             } finally {
                 submitBtn.textContent = originalText;
                 submitBtn.disabled = false;
