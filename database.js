@@ -17,14 +17,15 @@ async function initDb() {
                 password_hash VARCHAR(255) NOT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 last_login TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                login_count INTEGER DEFAULT 1
+                login_count INTEGER DEFAULT 1,
+                status VARCHAR(20) DEFAULT 'active'
             );
         `;
 
         await sql`
             CREATE TABLE IF NOT EXISTS otp_requests (
                 email VARCHAR(255) PRIMARY KEY,
-                otp VARCHAR(10) NOT NULL,
+                otp VARCHAR(255) NOT NULL,
                 name VARCHAR(255),
                 password VARCHAR(255),
                 type VARCHAR(20) NOT NULL,
@@ -64,6 +65,10 @@ async function initDb() {
         try { await sql`ALTER TABLE users ADD COLUMN password_hash VARCHAR(255) NOT NULL DEFAULT 'none'`; } catch (e) {}
         // Migration: Add attempts column to otp_requests
         try { await sql`ALTER TABLE otp_requests ADD COLUMN attempts INTEGER DEFAULT 0`; } catch (e) {}
+        // Migration: Expand OTP column to hold bcrypt hashes
+        try { await sql`ALTER TABLE otp_requests ALTER COLUMN otp TYPE VARCHAR(255)`; } catch (e) {}
+        // Migration: Add status column to users
+        try { await sql`ALTER TABLE users ADD COLUMN status VARCHAR(20) DEFAULT 'active'`; } catch (e) {}
 
         console.log('✓ Vercel Postgres Database initialized');
     } catch (error) {
@@ -81,8 +86,8 @@ async function initDb() {
 async function createUser(name, email, passwordHash) {
     try {
         const result = await sql`
-            INSERT INTO users (name, email, password_hash, created_at, last_login, login_count)
-            VALUES (${name}, ${email}, ${passwordHash}, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1)
+            INSERT INTO users (name, email, password_hash, created_at, last_login, login_count, status)
+            VALUES (${name}, ${email}, ${passwordHash}, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1, 'active')
             RETURNING id, name, email;
         `;
         return result.rows[0];
@@ -164,7 +169,7 @@ async function logLogin(email, ipAddress, status) {
 async function getAllUsers() {
     try {
         const result = await sql`
-            SELECT id, name, email, created_at, last_login, login_count
+            SELECT id, name, email, created_at, last_login, login_count, status
             FROM users
             ORDER BY last_login DESC
         `;
@@ -327,6 +332,39 @@ async function markMessageRead(id) {
     }
 }
 
+/* =============================================
+   ADMIN USER CONTROLS
+   ============================================= */
+
+async function banUser(email) {
+    try {
+        await sql`UPDATE users SET status = 'banned' WHERE email = ${email}`;
+    } catch (error) {
+        console.error('Error in banUser:', error);
+        throw error;
+    }
+}
+
+async function unbanUser(email) {
+    try {
+        await sql`UPDATE users SET status = 'active' WHERE email = ${email}`;
+    } catch (error) {
+        console.error('Error in unbanUser:', error);
+        throw error;
+    }
+}
+
+async function deleteUser(email) {
+    try {
+        await sql`DELETE FROM users WHERE email = ${email}`;
+        await sql`DELETE FROM login_logs WHERE email = ${email}`;
+        await sql`DELETE FROM otp_requests WHERE email = ${email}`;
+    } catch (error) {
+        console.error('Error in deleteUser:', error);
+        throw error;
+    }
+}
+
 module.exports = {
     initDb,
     createUser,
@@ -343,5 +381,8 @@ module.exports = {
     incrementOtpAttempts,
     saveContactMessage,
     getContactMessages,
-    markMessageRead
+    markMessageRead,
+    banUser,
+    unbanUser,
+    deleteUser
 };

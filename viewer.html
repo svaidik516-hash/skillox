@@ -217,16 +217,14 @@
 
             // Securely fetch the signed URL from the backend
             fetch(`/api/pdf-url?file=${encodeURIComponent(file)}`)
-                .then(response => {
+                .then(async response => {
+                    const data = await response.json().catch(() => ({}));
                     if (response.status === 401) {
                         throw new Error('Unauthorized. Please log in to view premium content.');
                     }
                     if (!response.ok) {
-                        throw new Error('Failed to secure PDF access.');
+                        throw new Error(data.error || 'Failed to secure PDF access.');
                     }
-                    return response.json();
-                })
-                .then(data => {
                     if (!data.success) {
                         throw new Error(data.error || 'Failed to secure PDF access.');
                     }

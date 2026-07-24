@@ -96,8 +96,26 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ---- Check Auth State & Protect Content ----
-    const isLoggedIn = localStorage.getItem('skillox_is_logged_in') === 'true';
+    let isLoggedIn = localStorage.getItem('skillox_is_logged_in') === 'true';
     const authEmail = localStorage.getItem('skillox_auth_email');
+
+    if (isLoggedIn) {
+        fetch((typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : '') + '/api/check-auth', { credentials: 'include' })
+            .then(res => res.json())
+            .then(data => {
+                if (data.banned) {
+                    localStorage.removeItem('skillox_is_logged_in');
+                    localStorage.removeItem('skillox_auth_email');
+                    window.showCustomToast('YOU ARE BANNED FOR VIOLATING THE RULES', 'error');
+                    setTimeout(() => { window.location.href = 'index.html'; }, 3000);
+                } else if (!data.loggedIn) {
+                    localStorage.removeItem('skillox_is_logged_in');
+                    localStorage.removeItem('skillox_auth_email');
+                    window.location.reload();
+                }
+            })
+            .catch(console.error);
+    }
     
     // Update Auth Buttons in Navbar
     const navAuthBtn = document.getElementById('nav-auth-btn');

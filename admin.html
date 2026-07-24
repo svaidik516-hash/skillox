@@ -443,14 +443,16 @@
                             <th>#</th>
                             <th>Name</th>
                             <th>Email</th>
-                            <th>First Login</th>
+                            <th>Status</th>
+                            <th>Joined</th>
                             <th>Last Login</th>
-                            <th>Total Logins</th>
+                            <th>Logins</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody id="users-body">
                         <tr>
-                            <td colspan="5">
+                            <td colspan="8">
                                 <div class="empty-state">
                                     <div class="empty-state-icon">📭</div>
                                     <p>No users yet. Logins will appear here automatically.</p>
@@ -609,19 +611,71 @@
         function renderUsers(users) {
             const body = document.getElementById('users-body');
             if (users.length === 0) {
-                body.innerHTML = `<tr><td colspan="5"><div class="empty-state"><div class="empty-state-icon">📭</div><p>No users found.</p></div></td></tr>`;
+                body.innerHTML = `<tr><td colspan="8"><div class="empty-state"><div class="empty-state-icon">📭</div><p>No users found.</p></div></td></tr>`;
                 return;
             }
-            body.innerHTML = users.map((u, i) => `
+            body.innerHTML = users.map((u, i) => {
+                const statusBadge = u.status === 'banned' 
+                    ? '<span class="status-badge failed">Banned</span>' 
+                    : '<span class="status-badge success">Active</span>';
+                
+                const actionBtns = u.status === 'banned'
+                    ? `<button onclick="unbanUserUI('${escapeHtml(u.email)}')" style="padding:4px 8px; font-size:0.8rem; background:#10b981; color:white; border:none; border-radius:4px; cursor:pointer; margin-right:4px;">Unban</button>`
+                    : `<button onclick="banUserUI('${escapeHtml(u.email)}')" style="padding:4px 8px; font-size:0.8rem; background:#f59e0b; color:white; border:none; border-radius:4px; cursor:pointer; margin-right:4px;">Ban</button>`;
+                
+                const deleteBtn = `<button onclick="deleteUserUI('${escapeHtml(u.email)}')" style="padding:4px 8px; font-size:0.8rem; background:#ef4444; color:white; border:none; border-radius:4px; cursor:pointer;">Delete</button>`;
+
+                return `
                 <tr>
                     <td style="color: var(--text-muted); font-size: 0.82rem;">${i + 1}</td>
                     <td style="font-weight: 500;">${escapeHtml(u.name)}</td>
                     <td class="email-cell">${escapeHtml(u.email)}</td>
+                    <td>${statusBadge}</td>
                     <td class="date-cell">${formatDate(u.created_at)}</td>
                     <td class="date-cell">${formatDate(u.last_login)}</td>
                     <td class="count-cell">${u.login_count}</td>
+                    <td>${actionBtns}${deleteBtn}</td>
                 </tr>
-            `).join('');
+                `;
+            }).join('');
+        }
+
+        async function banUserUI(email) {
+            if (!confirm(`Are you sure you want to BAN ${email}? They will not be able to log in.`)) return;
+            try {
+                const res = await fetch(API_BASE_URL + '/api/admin/users/' + encodeURIComponent(email) + '/ban', {
+                    method: 'POST',
+                    headers: { 'x-admin-password': adminPassword }
+                });
+                if (res.ok) loadUsers();
+                else alert('Failed to ban user');
+            } catch (e) { alert('Error banning user'); }
+        }
+
+        async function unbanUserUI(email) {
+            try {
+                const res = await fetch(API_BASE_URL + '/api/admin/users/' + encodeURIComponent(email) + '/unban', {
+                    method: 'POST',
+                    headers: { 'x-admin-password': adminPassword }
+                });
+                if (res.ok) loadUsers();
+                else alert('Failed to unban user');
+            } catch (e) { alert('Error unbanning user'); }
+        }
+
+        async function deleteUserUI(email) {
+            if (!confirm(`DANGER! Are you sure you want to PERMANENTLY DELETE ${email}? This cannot be undone.`)) return;
+            try {
+                const res = await fetch(API_BASE_URL + '/api/admin/users/' + encodeURIComponent(email), {
+                    method: 'DELETE',
+                    headers: { 'x-admin-password': adminPassword }
+                });
+                if (res.ok) {
+                    loadUsers();
+                    loadStats();
+                }
+                else alert('Failed to delete user');
+            } catch (e) { alert('Error deleting user'); }
         }
 
         // Load Logs

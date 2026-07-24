@@ -11,7 +11,7 @@ const jwt = require('jsonwebtoken');
 const { createClient } = require('@supabase/supabase-js');
 require('dotenv').config();
 
-const { initDb, createUser, getUserByEmail, updateUserPassword, recordLoginSuccess, logLogin, getAllUsers, getLoginLogs, getStats, saveOtpRequest, getOtpRequest, deleteOtpRequest, incrementOtpAttempts, saveContactMessage, getContactMessages, markMessageRead } = require('./database');
+const { initDb, createUser, getUserByEmail, updateUserPassword, recordLoginSuccess, logLogin, getAllUsers, getLoginLogs, getStats, saveOtpRequest, getOtpRequest, deleteOtpRequest, incrementOtpAttempts, saveContactMessage, getContactMessages, markMessageRead, banUser, unbanUser, deleteUser } = require('./database');
 
 const app = express();
 
@@ -471,6 +471,11 @@ app.post('/api/login', loginLimiter, async (req, res) => {
             await logLogin(email, ip, 'failed');
             return res.status(400).json({ error: 'Invalid email or password' });
         }
+        
+        if (user.status === 'banned') {
+            await logLogin(email, ip, 'failed');
+            return res.status(403).json({ error: 'YOU ARE BANNED FOR VIOLATING THE RULES' });
+        }
 
         // Success
         await recordLoginSuccess(email);
@@ -492,6 +497,30 @@ app.post('/api/login', loginLimiter, async (req, res) => {
 });
 
 /* =============================================
+   SESSION VERIFICATION
+   ============================================= */
+app.get('/api/check-auth', async (req, res) => {
+    const token = req.cookies.skillox_token;
+    if (!token) {
+        return res.json({ loggedIn: false });
+    }
+    
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const user = await getUserByEmail(decoded.email);
+        
+        if (user && user.status === 'banned') {
+            res.clearCookie('skillox_token');
+            return res.json({ loggedIn: false, banned: true });
+        }
+        
+        return res.json({ loggedIn: true, email: decoded.email });
+    } catch (err) {
+        return res.json({ loggedIn: false });
+    }
+});
+
+/* =============================================
    SECURE PDF ENDPOINT (SUPABASE)
    ============================================= */
 app.get('/api/pdf-url', async (req, res) => {
@@ -509,6 +538,13 @@ app.get('/api/pdf-url', async (req, res) => {
     try {
         // Verify JWT token
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        
+        // SECURITY FIX: Also check database to see if user is banned
+        const user = await getUserByEmail(decoded.email);
+        if (user && user.status === 'banned') {
+            res.clearCookie('skillox_token');
+            return res.status(403).json({ error: 'YOU ARE BANNED FOR VIOLATING THE RULES' });
+        }
         
         // Generate signed URL from Supabase (expires in 5 minutes)
         // SECURITY FIX: Block path traversal attacks (e.g., ../../private/secret.pdf)
@@ -568,12 +604,44 @@ app.get('/api/admin/users', adminLimiter, verifyAdmin, async (req, res) => {
             email: u.email,
             created_at: u.created_at,
             last_login: u.last_login,
-            login_count: u.login_count
+            login_count: u.login_count,
+            status: u.status
         }));
         res.json({ success: true, users: safeUsers });
     } catch (error) {
         console.error('Error fetching users:', error);
         res.status(500).json({ error: 'Failed to fetch users' });
+    }
+});
+
+// Admin User Controls
+app.post('/api/admin/users/:email/ban', adminLimiter, verifyAdmin, async (req, res) => {
+    try {
+        await banUser(req.params.email);
+        res.json({ success: true, message: 'User banned' });
+    } catch (error) {
+        console.error('Error banning user:', error);
+        res.status(500).json({ error: 'Failed to ban user' });
+    }
+});
+
+app.post('/api/admin/users/:email/unban', adminLimiter, verifyAdmin, async (req, res) => {
+    try {
+        await unbanUser(req.params.email);
+        res.json({ success: true, message: 'User unbanned' });
+    } catch (error) {
+        console.error('Error unbanning user:', error);
+        res.status(500).json({ error: 'Failed to unban user' });
+    }
+});
+
+app.delete('/api/admin/users/:email', adminLimiter, verifyAdmin, async (req, res) => {
+    try {
+        await deleteUser(req.params.email);
+        res.json({ success: true, message: 'User deleted' });
+    } catch (error) {
+        console.error('Error deleting user:', error);
+        res.status(500).json({ error: 'Failed to delete user' });
     }
 });
 
