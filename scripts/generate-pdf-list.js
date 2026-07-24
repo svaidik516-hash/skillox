@@ -59,23 +59,40 @@ function buildTree(paths) {
         textbooks: {},
         revision: {},
         "coaching-notes": {},
-        "sample-papers": {},
+        "sample-papers": {
+            "CBSE": {},
+            "ICSE": {},
+            "UP_Board": {}
+        },
         worksheets: {}
     };
 
-    const standardSubjects = ['Mathematics', 'Science', 'English', 'Social Science', 'Hindi'];
-    const higherSubjects = ['Physics', 'Chemistry', 'Mathematics', 'Biology', 'English', 'Accountancy', 'Business Studies', 'Economics'];
+    const standardSubjects = ['Math', 'Science', 'English', 'Social Science', 'Hindi'];
+    const higherSubjects = ['Physics', 'Chemistry', 'Math', 'Biology', 'English', 'Accountancy', 'Business Studies', 'Economics'];
 
     // Create Class 1-12 and their subjects
     for (const category of Object.keys(tree)) {
-        for (let i = 1; i <= 12; i++) {
-            const clsKey = `Class_${i}`;
-            tree[category][clsKey] = {};
-            
-            const subjects = i >= 11 ? higherSubjects : standardSubjects;
-            subjects.forEach(sub => {
-                tree[category][clsKey][sub] = { _files: [] };
-            });
+        if (category === 'sample-papers') {
+            for (const board of Object.keys(tree[category])) {
+                for (let i = 1; i <= 12; i++) {
+                    const clsKey = `Class_${i}`;
+                    tree[category][board][clsKey] = {};
+                    const subjects = i >= 11 ? higherSubjects : standardSubjects;
+                    subjects.forEach(sub => {
+                        tree[category][board][clsKey][sub] = { _files: [] };
+                    });
+                }
+            }
+        } else {
+            for (let i = 1; i <= 12; i++) {
+                const clsKey = `Class_${i}`;
+                tree[category][clsKey] = {};
+                
+                const subjects = i >= 11 ? higherSubjects : standardSubjects;
+                subjects.forEach(sub => {
+                    tree[category][clsKey][sub] = { _files: [] };
+                });
+            }
         }
     }
 

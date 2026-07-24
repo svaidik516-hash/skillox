@@ -1,41 +1,107 @@
 {
   "textbooks": {
     "Class_1": {
-      "Mathematics": {
+      "Math": {
         "_files": []
       },
       "Science": {
-        "_files": []
+        "_files": [
+          {
+            "filename": "Cyber Threat Landscape Analysis-compressed.pdf",
+            "title": "Cyber Threat Landscape Analysis Compressed",
+            "url": "textbooks/Class_1/Science/Cyber Threat Landscape Analysis-compressed.pdf"
+          }
+        ]
       },
       "English": {
-        "_files": []
+        "_files": [
+          {
+            "filename": "Cyber Threat Landscape Analysis-compressed.pdf",
+            "title": "Cyber Threat Landscape Analysis Compressed",
+            "url": "textbooks/Class_1/English/Cyber Threat Landscape Analysis-compressed.pdf"
+          }
+        ]
       },
       "Social Science": {
-        "_files": []
+        "_files": [
+          {
+            "filename": "Cyber Threat Landscape Analysis-compressed.pdf",
+            "title": "Cyber Threat Landscape Analysis Compressed",
+            "url": "textbooks/Class_1/Social Science/Cyber Threat Landscape Analysis-compressed.pdf"
+          }
+        ]
       },
       "Hindi": {
-        "_files": []
+        "_files": [
+          {
+            "filename": "Cyber Threat Landscape Analysis-compressed.pdf",
+            "title": "Cyber Threat Landscape Analysis Compressed",
+            "url": "textbooks/Class_1/Hindi/Cyber Threat Landscape Analysis-compressed.pdf"
+          }
+        ]
+      },
+      "Maths": {
+        "_files": [
+          {
+            "filename": "Cyber Threat Landscape Analysis-compressed.pdf",
+            "title": "Cyber Threat Landscape Analysis Compressed",
+            "url": "textbooks/Class_1/Maths/Cyber Threat Landscape Analysis-compressed.pdf"
+          }
+        ]
       }
     },
     "Class_2": {
-      "Mathematics": {
+      "Math": {
         "_files": []
       },
       "Science": {
-        "_files": []
+        "_files": [
+          {
+            "filename": "Cyber Threat Landscape Analysis-compressed.pdf",
+            "title": "Cyber Threat Landscape Analysis Compressed",
+            "url": "textbooks/Class_2/Science/Cyber Threat Landscape Analysis-compressed.pdf"
+          }
+        ]
       },
       "English": {
-        "_files": []
+        "_files": [
+          {
+            "filename": "Cyber Threat Landscape Analysis-compressed.pdf",
+            "title": "Cyber Threat Landscape Analysis Compressed",
+            "url": "textbooks/Class_2/English/Cyber Threat Landscape Analysis-compressed.pdf"
+          }
+        ]
       },
       "Social Science": {
-        "_files": []
+        "_files": [
+          {
+            "filename": "Cyber Threat Landscape Analysis-compressed.pdf",
+            "title": "Cyber Threat Landscape Analysis Compressed",
+            "url": "textbooks/Class_2/Social Science/Cyber Threat Landscape Analysis-compressed.pdf"
+          }
+        ]
       },
       "Hindi": {
-        "_files": []
+        "_files": [
+          {
+            "filename": "Cyber Threat Landscape Analysis-compressed.pdf",
+            "title": "Cyber Threat Landscape Analysis Compressed",
+            "url": "textbooks/Class_2/Hindi/Cyber Threat Landscape Analysis-compressed.pdf"
+          }
+        ]
+      },
+      "Maths": {
+        "_files": [
+          {
+            "filename": "Cyber Threat Landscape Analysis-compressed.pdf",
+            "title": "Cyber Threat Landscape Analysis Compressed",
+            "url": "textbooks/Class_2/Maths/Cyber Threat Landscape Analysis-compressed.pdf"
+          }
+        ]
       }
     },
     "Class_3": {
-      "Mathematics": {
+      "Math": {
         "_files": []
       },
       "Science": {
@@ -52,7 +118,7 @@
       }
     },
     "Class_4": {
-      "Mathematics": {
+      "Math": {
         "_files": []
       },
       "Science": {
@@ -69,7 +135,7 @@
       }
     },
     "Class_5": {
-      "Mathematics": {
+      "Math": {
         "_files": []
       },
       "Science": {
@@ -86,7 +152,7 @@
       }
     },
     "Class_6": {
-      "Mathematics": {
+      "Math": {
         "_files": []
       },
       "Science": {
@@ -103,7 +169,7 @@
       }
     },
     "Class_7": {
-      "Mathematics": {
+      "Math": {
         "_files": []
       },
       "Science": {
@@ -113,20 +179,14 @@
         "_files": []
       },
       "Social Science": {
-        "_files": [
-          {
-            "filename": "SST-Class-7-WB-PART 2-CH-1-24-2-26 (1).pdf",
-            "title": "SST Class 7 WB PART 2 CH 1 24 2 26 (1)",
-            "url": "textbooks/Class_7/Social Science/SST-Class-7-WB-PART 2-CH-1-24-2-26 (1).pdf"
-          }
-        ]
+        "_files": []
       },
       "Hindi": {
         "_files": []
       }
     },
     "Class_8": {
-      "Mathematics": {
+      "Math": {
         "_files": []
       },
       "Science": {
@@ -143,7 +203,7 @@
       }
     },
     "Class_9": {
-      "Mathematics": {
+      "Math": {
         "_files": []
       },
       "Science": {
@@ -160,7 +220,7 @@
       }
     },
     "Class_10": {
-      "Mathematics": {
+      "Math": {
         "_files": []
       },
       "Science": {
@@ -183,7 +243,7 @@
       "Chemistry": {
         "_files": []
       },
-      "Mathematics": {
+      "Math": {
         "_files": []
       },
       "Biology": {
@@ -209,7 +269,7 @@
       "Chemistry": {
         "_files": []
       },
-      "Mathematics": {
+      "Math": {
         "_files": []
       },
       "Biology": {
@@ -231,7 +291,7 @@
   },
   "revision": {
     "Class_1": {
-      "Mathematics": {
+      "Math": {
         "_files": []
       },
       "Science": {
@@ -248,7 +308,7 @@
       }
     },
     "Class_2": {
-      "Mathematics": {
+      "Math": {
         "_files": []
       },
       "Science": {
@@ -265,7 +325,7 @@
       }
     },
     "Class_3": {
-      "Mathematics": {
+      "Math": {
         "_files": []
       },
       "Science": {
@@ -282,7 +342,7 @@
       }
     },
     "Class_4": {
-      "Mathematics": {
+      "Math": {
         "_files": []
       },
       "Science": {
@@ -299,7 +359,7 @@
       }
     },
     "Class_5": {
-      "Mathematics": {
+      "Math": {
         "_files": []
       },
       "Science": {
@@ -316,7 +376,7 @@
       }
     },
     "Class_6": {
-      "Mathematics": {
+      "Math": {
         "_files": []
       },
       "Science": {
@@ -333,7 +393,7 @@
       }
     },
     "Class_7": {
-      "Mathematics": {
+      "Math": {
         "_files": []
       },
       "Science": {
@@ -350,7 +410,7 @@
       }
     },
     "Class_8": {
-      "Mathematics": {
+      "Math": {
         "_files": []
       },
       "Science": {
@@ -367,7 +427,7 @@
       }
     },
     "Class_9": {
-      "Mathematics": {
+      "Math": {
         "_files": []
       },
       "Science": {
@@ -384,7 +444,7 @@
       }
     },
     "Class_10": {
-      "Mathematics": {
+      "Math": {
         "_files": []
       },
       "Science": {
@@ -407,7 +467,7 @@
       "Chemistry": {
         "_files": []
       },
-      "Mathematics": {
+      "Math": {
         "_files": []
       },
       "Biology": {
@@ -433,7 +493,7 @@
       "Chemistry": {
         "_files": []
       },
-      "Mathematics": {
+      "Math": {
         "_files": []
       },
       "Biology": {
@@ -455,7 +515,7 @@
   },
   "coaching-notes": {
     "Class_1": {
-      "Mathematics": {
+      "Math": {
         "_files": []
       },
       "Science": {
@@ -472,7 +532,7 @@
       }
     },
     "Class_2": {
-      "Mathematics": {
+      "Math": {
         "_files": []
       },
       "Science": {
@@ -489,7 +549,7 @@
       }
     },
     "Class_3": {
-      "Mathematics": {
+      "Math": {
         "_files": []
       },
       "Science": {
@@ -506,7 +566,7 @@
       }
     },
     "Class_4": {
-      "Mathematics": {
+      "Math": {
         "_files": []
       },
       "Science": {
@@ -523,7 +583,7 @@
       }
     },
     "Class_5": {
-      "Mathematics": {
+      "Math": {
         "_files": []
       },
       "Science": {
@@ -540,7 +600,7 @@
       }
     },
     "Class_6": {
-      "Mathematics": {
+      "Math": {
         "_files": []
       },
       "Science": {
@@ -557,7 +617,7 @@
       }
     },
     "Class_7": {
-      "Mathematics": {
+      "Math": {
         "_files": []
       },
       "Science": {
@@ -574,7 +634,7 @@
       }
     },
     "Class_8": {
-      "Mathematics": {
+      "Math": {
         "_files": []
       },
       "Science": {
@@ -591,7 +651,7 @@
       }
     },
     "Class_9": {
-      "Mathematics": {
+      "Math": {
         "_files": []
       },
       "Science": {
@@ -608,7 +668,7 @@
       }
     },
     "Class_10": {
-      "Mathematics": {
+      "Math": {
         "_files": []
       },
       "Science": {
@@ -631,7 +691,7 @@
       "Chemistry": {
         "_files": []
       },
-      "Mathematics": {
+      "Math": {
         "_files": []
       },
       "Biology": {
@@ -657,7 +717,7 @@
       "Chemistry": {
         "_files": []
       },
-      "Mathematics": {
+      "Math": {
         "_files": []
       },
       "Biology": {
@@ -680,7 +740,7 @@
   "sample-papers": {
     "CBSE": {
       "Class_1": {
-        "Mathematics": {
+        "Math": {
           "_files": []
         },
         "Science": {
@@ -697,7 +757,7 @@
         }
       },
       "Class_2": {
-        "Mathematics": {
+        "Math": {
           "_files": []
         },
         "Science": {
@@ -714,7 +774,7 @@
         }
       },
       "Class_3": {
-        "Mathematics": {
+        "Math": {
           "_files": []
         },
         "Science": {
@@ -731,7 +791,7 @@
         }
       },
       "Class_4": {
-        "Mathematics": {
+        "Math": {
           "_files": []
         },
         "Science": {
@@ -748,7 +808,7 @@
         }
       },
       "Class_5": {
-        "Mathematics": {
+        "Math": {
           "_files": []
         },
         "Science": {
@@ -765,7 +825,7 @@
         }
       },
       "Class_6": {
-        "Mathematics": {
+        "Math": {
           "_files": []
         },
         "Science": {
@@ -782,7 +842,7 @@
         }
       },
       "Class_7": {
-        "Mathematics": {
+        "Math": {
           "_files": []
         },
         "Science": {
@@ -799,7 +859,7 @@
         }
       },
       "Class_8": {
-        "Mathematics": {
+        "Math": {
           "_files": []
         },
         "Science": {
@@ -816,7 +876,7 @@
         }
       },
       "Class_9": {
-        "Mathematics": {
+        "Math": {
           "_files": []
         },
         "Science": {
@@ -833,7 +893,7 @@
         }
       },
       "Class_10": {
-        "Mathematics": {
+        "Math": {
           "_files": []
         },
         "Science": {
@@ -856,7 +916,7 @@
         "Chemistry": {
           "_files": []
         },
-        "Mathematics": {
+        "Math": {
           "_files": []
         },
         "Biology": {
@@ -882,7 +942,7 @@
         "Chemistry": {
           "_files": []
         },
-        "Mathematics": {
+        "Math": {
           "_files": []
         },
         "Biology": {
@@ -904,7 +964,7 @@
     },
     "ICSE": {
       "Class_1": {
-        "Mathematics": {
+        "Math": {
           "_files": []
         },
         "Science": {
@@ -921,7 +981,7 @@
         }
       },
       "Class_2": {
-        "Mathematics": {
+        "Math": {
           "_files": []
         },
         "Science": {
@@ -938,7 +998,7 @@
         }
       },
       "Class_3": {
-        "Mathematics": {
+        "Math": {
           "_files": []
         },
         "Science": {
@@ -955,7 +1015,7 @@
         }
       },
       "Class_4": {
-        "Mathematics": {
+        "Math": {
           "_files": []
         },
         "Science": {
@@ -972,7 +1032,7 @@
         }
       },
       "Class_5": {
-        "Mathematics": {
+        "Math": {
           "_files": []
         },
         "Science": {
@@ -989,7 +1049,7 @@
         }
       },
       "Class_6": {
-        "Mathematics": {
+        "Math": {
           "_files": []
         },
         "Science": {
@@ -1006,7 +1066,7 @@
         }
       },
       "Class_7": {
-        "Mathematics": {
+        "Math": {
           "_files": []
         },
         "Science": {
@@ -1023,7 +1083,7 @@
         }
       },
       "Class_8": {
-        "Mathematics": {
+        "Math": {
           "_files": []
         },
         "Science": {
@@ -1040,7 +1100,7 @@
         }
       },
       "Class_9": {
-        "Mathematics": {
+        "Math": {
           "_files": []
         },
         "Science": {
@@ -1057,7 +1117,7 @@
         }
       },
       "Class_10": {
-        "Mathematics": {
+        "Math": {
           "_files": []
         },
         "Science": {
@@ -1080,7 +1140,7 @@
         "Chemistry": {
           "_files": []
         },
-        "Mathematics": {
+        "Math": {
           "_files": []
         },
         "Biology": {
@@ -1106,7 +1166,7 @@
         "Chemistry": {
           "_files": []
         },
-        "Mathematics": {
+        "Math": {
           "_files": []
         },
         "Biology": {
@@ -1128,7 +1188,7 @@
     },
     "UP_Board": {
       "Class_1": {
-        "Mathematics": {
+        "Math": {
           "_files": []
         },
         "Science": {
@@ -1145,7 +1205,7 @@
         }
       },
       "Class_2": {
-        "Mathematics": {
+        "Math": {
           "_files": []
         },
         "Science": {
@@ -1162,7 +1222,7 @@
         }
       },
       "Class_3": {
-        "Mathematics": {
+        "Math": {
           "_files": []
         },
         "Science": {
@@ -1179,7 +1239,7 @@
         }
       },
       "Class_4": {
-        "Mathematics": {
+        "Math": {
           "_files": []
         },
         "Science": {
@@ -1196,7 +1256,7 @@
         }
       },
       "Class_5": {
-        "Mathematics": {
+        "Math": {
           "_files": []
         },
         "Science": {
@@ -1213,7 +1273,7 @@
         }
       },
       "Class_6": {
-        "Mathematics": {
+        "Math": {
           "_files": []
         },
         "Science": {
@@ -1230,7 +1290,7 @@
         }
       },
       "Class_7": {
-        "Mathematics": {
+        "Math": {
           "_files": []
         },
         "Science": {
@@ -1247,7 +1307,7 @@
         }
       },
       "Class_8": {
-        "Mathematics": {
+        "Math": {
           "_files": []
         },
         "Science": {
@@ -1264,7 +1324,7 @@
         }
       },
       "Class_9": {
-        "Mathematics": {
+        "Math": {
           "_files": []
         },
         "Science": {
@@ -1281,7 +1341,7 @@
         }
       },
       "Class_10": {
-        "Mathematics": {
+        "Math": {
           "_files": []
         },
         "Science": {
@@ -1304,7 +1364,7 @@
         "Chemistry": {
           "_files": []
         },
-        "Mathematics": {
+        "Math": {
           "_files": []
         },
         "Biology": {
@@ -1330,7 +1390,7 @@
         "Chemistry": {
           "_files": []
         },
-        "Mathematics": {
+        "Math": {
           "_files": []
         },
         "Biology": {
@@ -1353,7 +1413,7 @@
   },
   "worksheets": {
     "Class_1": {
-      "Mathematics": {
+      "Math": {
         "_files": []
       },
       "Science": {
@@ -1370,7 +1430,7 @@
       }
     },
     "Class_2": {
-      "Mathematics": {
+      "Math": {
         "_files": []
       },
       "Science": {
@@ -1387,7 +1447,7 @@
       }
     },
     "Class_3": {
-      "Mathematics": {
+      "Math": {
         "_files": []
       },
       "Science": {
@@ -1404,7 +1464,7 @@
       }
     },
     "Class_4": {
-      "Mathematics": {
+      "Math": {
         "_files": []
       },
       "Science": {
@@ -1421,7 +1481,7 @@
       }
     },
     "Class_5": {
-      "Mathematics": {
+      "Math": {
         "_files": []
       },
       "Science": {
@@ -1438,7 +1498,7 @@
       }
     },
     "Class_6": {
-      "Mathematics": {
+      "Math": {
         "_files": []
       },
       "Science": {
@@ -1455,7 +1515,7 @@
       }
     },
     "Class_7": {
-      "Mathematics": {
+      "Math": {
         "_files": []
       },
       "Science": {
@@ -1472,7 +1532,7 @@
       }
     },
     "Class_8": {
-      "Mathematics": {
+      "Math": {
         "_files": []
       },
       "Science": {
@@ -1489,7 +1549,7 @@
       }
     },
     "Class_9": {
-      "Mathematics": {
+      "Math": {
         "_files": []
       },
       "Science": {
@@ -1506,7 +1566,7 @@
       }
     },
     "Class_10": {
-      "Mathematics": {
+      "Math": {
         "_files": []
       },
       "Science": {
@@ -1529,7 +1589,7 @@
       "Chemistry": {
         "_files": []
       },
-      "Mathematics": {
+      "Math": {
         "_files": []
       },
       "Biology": {
@@ -1555,7 +1615,7 @@
       "Chemistry": {
         "_files": []
       },
-      "Mathematics": {
+      "Math": {
         "_files": []
       },
       "Biology": {
