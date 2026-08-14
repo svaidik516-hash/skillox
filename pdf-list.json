@@ -1,0 +1,1638 @@
+{
+  "textbooks": {
+    "Class_1": {
+      "Math": {
+        "_files": []
+      },
+      "Science": {
+        "_files": [
+          {
+            "filename": "Cyber Threat Landscape Analysis-compressed.pdf",
+            "title": "Cyber Threat Landscape Analysis Compressed",
+            "url": "textbooks/Class_1/Science/Cyber Threat Landscape Analysis-compressed.pdf"
+          }
+        ]
+      },
+      "English": {
+        "_files": [
+          {
+            "filename": "Cyber Threat Landscape Analysis-compressed.pdf",
+            "title": "Cyber Threat Landscape Analysis Compressed",
+            "url": "textbooks/Class_1/English/Cyber Threat Landscape Analysis-compressed.pdf"
+          }
+        ]
+      },
+      "Social Science": {
+        "_files": [
+          {
+            "filename": "Cyber Threat Landscape Analysis-compressed.pdf",
+            "title": "Cyber Threat Landscape Analysis Compressed",
+            "url": "textbooks/Class_1/Social Science/Cyber Threat Landscape Analysis-compressed.pdf"
+          }
+        ]
+      },
+      "Hindi": {
+        "_files": [
+          {
+            "filename": "Cyber Threat Landscape Analysis-compressed.pdf",
+            "title": "Cyber Threat Landscape Analysis Compressed",
+            "url": "textbooks/Class_1/Hindi/Cyber Threat Landscape Analysis-compressed.pdf"
+          }
+        ]
+      },
+      "Maths": {
+        "_files": [
+          {
+            "filename": "Cyber Threat Landscape Analysis-compressed.pdf",
+            "title": "Cyber Threat Landscape Analysis Compressed",
+            "url": "textbooks/Class_1/Maths/Cyber Threat Landscape Analysis-compressed.pdf"
+          }
+        ]
+      }
+    },
+    "Class_2": {
+      "Math": {
+        "_files": []
+      },
+      "Science": {
+        "_files": [
+          {
+            "filename": "Cyber Threat Landscape Analysis-compressed.pdf",
+            "title": "Cyber Threat Landscape Analysis Compressed",
+            "url": "textbooks/Class_2/Science/Cyber Threat Landscape Analysis-compressed.pdf"
+          }
+        ]
+      },
+      "English": {
+        "_files": [
+          {
+            "filename": "Cyber Threat Landscape Analysis-compressed.pdf",
+            "title": "Cyber Threat Landscape Analysis Compressed",
+            "url": "textbooks/Class_2/English/Cyber Threat Landscape Analysis-compressed.pdf"
+          }
+        ]
+      },
+      "Social Science": {
+        "_files": [
+          {
+            "filename": "Cyber Threat Landscape Analysis-compressed.pdf",
+            "title": "Cyber Threat Landscape Analysis Compressed",
+            "url": "textbooks/Class_2/Social Science/Cyber Threat Landscape Analysis-compressed.pdf"
+          }
+        ]
+      },
+      "Hindi": {
+        "_files": [
+          {
+            "filename": "Cyber Threat Landscape Analysis-compressed.pdf",
+            "title": "Cyber Threat Landscape Analysis Compressed",
+            "url": "textbooks/Class_2/Hindi/Cyber Threat Landscape Analysis-compressed.pdf"
+          }
+        ]
+      },
+      "Maths": {
+        "_files": [
+          {
+            "filename": "Cyber Threat Landscape Analysis-compressed.pdf",
+            "title": "Cyber Threat Landscape Analysis Compressed",
+            "url": "textbooks/Class_2/Maths/Cyber Threat Landscape Analysis-compressed.pdf"
+          }
+        ]
+      }
+    },
+    "Class_3": {
+      "Math": {
+        "_files": []
+      },
+      "Science": {
+        "_files": []
+      },
+      "English": {
+        "_files": []
+      },
+      "Social Science": {
+        "_files": []
+      },
+      "Hindi": {
+        "_files": []
+      }
+    },
+    "Class_4": {
+      "Math": {
+        "_files": []
+      },
+      "Science": {
+        "_files": []
+      },
+      "English": {
+        "_files": []
+      },
+      "Social Science": {
+        "_files": []
+      },
+      "Hindi": {
+        "_files": []
+      }
+    },
+    "Class_5": {
+      "Math": {
+        "_files": []
+      },
+      "Science": {
+        "_files": []
+      },
+      "English": {
+        "_files": []
+      },
+      "Social Science": {
+        "_files": []
+      },
+      "Hindi": {
+        "_files": []
+      }
+    },
+    "Class_6": {
+      "Math": {
+        "_files": []
+      },
+      "Science": {
+        "_files": []
+      },
+      "English": {
+        "_files": []
+      },
+      "Social Science": {
+        "_files": []
+      },
+      "Hindi": {
+        "_files": []
+      }
+    },
+    "Class_7": {
+      "Math": {
+        "_files": []
+      },
+      "Science": {
+        "_files": []
+      },
+      "English": {
+        "_files": []
+      },
+      "Social Science": {
+        "_files": []
+      },
+      "Hindi": {
+        "_files": []
+      }
+    },
+    "Class_8": {
+      "Math": {
+        "_files": []
+      },
+      "Science": {
+        "_files": []
+      },
+      "English": {
+        "_files": []
+      },
+      "Social Science": {
+        "_files": []
+      },
+      "Hindi": {
+        "_files": []
+      }
+    },
+    "Class_9": {
+      "Math": {
+        "_files": []
+      },
+      "Science": {
+        "_files": []
+      },
+      "English": {
+        "_files": []
+      },
+      "Social Science": {
+        "_files": []
+      },
+      "Hindi": {
+        "_files": []
+      }
+    },
+    "Class_10": {
+      "Math": {
+        "_files": []
+      },
+      "Science": {
+        "_files": []
+      },
+      "English": {
+        "_files": []
+      },
+      "Social Science": {
+        "_files": []
+      },
+      "Hindi": {
+        "_files": []
+      }
+    },
+    "Class_11": {
+      "Physics": {
+        "_files": []
+      },
+      "Chemistry": {
+        "_files": []
+      },
+      "Math": {
+        "_files": []
+      },
+      "Biology": {
+        "_files": []
+      },
+      "English": {
+        "_files": []
+      },
+      "Accountancy": {
+        "_files": []
+      },
+      "Business Studies": {
+        "_files": []
+      },
+      "Economics": {
+        "_files": []
+      }
+    },
+    "Class_12": {
+      "Physics": {
+        "_files": []
+      },
+      "Chemistry": {
+        "_files": []
+      },
+      "Math": {
+        "_files": []
+      },
+      "Biology": {
+        "_files": []
+      },
+      "English": {
+        "_files": []
+      },
+      "Accountancy": {
+        "_files": []
+      },
+      "Business Studies": {
+        "_files": []
+      },
+      "Economics": {
+        "_files": []
+      }
+    }
+  },
+  "revision": {
+    "Class_1": {
+      "Math": {
+        "_files": []
+      },
+      "Science": {
+        "_files": []
+      },
+      "English": {
+        "_files": []
+      },
+      "Social Science": {
+        "_files": []
+      },
+      "Hindi": {
+        "_files": []
+      }
+    },
+    "Class_2": {
+      "Math": {
+        "_files": []
+      },
+      "Science": {
+        "_files": []
+      },
+      "English": {
+        "_files": []
+      },
+      "Social Science": {
+        "_files": []
+      },
+      "Hindi": {
+        "_files": []
+      }
+    },
+    "Class_3": {
+      "Math": {
+        "_files": []
+      },
+      "Science": {
+        "_files": []
+      },
+      "English": {
+        "_files": []
+      },
+      "Social Science": {
+        "_files": []
+      },
+      "Hindi": {
+        "_files": []
+      }
+    },
+    "Class_4": {
+      "Math": {
+        "_files": []
+      },
+      "Science": {
+        "_files": []
+      },
+      "English": {
+        "_files": []
+      },
+      "Social Science": {
+        "_files": []
+      },
+      "Hindi": {
+        "_files": []
+      }
+    },
+    "Class_5": {
+      "Math": {
+        "_files": []
+      },
+      "Science": {
+        "_files": []
+      },
+      "English": {
+        "_files": []
+      },
+      "Social Science": {
+        "_files": []
+      },
+      "Hindi": {
+        "_files": []
+      }
+    },
+    "Class_6": {
+      "Math": {
+        "_files": []
+      },
+      "Science": {
+        "_files": []
+      },
+      "English": {
+        "_files": []
+      },
+      "Social Science": {
+        "_files": []
+      },
+      "Hindi": {
+        "_files": []
+      }
+    },
+    "Class_7": {
+      "Math": {
+        "_files": []
+      },
+      "Science": {
+        "_files": []
+      },
+      "English": {
+        "_files": []
+      },
+      "Social Science": {
+        "_files": []
+      },
+      "Hindi": {
+        "_files": []
+      }
+    },
+    "Class_8": {
+      "Math": {
+        "_files": []
+      },
+      "Science": {
+        "_files": []
+      },
+      "English": {
+        "_files": []
+      },
+      "Social Science": {
+        "_files": []
+      },
+      "Hindi": {
+        "_files": []
+      }
+    },
+    "Class_9": {
+      "Math": {
+        "_files": []
+      },
+      "Science": {
+        "_files": []
+      },
+      "English": {
+        "_files": []
+      },
+      "Social Science": {
+        "_files": []
+      },
+      "Hindi": {
+        "_files": []
+      }
+    },
+    "Class_10": {
+      "Math": {
+        "_files": []
+      },
+      "Science": {
+        "_files": []
+      },
+      "English": {
+        "_files": []
+      },
+      "Social Science": {
+        "_files": []
+      },
+      "Hindi": {
+        "_files": []
+      }
+    },
+    "Class_11": {
+      "Physics": {
+        "_files": []
+      },
+      "Chemistry": {
+        "_files": []
+      },
+      "Math": {
+        "_files": []
+      },
+      "Biology": {
+        "_files": []
+      },
+      "English": {
+        "_files": []
+      },
+      "Accountancy": {
+        "_files": []
+      },
+      "Business Studies": {
+        "_files": []
+      },
+      "Economics": {
+        "_files": []
+      }
+    },
+    "Class_12": {
+      "Physics": {
+        "_files": []
+      },
+      "Chemistry": {
+        "_files": []
+      },
+      "Math": {
+        "_files": []
+      },
+      "Biology": {
+        "_files": []
+      },
+      "English": {
+        "_files": []
+      },
+      "Accountancy": {
+        "_files": []
+      },
+      "Business Studies": {
+        "_files": []
+      },
+      "Economics": {
+        "_files": []
+      }
+    }
+  },
+  "coaching-notes": {
+    "Class_1": {
+      "Math": {
+        "_files": []
+      },
+      "Science": {
+        "_files": []
+      },
+      "English": {
+        "_files": []
+      },
+      "Social Science": {
+        "_files": []
+      },
+      "Hindi": {
+        "_files": []
+      }
+    },
+    "Class_2": {
+      "Math": {
+        "_files": []
+      },
+      "Science": {
+        "_files": []
+      },
+      "English": {
+        "_files": []
+      },
+      "Social Science": {
+        "_files": []
+      },
+      "Hindi": {
+        "_files": []
+      }
+    },
+    "Class_3": {
+      "Math": {
+        "_files": []
+      },
+      "Science": {
+        "_files": []
+      },
+      "English": {
+        "_files": []
+      },
+      "Social Science": {
+        "_files": []
+      },
+      "Hindi": {
+        "_files": []
+      }
+    },
+    "Class_4": {
+      "Math": {
+        "_files": []
+      },
+      "Science": {
+        "_files": []
+      },
+      "English": {
+        "_files": []
+      },
+      "Social Science": {
+        "_files": []
+      },
+      "Hindi": {
+        "_files": []
+      }
+    },
+    "Class_5": {
+      "Math": {
+        "_files": []
+      },
+      "Science": {
+        "_files": []
+      },
+      "English": {
+        "_files": []
+      },
+      "Social Science": {
+        "_files": []
+      },
+      "Hindi": {
+        "_files": []
+      }
+    },
+    "Class_6": {
+      "Math": {
+        "_files": []
+      },
+      "Science": {
+        "_files": []
+      },
+      "English": {
+        "_files": []
+      },
+      "Social Science": {
+        "_files": []
+      },
+      "Hindi": {
+        "_files": []
+      }
+    },
+    "Class_7": {
+      "Math": {
+        "_files": []
+      },
+      "Science": {
+        "_files": []
+      },
+      "English": {
+        "_files": []
+      },
+      "Social Science": {
+        "_files": []
+      },
+      "Hindi": {
+        "_files": []
+      }
+    },
+    "Class_8": {
+      "Math": {
+        "_files": []
+      },
+      "Science": {
+        "_files": []
+      },
+      "English": {
+        "_files": []
+      },
+      "Social Science": {
+        "_files": []
+      },
+      "Hindi": {
+        "_files": []
+      }
+    },
+    "Class_9": {
+      "Math": {
+        "_files": []
+      },
+      "Science": {
+        "_files": []
+      },
+      "English": {
+        "_files": []
+      },
+      "Social Science": {
+        "_files": []
+      },
+      "Hindi": {
+        "_files": []
+      }
+    },
+    "Class_10": {
+      "Math": {
+        "_files": []
+      },
+      "Science": {
+        "_files": []
+      },
+      "English": {
+        "_files": []
+      },
+      "Social Science": {
+        "_files": []
+      },
+      "Hindi": {
+        "_files": []
+      }
+    },
+    "Class_11": {
+      "Physics": {
+        "_files": []
+      },
+      "Chemistry": {
+        "_files": []
+      },
+      "Math": {
+        "_files": []
+      },
+      "Biology": {
+        "_files": []
+      },
+      "English": {
+        "_files": []
+      },
+      "Accountancy": {
+        "_files": []
+      },
+      "Business Studies": {
+        "_files": []
+      },
+      "Economics": {
+        "_files": []
+      }
+    },
+    "Class_12": {
+      "Physics": {
+        "_files": []
+      },
+      "Chemistry": {
+        "_files": []
+      },
+      "Math": {
+        "_files": []
+      },
+      "Biology": {
+        "_files": []
+      },
+      "English": {
+        "_files": []
+      },
+      "Accountancy": {
+        "_files": []
+      },
+      "Business Studies": {
+        "_files": []
+      },
+      "Economics": {
+        "_files": []
+      }
+    }
+  },
+  "sample-papers": {
+    "CBSE": {
+      "Class_1": {
+        "Math": {
+          "_files": []
+        },
+        "Science": {
+          "_files": []
+        },
+        "English": {
+          "_files": []
+        },
+        "Social Science": {
+          "_files": []
+        },
+        "Hindi": {
+          "_files": []
+        }
+      },
+      "Class_2": {
+        "Math": {
+          "_files": []
+        },
+        "Science": {
+          "_files": []
+        },
+        "English": {
+          "_files": []
+        },
+        "Social Science": {
+          "_files": []
+        },
+        "Hindi": {
+          "_files": []
+        }
+      },
+      "Class_3": {
+        "Math": {
+          "_files": []
+        },
+        "Science": {
+          "_files": []
+        },
+        "English": {
+          "_files": []
+        },
+        "Social Science": {
+          "_files": []
+        },
+        "Hindi": {
+          "_files": []
+        }
+      },
+      "Class_4": {
+        "Math": {
+          "_files": []
+        },
+        "Science": {
+          "_files": []
+        },
+        "English": {
+          "_files": []
+        },
+        "Social Science": {
+          "_files": []
+        },
+        "Hindi": {
+          "_files": []
+        }
+      },
+      "Class_5": {
+        "Math": {
+          "_files": []
+        },
+        "Science": {
+          "_files": []
+        },
+        "English": {
+          "_files": []
+        },
+        "Social Science": {
+          "_files": []
+        },
+        "Hindi": {
+          "_files": []
+        }
+      },
+      "Class_6": {
+        "Math": {
+          "_files": []
+        },
+        "Science": {
+          "_files": []
+        },
+        "English": {
+          "_files": []
+        },
+        "Social Science": {
+          "_files": []
+        },
+        "Hindi": {
+          "_files": []
+        }
+      },
+      "Class_7": {
+        "Math": {
+          "_files": []
+        },
+        "Science": {
+          "_files": []
+        },
+        "English": {
+          "_files": []
+        },
+        "Social Science": {
+          "_files": []
+        },
+        "Hindi": {
+          "_files": []
+        }
+      },
+      "Class_8": {
+        "Math": {
+          "_files": []
+        },
+        "Science": {
+          "_files": []
+        },
+        "English": {
+          "_files": []
+        },
+        "Social Science": {
+          "_files": []
+        },
+        "Hindi": {
+          "_files": []
+        }
+      },
+      "Class_9": {
+        "Math": {
+          "_files": []
+        },
+        "Science": {
+          "_files": []
+        },
+        "English": {
+          "_files": []
+        },
+        "Social Science": {
+          "_files": []
+        },
+        "Hindi": {
+          "_files": []
+        }
+      },
+      "Class_10": {
+        "Math": {
+          "_files": []
+        },
+        "Science": {
+          "_files": []
+        },
+        "English": {
+          "_files": []
+        },
+        "Social Science": {
+          "_files": []
+        },
+        "Hindi": {
+          "_files": []
+        }
+      },
+      "Class_11": {
+        "Physics": {
+          "_files": []
+        },
+        "Chemistry": {
+          "_files": []
+        },
+        "Math": {
+          "_files": []
+        },
+        "Biology": {
+          "_files": []
+        },
+        "English": {
+          "_files": []
+        },
+        "Accountancy": {
+          "_files": []
+        },
+        "Business Studies": {
+          "_files": []
+        },
+        "Economics": {
+          "_files": []
+        }
+      },
+      "Class_12": {
+        "Physics": {
+          "_files": []
+        },
+        "Chemistry": {
+          "_files": []
+        },
+        "Math": {
+          "_files": []
+        },
+        "Biology": {
+          "_files": []
+        },
+        "English": {
+          "_files": []
+        },
+        "Accountancy": {
+          "_files": []
+        },
+        "Business Studies": {
+          "_files": []
+        },
+        "Economics": {
+          "_files": []
+        }
+      }
+    },
+    "ICSE": {
+      "Class_1": {
+        "Math": {
+          "_files": []
+        },
+        "Science": {
+          "_files": []
+        },
+        "English": {
+          "_files": []
+        },
+        "Social Science": {
+          "_files": []
+        },
+        "Hindi": {
+          "_files": []
+        }
+      },
+      "Class_2": {
+        "Math": {
+          "_files": []
+        },
+        "Science": {
+          "_files": []
+        },
+        "English": {
+          "_files": []
+        },
+        "Social Science": {
+          "_files": []
+        },
+        "Hindi": {
+          "_files": []
+        }
+      },
+      "Class_3": {
+        "Math": {
+          "_files": []
+        },
+        "Science": {
+          "_files": []
+        },
+        "English": {
+          "_files": []
+        },
+        "Social Science": {
+          "_files": []
+        },
+        "Hindi": {
+          "_files": []
+        }
+      },
+      "Class_4": {
+        "Math": {
+          "_files": []
+        },
+        "Science": {
+          "_files": []
+        },
+        "English": {
+          "_files": []
+        },
+        "Social Science": {
+          "_files": []
+        },
+        "Hindi": {
+          "_files": []
+        }
+      },
+      "Class_5": {
+        "Math": {
+          "_files": []
+        },
+        "Science": {
+          "_files": []
+        },
+        "English": {
+          "_files": []
+        },
+        "Social Science": {
+          "_files": []
+        },
+        "Hindi": {
+          "_files": []
+        }
+      },
+      "Class_6": {
+        "Math": {
+          "_files": []
+        },
+        "Science": {
+          "_files": []
+        },
+        "English": {
+          "_files": []
+        },
+        "Social Science": {
+          "_files": []
+        },
+        "Hindi": {
+          "_files": []
+        }
+      },
+      "Class_7": {
+        "Math": {
+          "_files": []
+        },
+        "Science": {
+          "_files": []
+        },
+        "English": {
+          "_files": []
+        },
+        "Social Science": {
+          "_files": []
+        },
+        "Hindi": {
+          "_files": []
+        }
+      },
+      "Class_8": {
+        "Math": {
+          "_files": []
+        },
+        "Science": {
+          "_files": []
+        },
+        "English": {
+          "_files": []
+        },
+        "Social Science": {
+          "_files": []
+        },
+        "Hindi": {
+          "_files": []
+        }
+      },
+      "Class_9": {
+        "Math": {
+          "_files": []
+        },
+        "Science": {
+          "_files": []
+        },
+        "English": {
+          "_files": []
+        },
+        "Social Science": {
+          "_files": []
+        },
+        "Hindi": {
+          "_files": []
+        }
+      },
+      "Class_10": {
+        "Math": {
+          "_files": []
+        },
+        "Science": {
+          "_files": []
+        },
+        "English": {
+          "_files": []
+        },
+        "Social Science": {
+          "_files": []
+        },
+        "Hindi": {
+          "_files": []
+        }
+      },
+      "Class_11": {
+        "Physics": {
+          "_files": []
+        },
+        "Chemistry": {
+          "_files": []
+        },
+        "Math": {
+          "_files": []
+        },
+        "Biology": {
+          "_files": []
+        },
+        "English": {
+          "_files": []
+        },
+        "Accountancy": {
+          "_files": []
+        },
+        "Business Studies": {
+          "_files": []
+        },
+        "Economics": {
+          "_files": []
+        }
+      },
+      "Class_12": {
+        "Physics": {
+          "_files": []
+        },
+        "Chemistry": {
+          "_files": []
+        },
+        "Math": {
+          "_files": []
+        },
+        "Biology": {
+          "_files": []
+        },
+        "English": {
+          "_files": []
+        },
+        "Accountancy": {
+          "_files": []
+        },
+        "Business Studies": {
+          "_files": []
+        },
+        "Economics": {
+          "_files": []
+        }
+      }
+    },
+    "UP_Board": {
+      "Class_1": {
+        "Math": {
+          "_files": []
+        },
+        "Science": {
+          "_files": []
+        },
+        "English": {
+          "_files": []
+        },
+        "Social Science": {
+          "_files": []
+        },
+        "Hindi": {
+          "_files": []
+        }
+      },
+      "Class_2": {
+        "Math": {
+          "_files": []
+        },
+        "Science": {
+          "_files": []
+        },
+        "English": {
+          "_files": []
+        },
+        "Social Science": {
+          "_files": []
+        },
+        "Hindi": {
+          "_files": []
+        }
+      },
+      "Class_3": {
+        "Math": {
+          "_files": []
+        },
+        "Science": {
+          "_files": []
+        },
+        "English": {
+          "_files": []
+        },
+        "Social Science": {
+          "_files": []
+        },
+        "Hindi": {
+          "_files": []
+        }
+      },
+      "Class_4": {
+        "Math": {
+          "_files": []
+        },
+        "Science": {
+          "_files": []
+        },
+        "English": {
+          "_files": []
+        },
+        "Social Science": {
+          "_files": []
+        },
+        "Hindi": {
+          "_files": []
+        }
+      },
+      "Class_5": {
+        "Math": {
+          "_files": []
+        },
+        "Science": {
+          "_files": []
+        },
+        "English": {
+          "_files": []
+        },
+        "Social Science": {
+          "_files": []
+        },
+        "Hindi": {
+          "_files": []
+        }
+      },
+      "Class_6": {
+        "Math": {
+          "_files": []
+        },
+        "Science": {
+          "_files": []
+        },
+        "English": {
+          "_files": []
+        },
+        "Social Science": {
+          "_files": []
+        },
+        "Hindi": {
+          "_files": []
+        }
+      },
+      "Class_7": {
+        "Math": {
+          "_files": []
+        },
+        "Science": {
+          "_files": []
+        },
+        "English": {
+          "_files": []
+        },
+        "Social Science": {
+          "_files": []
+        },
+        "Hindi": {
+          "_files": []
+        }
+      },
+      "Class_8": {
+        "Math": {
+          "_files": []
+        },
+        "Science": {
+          "_files": []
+        },
+        "English": {
+          "_files": []
+        },
+        "Social Science": {
+          "_files": []
+        },
+        "Hindi": {
+          "_files": []
+        }
+      },
+      "Class_9": {
+        "Math": {
+          "_files": []
+        },
+        "Science": {
+          "_files": []
+        },
+        "English": {
+          "_files": []
+        },
+        "Social Science": {
+          "_files": []
+        },
+        "Hindi": {
+          "_files": []
+        }
+      },
+      "Class_10": {
+        "Math": {
+          "_files": []
+        },
+        "Science": {
+          "_files": []
+        },
+        "English": {
+          "_files": []
+        },
+        "Social Science": {
+          "_files": []
+        },
+        "Hindi": {
+          "_files": []
+        }
+      },
+      "Class_11": {
+        "Physics": {
+          "_files": []
+        },
+        "Chemistry": {
+          "_files": []
+        },
+        "Math": {
+          "_files": []
+        },
+        "Biology": {
+          "_files": []
+        },
+        "English": {
+          "_files": []
+        },
+        "Accountancy": {
+          "_files": []
+        },
+        "Business Studies": {
+          "_files": []
+        },
+        "Economics": {
+          "_files": []
+        }
+      },
+      "Class_12": {
+        "Physics": {
+          "_files": []
+        },
+        "Chemistry": {
+          "_files": []
+        },
+        "Math": {
+          "_files": []
+        },
+        "Biology": {
+          "_files": []
+        },
+        "English": {
+          "_files": []
+        },
+        "Accountancy": {
+          "_files": []
+        },
+        "Business Studies": {
+          "_files": []
+        },
+        "Economics": {
+          "_files": []
+        }
+      }
+    }
+  },
+  "worksheets": {
+    "Class_1": {
+      "Math": {
+        "_files": []
+      },
+      "Science": {
+        "_files": []
+      },
+      "English": {
+        "_files": []
+      },
+      "Social Science": {
+        "_files": []
+      },
+      "Hindi": {
+        "_files": []
+      }
+    },
+    "Class_2": {
+      "Math": {
+        "_files": []
+      },
+      "Science": {
+        "_files": []
+      },
+      "English": {
+        "_files": []
+      },
+      "Social Science": {
+        "_files": []
+      },
+      "Hindi": {
+        "_files": []
+      }
+    },
+    "Class_3": {
+      "Math": {
+        "_files": []
+      },
+      "Science": {
+        "_files": []
+      },
+      "English": {
+        "_files": []
+      },
+      "Social Science": {
+        "_files": []
+      },
+      "Hindi": {
+        "_files": []
+      }
+    },
+    "Class_4": {
+      "Math": {
+        "_files": []
+      },
+      "Science": {
+        "_files": []
+      },
+      "English": {
+        "_files": []
+      },
+      "Social Science": {
+        "_files": []
+      },
+      "Hindi": {
+        "_files": []
+      }
+    },
+    "Class_5": {
+      "Math": {
+        "_files": []
+      },
+      "Science": {
+        "_files": []
+      },
+      "English": {
+        "_files": []
+      },
+      "Social Science": {
+        "_files": []
+      },
+      "Hindi": {
+        "_files": []
+      }
+    },
+    "Class_6": {
+      "Math": {
+        "_files": []
+      },
+      "Science": {
+        "_files": []
+      },
+      "English": {
+        "_files": []
+      },
+      "Social Science": {
+        "_files": []
+      },
+      "Hindi": {
+        "_files": []
+      }
+    },
+    "Class_7": {
+      "Math": {
+        "_files": []
+      },
+      "Science": {
+        "_files": []
+      },
+      "English": {
+        "_files": []
+      },
+      "Social Science": {
+        "_files": []
+      },
+      "Hindi": {
+        "_files": []
+      }
+    },
+    "Class_8": {
+      "Math": {
+        "_files": []
+      },
+      "Science": {
+        "_files": []
+      },
+      "English": {
+        "_files": []
+      },
+      "Social Science": {
+        "_files": []
+      },
+      "Hindi": {
+        "_files": []
+      }
+    },
+    "Class_9": {
+      "Math": {
+        "_files": []
+      },
+      "Science": {
+        "_files": []
+      },
+      "English": {
+        "_files": []
+      },
+      "Social Science": {
+        "_files": []
+      },
+      "Hindi": {
+        "_files": []
+      }
+    },
+    "Class_10": {
+      "Math": {
+        "_files": []
+      },
+      "Science": {
+        "_files": []
+      },
+      "English": {
+        "_files": []
+      },
+      "Social Science": {
+        "_files": []
+      },
+      "Hindi": {
+        "_files": []
+      }
+    },
+    "Class_11": {
+      "Physics": {
+        "_files": []
+      },
+      "Chemistry": {
+        "_files": []
+      },
+      "Math": {
+        "_files": []
+      },
+      "Biology": {
+        "_files": []
+      },
+      "English": {
+        "_files": []
+      },
+      "Accountancy": {
+        "_files": []
+      },
+      "Business Studies": {
+        "_files": []
+      },
+      "Economics": {
+        "_files": []
+      }
+    },
+    "Class_12": {
+      "Physics": {
+        "_files": []
+      },
+      "Chemistry": {
+        "_files": []
+      },
+      "Math": {
+        "_files": []
+      },
+      "Biology": {
+        "_files": []
+      },
+      "English": {
+        "_files": []
+      },
+      "Accountancy": {
+        "_files": []
+      },
+      "Business Studies": {
+        "_files": []
+      },
+      "Economics": {
+        "_files": []
+      }
+    }
+  }
+}

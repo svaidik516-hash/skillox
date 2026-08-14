@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Bookmarked Study Materials | Skillox</title>
+    <meta name="description" content="Access your saved textbooks, sample exam papers, coaching notes, and practice worksheets in one personalized Skillox repository.">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css?v=23.0">
+    <script>
+        // ---- Auth Guard ----
+        // Prevent unauthorized access by direct URL navigation
+        if (localStorage.getItem('skillox_is_logged_in') !== 'true') {
+            window.location.replace('login.html');
+        }
+    </script>
+    <style>
+        .bookmarks-header {
+            padding: 130px 20px 40px;
+            text-align: center;
+            max-width: 900px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .bookmarks-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto 30px;
+            padding: 18px 24px;
+            background: var(--bg-card, #ffffff);
+            border: 1px solid var(--border-color, rgba(0,0,0,0.08));
+            border-radius: var(--radius-lg, 16px);
+            box-shadow: var(--shadow-sm, 0 2px 12px rgba(0,0,0,0.04));
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .search-box {
+            display: flex;
+            align-items: center;
+            flex: 1;
+            min-width: 280px;
+            background: var(--bg-main, #f8fafc);
+            border: 1px solid var(--border-color, #e2e8f0);
+            border-radius: 30px;
+            padding: 6px 16px;
+            transition: all 0.2s ease;
+        }
+        .search-box:focus-within {
+            border-color: #f43f5e;
+            box-shadow: 0 0 0 3px rgba(244, 63, 94, 0.15);
+        }
+        .search-box input {
+            border: none;
+            background: transparent;
+            width: 100%;
+            padding: 8px 10px;
+            font-size: 0.95rem;
+            color: var(--text-dark, #0f172a);
+            outline: none;
+            font-family: 'Inter', sans-serif;
+        }
+        .search-box input::placeholder {
+            color: var(--text-muted, #64748b);
+        }
+
+        .sort-actions-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .sort-select {
+            padding: 9px 16px;
+            border-radius: 30px;
+            border: 1px solid var(--border-color, #e2e8f0);
+            background: var(--bg-main, #f8fafc);
+            color: var(--text-dark, #0f172a);
+            font-size: 0.9rem;
+            font-weight: 500;
+            outline: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: 'Inter', sans-serif;
+        }
+        .sort-select:focus {
+            border-color: #f43f5e;
+        }
+
+        .btn-clear-all {
+            background: rgba(244, 63, 94, 0.08);
+            color: #f43f5e;
+            border: 1px solid rgba(244, 63, 94, 0.3);
+            padding: 9px 18px;
+            border-radius: 30px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-family: 'Inter', sans-serif;
+        }
+        .btn-clear-all:hover {
+            background: #f43f5e;
+            color: #ffffff;
+            box-shadow: 0 4px 14px rgba(244, 63, 94, 0.3);
+        }
+
+        .bookmarks-container {
+            max-width: 1200px;
+            margin: 0 auto 100px;
+            padding: 0 20px;
+        }
+
+        @media (max-width: 640px) {
+            .bookmarks-controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .sort-actions-group {
+                justify-content: space-between;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-glow bg-glow-1" style="background: radial-gradient(circle, rgba(244,63,94,0.12) 0%, rgba(244,63,94,0) 70%);"></div>
+    <div class="bg-glow bg-glow-2"></div>
+
+    <!-- Navbar -->
+    <nav class="navbar" id="navbar">
+        <a href="index.html" class="logo">
+            <div class="logo-icon">S</div>
+            <h2>Skillox</h2>
+        </a>
+        <ul class="nav-links">
+            <li><a href="bookmarks.html" class="active" style="color: #f43f5e; font-weight: 700;">Bookmarks <span id="bookmarks-count-badge" style="display:none; background: #f43f5e; color: white; padding: 2px 7px; border-radius: 20px; font-size: 0.72rem; margin-left: 3px; font-weight: bold; vertical-align: middle;">0</span></a></li>
+            <li><a href="index.html#textbooks">Textbooks</a></li>
+            <li><a href="index.html#sample-papers">Sample Papers</a></li>
+            <li><a href="index.html#worksheets">Worksheets</a></li>
+            <li><a href="index.html#coaching-notes">Coaching Notes</a></li>
+            <li><a href="index.html#revision">Quick Revision</a></li>
+            <li><a href="contact.html">Contact Us</a></li>
+        </ul>
+        <div class="nav-actions">
+            <a href="login.html" id="nav-auth-btn" class="btn btn-outline btn-sm">Log In</a>
+            <a href="signup.html" id="nav-signup-btn" class="btn btn-primary btn-sm" style="margin-left: 10px;">Sign Up</a>
+        </div>
+        <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+            <span></span><span></span><span></span>
+        </button>
+    </nav>
+
+    <!-- Mobile Menu -->
+    <div class="mobile-menu" id="mobileMenu">
+        <ul>
+            <li><a href="bookmarks.html" style="color: #f43f5e; font-weight: 700;">My Bookmarks <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" style="vertical-align: middle;"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg></a></li>
+            <li><a href="index.html#textbooks">Textbooks</a></li>
+            <li><a href="index.html#sample-papers">Sample Papers</a></li>
+            <li><a href="index.html#worksheets">Worksheets</a></li>
+            <li><a href="index.html#coaching-notes">Coaching Notes</a></li>
+            <li><a href="index.html#revision">Quick Revision</a></li>
+            <li><a href="contact.html">Contact Us</a></li>
+            <li><a href="login.html" id="mobile-auth-btn" class="btn btn-outline" style="display:inline-block; margin-top:10px;">Log In</a></li>
+            <li><a href="signup.html" id="mobile-signup-btn" class="btn btn-primary" style="display:inline-block; margin-top:10px;">Sign Up</a></li>
+        </ul>
+    </div>
+
+    <!-- Page Header -->
+    <header class="bookmarks-header">
+        <span class="section-tag" style="background: rgba(244, 63, 94, 0.1); color: #f43f5e; border-color: rgba(244, 63, 94, 0.25);"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" style="vertical-align: -2px; margin-right: 4px;"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg> Student Study Hub</span>
+        <h1 style="font-family: 'Outfit', sans-serif; font-size: 2.6rem; margin: 12px 0 16px; color: var(--text-dark, #0f172a);">My Saved <span style="color: #f43f5e;">Study Materials</span></h1>
+        <p style="color: var(--text-muted, #64748b); font-size: 1.08rem; max-width: 620px; margin: 0 auto; line-height: 1.6;">
+            Your personal library of bookmarked textbooks, CBSE/ICSE revision notes, practice sheets, and past sample papers for quick exam review.
+        </p>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="bookmarks-container">
+        <!-- Search & Filter Controls -->
+        <div class="bookmarks-controls" id="bookmarks-toolbar" style="display: none;">
+            <div class="search-box">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f43f5e" stroke-width="2" style="margin-right: 6px;"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                <input type="text" id="bookmark-search-input" placeholder="Search saved study PDFs by title...">
+            </div>
+            <div class="sort-actions-group">
+                <select class="sort-select" id="bookmark-sort-select" aria-label="Sort Bookmarks">
+                    <option value="recent">Sort by: Recently Saved</option>
+                    <option value="oldest">Sort by: Oldest First</option>
+                    <option value="alpha">Sort by: Title (A-Z)</option>
+                </select>
+                <button class="btn-clear-all" id="btn-clear-bookmarks">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                    Clear All
+                </button>
+            </div>
+        </div>
+
+        <!-- Dynamic Grid Container -->
+        <div class="pdf-grid" id="bookmarks-dynamic-grid"></div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer" style="margin-top: auto;">
+        <div class="container footer-grid">
+            <div class="footer-brand">
+                <div class="logo">
+                    <div class="logo-icon">S</div>
+                    <h2>Skillox</h2>
+                </div>
+                <p>Empowering Indian school students from Class 1 to 12 with quality educational resources, sample papers, notes, and interactive study decks.</p>
+                <p class="copyright">© 2026 Skillox Education Pvt. Ltd. All rights reserved.</p>
+            </div>
+            <div class="footer-links">
+                <h3>Explore Library</h3>
+                <ul>
+                    <li><a href="index.html#textbooks">Textbooks Library</a></li>
+                    <li><a href="index.html#sample-papers">Sample Exam Papers</a></li>
+                    <li><a href="index.html#worksheets">Practice Worksheets</a></li>
+                    <li><a href="index.html#coaching-notes">Coaching Study Notes</a></li>
+                    <li><a href="index.html#revision">Quick Revision Hub</a></li>
+                </ul>
+            </div>
+            <div class="footer-links">
+                <h3>Account & Help</h3>
+                <ul>
+                    <li><a href="bookmarks.html" style="color: #f43f5e;">My Saved Bookmarks</a></li>
+                    <li><a href="login.html">Student Login</a></li>
+                    <li><a href="signup.html">Create Account</a></li>
+                    <li><a href="contact.html">Contact Support</a></li>
+                </ul>
+            </div>
+        </div>
+    </footer>
+
+    <script src="config.js?v=4"></script>
+    <script src="script.js?v=4"></script>
+    <script>
+        // Custom UI functionality for Bookmarks page controls
+        document.addEventListener('DOMContentLoaded', () => {
+            if (localStorage.getItem('skillox_is_logged_in') !== 'true') {
+                window.location.replace('login.html');
+                return;
+            }
+
+            const searchInput = document.getElementById('bookmark-search-input');
+            const sortSelect = document.getElementById('bookmark-sort-select');
+            const clearBtn = document.getElementById('btn-clear-bookmarks');
+            const toolbar = document.getElementById('bookmarks-toolbar');
+
+            function refreshPageUI() {
+                const bookmarksMap = window.getBookmarks();
+                const totalCount = Object.keys(bookmarksMap).length;
+                if (toolbar) toolbar.style.display = totalCount > 0 ? 'flex' : 'none';
+            }
+
+            if (searchInput) {
+                searchInput.addEventListener('input', () => {
+                    if (window.renderBookmarksSection) {
+                        window.renderBookmarksSection(searchInput.value.trim(), sortSelect ? sortSelect.value : 'recent');
+                    }
+                });
+            }
+
+            if (sortSelect) {
+                sortSelect.addEventListener('change', () => {
+                    if (window.renderBookmarksSection) {
+                        window.renderBookmarksSection(searchInput ? searchInput.value.trim() : '', sortSelect.value);
+                    }
+                });
+            }
+
+            if (clearBtn) {
+                clearBtn.addEventListener('click', () => {
+                    const count = Object.keys(window.getBookmarks()).length;
+                    if (count === 0) return;
+                    if (confirm(`Are you sure you want to remove all ${count} bookmarked documents from your library?`)) {
+                        localStorage.removeItem('skillox_bookmarks');
+                        window.dispatchEvent(new CustomEvent('skillox:bookmark-changed', { detail: { cleared: true } }));
+                        if (window.renderBookmarksSection) window.renderBookmarksSection();
+                        refreshPageUI();
+                    }
+                });
+            }
+
+            window.addEventListener('skillox:bookmark-changed', refreshPageUI);
+            refreshPageUI();
+        });
+    </script>
+</body>
+</html>

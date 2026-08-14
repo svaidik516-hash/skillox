@@ -1,0 +1,1547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Skillox Study Viewer | Enterprise PDF Reader</title>
+    <meta name="description" content="Secure Skillox Study Viewer with dynamic table of contents, custom note annotations, and tamper-proof user email watermarking.">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        /* === Design Tokens â€” Clean Light Theme === */
+        :root {
+            --primary: #475569;
+            --primary-hover: #334155;
+            --bg-shell: #f8f9fa;
+            --bg-navbar: #ffffff;
+            --bg-panel: #ffffff;
+            --bg-canvas: #eef0f4;
+            --bg-toolbar: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --text-sub: #94a3b8;
+            --border-color: #e2e8f0;
+            --accent: #4f6d7a;
+            --accent-light: #eef2f5;
+            --radius-sm: 6px;
+            --radius-md: 8px;
+        }
+
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg-shell);
+            color: var(--text-main);
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            user-select: none;
+            -webkit-user-select: none;
+            font-size: 14px;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        h1, h2, h3, h4, h5 { font-family: 'Inter', sans-serif; font-weight: 600; }
+
+        /* === Top Navbar === */
+        .top-navbar {
+            height: 52px;
+            background: var(--bg-navbar);
+            border-bottom: 1px solid var(--border-color);
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 100;
+            flex-shrink: 0;
+        }
+
+        .navbar-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-logo-box {
+            width: 30px;
+            height: 30px;
+            border-radius: var(--radius-sm);
+            background: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Inter', sans-serif;
+            font-weight: 700;
+            font-size: 0.85rem;
+            color: white;
+        }
+
+        .brand-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-main);
+            letter-spacing: -0.3px;
+        }
+        .brand-title span { color: var(--text-muted); font-weight: 400; font-size: 0.9rem; margin-left: 2px; }
+
+        .btn-toggle-panel {
+            padding: 6px 10px;
+            border-radius: var(--radius-sm);
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.15s ease;
+        }
+        .btn-toggle-panel:hover { background: var(--accent-light); color: var(--text-main); }
+        .btn-toggle-panel.active { background: var(--accent-light); color: var(--accent); border-color: var(--accent); }
+
+        .navbar-center {
+            display: flex;
+            align-items: center;
+            width: 340px;
+            max-width: 40%;
+            position: relative;
+        }
+        .search-input {
+            width: 100%;
+            height: 34px;
+            padding: 0 14px 0 34px;
+            border-radius: var(--radius-md);
+            background: var(--bg-shell);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            font-size: 0.82rem;
+            font-family: 'Inter', sans-serif;
+            outline: none;
+            transition: all 0.15s ease;
+        }
+        .search-input:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(79,109,122,0.12); }
+        .search-input::placeholder { color: var(--text-sub); }
+        .search-icon {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-sub);
+            pointer-events: none;
+        }
+
+        .navbar-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .user-profile-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 4px 10px 4px 4px;
+            background: var(--bg-shell);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+        }
+        .user-avatar-circle {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background: var(--accent);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.75rem;
+        }
+        .user-email-text {
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--text-main);
+            max-width: 150px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .btn-close-app {
+            width: 30px;
+            height: 30px;
+            border-radius: var(--radius-sm);
+            background: transparent;
+            color: var(--text-sub);
+            border: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 1.1rem;
+            transition: all 0.15s ease;
+            text-decoration: none;
+        }
+        .btn-close-app:hover { background: #fef2f2; color: #dc2626; border-color: #fecaca; }
+
+        /* === Workspace Layout === */
+        .workspace-body {
+            display: flex;
+            flex: 1;
+            height: calc(100vh - 52px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* --- Left Panel: Table of Contents --- */
+        .panel-left {
+            width: 260px;
+            background: var(--bg-panel);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            transition: width 0.2s ease;
+            flex-shrink: 0;
+            z-index: 40;
+        }
+        .panel-left.collapsed { width: 0; border: none; overflow: hidden; }
+
+        .panel-header {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--text-sub);
+            letter-spacing: 0.6px;
+            text-transform: uppercase;
+        }
+        .btn-panel-close { background: transparent; border: none; color: var(--text-sub); cursor: pointer; font-size: 1rem; padding: 2px; }
+        .btn-panel-close:hover { color: var(--text-main); }
+
+        .toc-doc-title-box {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .toc-doc-title {
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: var(--text-main);
+            line-height: 1.4;
+        }
+
+        .toc-tree {
+            padding: 8px;
+            overflow-y: auto;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .toc-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 10px;
+            border-radius: var(--radius-sm);
+            color: var(--text-muted);
+            font-size: 0.82rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.12s ease;
+            text-decoration: none;
+            border: 1px solid transparent;
+        }
+        .toc-item:hover { background: var(--bg-shell); color: var(--text-main); }
+        .toc-item.active { background: var(--accent-light); color: var(--accent); font-weight: 600; }
+        .toc-page-num { font-size: 0.72rem; color: var(--text-sub); font-weight: 500; }
+        .toc-item.sub-item { padding-left: 22px; font-size: 0.8rem; }
+
+        /* --- Center: Reading Pane --- */
+        .pane-reading-stage {
+            flex: 1;
+            background: var(--bg-canvas);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Toolbar */
+        .toolbar-container {
+            padding: 10px 20px;
+            display: flex;
+            justify-content: center;
+            z-index: 60;
+            flex-shrink: 0;
+            pointer-events: none;
+            background: var(--bg-panel);
+            border-bottom: 1px solid var(--border-color);
+        }
+        .toolbar-capsule {
+            pointer-events: auto;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .toolbar-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-right: 1px solid var(--border-color);
+            padding-right: 16px;
+        }
+        .toolbar-group:last-child { border-right: none; padding-right: 0; }
+
+        .tool-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 0.7rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.12s ease;
+            padding: 4px 6px;
+            border-radius: var(--radius-sm);
+        }
+        .tool-btn:hover { background: var(--accent-light); color: var(--accent); }
+
+        .color-pills-row { display: flex; gap: 5px; align-items: center; }
+        .color-pill { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--border-color); cursor: pointer; transition: transform 0.12s ease; }
+        .color-pill:hover { transform: scale(1.15); border-color: var(--text-muted); }
+        .pill-yellow { background: #fbbf24; }
+        .pill-pink { background: #e879a0; }
+        .pill-blue { background: #6ba3be; }
+        .pill-orange { background: #d97c50; }
+
+        .zoom-controls { display: flex; align-items: center; gap: 4px; background: var(--bg-shell); padding: 3px 8px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); }
+        .btn-zoom { background: transparent; border: none; color: var(--text-main); font-weight: 600; font-size: 1rem; cursor: pointer; width: 22px; text-align: center; }
+        .btn-zoom:hover { color: var(--accent); }
+        .zoom-display { font-size: 0.78rem; font-weight: 600; color: var(--text-main); min-width: 42px; text-align: center; }
+
+        /* PDF Viewport */
+        .pdf-scroll-viewport {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: auto;
+            padding: 24px 32px 100px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+
+        .canvas-card-wrapper {
+            position: relative;
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: center;
+        }
+        canvas {
+            display: block;
+            border-radius: 2px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.04);
+            max-width: 100%;
+            height: auto !important;
+            background: white;
+        }
+
+        /* Watermark Overlay */
+        .secure-watermark-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            pointer-events: none;
+            z-index: 50;
+            overflow: hidden;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-auto-rows: 240px;
+            align-items: center;
+            justify-items: center;
+            opacity: 0.06;
+        }
+        .watermark-tile {
+            transform: rotate(-35deg);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+        .wm-brand {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #475569;
+            letter-spacing: 2px;
+            font-family: 'Inter', sans-serif;
+        }
+        .wm-email {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #475569;
+            margin-top: 2px;
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Pagination */
+        .bottom-pagination-bar {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.96);
+            backdrop-filter: blur(8px);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 6px 14px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 60;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        }
+        .btn-page-nav {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 5px 12px;
+            border-radius: var(--radius-sm);
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.12s ease;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .btn-page-nav:hover { background: var(--accent-light); border-color: var(--accent); color: var(--accent); }
+        .page-counter-capsule { font-size: 0.82rem; font-weight: 500; color: var(--text-main); display: flex; align-items: center; gap: 4px; }
+        .page-input-inline {
+            width: 42px;
+            padding: 3px;
+            text-align: center;
+            background: var(--bg-shell);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            color: var(--text-main);
+            font-weight: 600;
+            font-size: 0.82rem;
+            font-family: 'Inter', sans-serif;
+        }
+        .page-input-inline:focus { border-color: var(--accent); outline: none; }
+
+        /* --- Right Panel: Notes --- */
+        .panel-right {
+            width: 280px;
+            background: var(--bg-panel);
+            border-left: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            transition: width 0.2s ease;
+            flex-shrink: 0;
+            z-index: 40;
+        }
+        .panel-right.collapsed { width: 0; border: none; overflow: hidden; }
+
+        .notes-header-sub {
+            padding: 14px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .notes-title-h3 { font-size: 0.9rem; font-weight: 600; color: var(--text-main); }
+
+        .notes-scroll-list {
+            padding: 12px;
+            overflow-y: auto;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .note-card {
+            background: var(--bg-shell);
+            border-radius: var(--radius-md);
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-left: 3px solid var(--accent);
+            transition: box-shadow 0.12s ease;
+        }
+        .note-card:hover { box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+        .note-card.border-yellow { border-left-color: #d4a017; }
+        .note-card.border-blue { border-left-color: #5b8fa8; }
+        .note-card.border-pink { border-left-color: #c06080; }
+
+        .note-top-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.7rem;
+            color: var(--text-sub);
+            font-weight: 500;
+            margin-bottom: 6px;
+        }
+        .note-content-text { font-size: 0.82rem; color: var(--text-main); font-weight: 400; line-height: 1.45; background: #ffffff; padding: 8px 10px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); }
+
+        .note-actions { display: flex; justify-content: flex-end; gap: 6px; margin-top: 6px; }
+        .btn-note-icon { background: transparent; border: none; color: var(--text-sub); font-size: 0.78rem; cursor: pointer; transition: color 0.12s ease; }
+        .btn-note-icon:hover { color: #dc2626; }
+
+        .notes-footer-action {
+            padding: 12px;
+            border-top: 1px solid var(--border-color);
+        }
+        .btn-add-note {
+            width: 100%;
+            padding: 8px 14px;
+            border-radius: var(--radius-md);
+            background: transparent;
+            border: 1px dashed var(--border-color);
+            color: var(--text-sub);
+            font-size: 0.82rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.12s ease;
+            text-align: center;
+            font-family: 'Inter', sans-serif;
+        }
+        .btn-add-note:hover { background: var(--accent-light); border-color: var(--accent); color: var(--accent); }
+
+        /* Loader */
+        .loader-stage {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 60vh;
+            color: var(--text-muted);
+            text-align: center;
+            gap: 12px;
+        }
+        .spinner-ring {
+            width: 32px;
+            height: 32px;
+            border: 3px solid var(--border-color);
+            border-top: 3px solid var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        /* === Responsive === */
+        @media (max-width: 1100px) {
+            .panel-left, .panel-right { width: 220px; }
+        }
+        @media (max-width: 850px) {
+            .panel-left { position: absolute; left: 0; top: 0; bottom: 0; width: 260px; box-shadow: 4px 0 12px rgba(0,0,0,0.08); }
+            .panel-right { position: absolute; right: 0; top: 0; bottom: 0; width: 260px; box-shadow: -4px 0 12px rgba(0,0,0,0.08); }
+            .panel-left.collapsed, .panel-right.collapsed { width: 0; transform: translateX(-100%); }
+            .panel-right.collapsed { transform: translateX(100%); }
+            .navbar-center { display: none; }
+            .toolbar-group:nth-child(2) { display: none; }
+        }
+
+        /* === Custom Note Modal === */
+        .note-modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.45);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            z-index: 9000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.18s ease;
+        }
+        .note-modal-backdrop.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .note-modal-box {
+            background: #ffffff;
+            border-radius: 14px;
+            width: 460px;
+            max-width: calc(100vw - 32px);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.14), 0 4px 16px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.05);
+            overflow: hidden;
+            transform: translateY(12px) scale(0.97);
+            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .note-modal-backdrop.open .note-modal-box {
+            transform: translateY(0) scale(1);
+        }
+        .note-modal-header {
+            padding: 18px 20px 14px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .note-modal-title {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+        }
+        .note-modal-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: var(--accent-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent);
+        }
+        .note-modal-title h3 {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+        .note-modal-title p {
+            font-size: 0.75rem;
+            color: var(--text-sub);
+            font-weight: 400;
+            margin-top: 1px;
+        }
+        .note-modal-close {
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            background: transparent;
+            color: var(--text-sub);
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.12s ease;
+            line-height: 1;
+        }
+        .note-modal-close:hover { background: #fef2f2; color: #dc2626; border-color: #fecaca; }
+        .note-modal-body {
+            padding: 16px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+        .note-color-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .note-color-label {
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: var(--text-sub);
+            width: 44px;
+            flex-shrink: 0;
+        }
+        .note-color-options {
+            display: flex;
+            gap: 7px;
+        }
+        .note-color-opt {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: transform 0.12s ease, border-color 0.12s ease;
+            position: relative;
+        }
+        .note-color-opt:hover { transform: scale(1.15); }
+        .note-color-opt.selected {
+            border-color: var(--text-main);
+            transform: scale(1.1);
+        }
+        .note-color-opt.selected::after {
+            content: '';
+            position: absolute;
+            inset: 3px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.5);
+        }
+        .note-color-opt-yellow { background: #fbbf24; }
+        .note-color-opt-blue   { background: #6ba3be; }
+        .note-color-opt-pink   { background: #e879a0; }
+        .note-color-opt-green  { background: #4ade80; }
+        .note-type-row {
+            display: flex;
+            gap: 7px;
+        }
+        .note-type-chip {
+            padding: 5px 12px;
+            border-radius: 999px;
+            border: 1px solid var(--border-color);
+            background: transparent;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            font-weight: 500;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.12s ease;
+        }
+        .note-type-chip:hover { background: var(--accent-light); border-color: var(--accent); color: var(--accent); }
+        .note-type-chip.selected { background: var(--accent-light); border-color: var(--accent); color: var(--accent); font-weight: 600; }
+        .note-textarea-wrap {
+            position: relative;
+        }
+        .note-modal-textarea {
+            width: 100%;
+            min-height: 110px;
+            padding: 11px 14px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-shell);
+            color: var(--text-main);
+            font-size: 0.85rem;
+            font-family: 'Inter', sans-serif;
+            line-height: 1.55;
+            resize: vertical;
+            outline: none;
+            transition: border-color 0.15s ease, box-shadow 0.15s ease;
+            user-select: text;
+            -webkit-user-select: text;
+        }
+        .note-modal-textarea:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(79,109,122,0.1);
+        }
+        .note-modal-textarea::placeholder { color: var(--text-sub); }
+        .note-char-count {
+            position: absolute;
+            bottom: 8px;
+            right: 10px;
+            font-size: 0.68rem;
+            color: var(--text-sub);
+            pointer-events: none;
+        }
+        .note-modal-footer {
+            padding: 12px 20px 18px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+        .btn-note-cancel {
+            padding: 8px 18px;
+            border-radius: 7px;
+            border: 1px solid var(--border-color);
+            background: transparent;
+            color: var(--text-muted);
+            font-size: 0.82rem;
+            font-weight: 500;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.12s ease;
+        }
+        .btn-note-cancel:hover { background: var(--bg-shell); color: var(--text-main); }
+        .btn-note-save {
+            padding: 8px 20px;
+            border-radius: 7px;
+            border: none;
+            background: var(--accent);
+            color: white;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.12s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-note-save:hover { background: var(--primary-hover); transform: translateY(-1px); box-shadow: 0 3px 8px rgba(71,85,105,0.25); }
+        .btn-note-save:active { transform: translateY(0); }
+        .btn-note-save:disabled { opacity: 0.45; cursor: not-allowed; transform: none; box-shadow: none; }
+    </style>
+</head>
+
+<body oncontextmenu="return false;">
+
+    <!-- Top Navbar -->
+    <header class="top-navbar">
+        <div class="navbar-left">
+            <div class="brand-logo-box">S</div>
+            <div class="brand-title">Skillox<span>Study</span></div>
+            <button class="btn-toggle-panel active" id="btn-toggle-toc" onclick="toggleLeftPanel()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+                <span>Contents</span>
+            </button>
+        </div>
+
+        <div class="navbar-center">
+            <span class="search-icon">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            </span>
+            <input type="text" class="search-input" id="search-textbook" placeholder="Search document...">
+        </div>
+
+        <div class="navbar-right">
+            <button class="btn-toggle-panel active" id="btn-toggle-notes" onclick="toggleRightPanel()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+                <span>Notes</span>
+            </button>
+            <div class="user-profile-badge" title="Logged in as">
+                <div class="user-avatar-circle" id="user-initial">S</div>
+                <div class="user-email-text" id="navbar-email-display">user@skillox.com</div>
+            </div>
+            <button class="btn-close-app" onclick="window.close()" title="Close Viewer">×</button>
+        </div>
+    </header>
+
+    <!-- Workspace -->
+    <main class="workspace-body">
+
+        <!-- Left Panel: Table of Contents -->
+        <aside class="panel-left" id="toc-panel">
+            <div class="panel-header">
+                <span>Table of Contents</span>
+                <button class="btn-panel-close" onclick="toggleLeftPanel()" title="Hide">×</button>
+            </div>
+            <div class="toc-doc-title-box">
+                <div class="toc-doc-title" id="display-doc-title">Document Title</div>
+            </div>
+            <nav class="toc-tree" id="toc-tree">
+                <!-- Dynamically generated chapter links -->
+                <div class="toc-item active" onclick="jumpToPageNumber(1)">
+                    <span>> Chapter 1: Foundations</span>
+                    <span class="toc-page-num">p. 1</span>
+                </div>
+                <div class="toc-item" onclick="jumpToPageNumber(3)">
+                    <span>v Chapter 2: Core Concepts</span>
+                    <span class="toc-page-num">p. 3</span>
+                </div>
+                <div class="toc-item sub-item" onclick="jumpToPageNumber(4)">
+                    <span>2.1 Theoretical Overview</span>
+                    <span class="toc-page-num">p. 4</span>
+                </div>
+                <div class="toc-item sub-item" onclick="jumpToPageNumber(6)">
+                    <span>2.2 Formula Derivations</span>
+                    <span class="toc-page-num">p. 6</span>
+                </div>
+                <div class="toc-item sub-item" onclick="jumpToPageNumber(8)">
+                    <span>2.3 NCERT Exercises</span>
+                    <span class="toc-page-num">p. 8</span>
+                </div>
+                <div class="toc-item" onclick="jumpToPageNumber(12)">
+                    <span>> Chapter 3: Practice & Tests</span>
+                    <span class="toc-page-num">p. 12</span>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Center: Reading Pane -->
+        <section class="pane-reading-stage">
+            
+            <!-- Toolbar -->
+            <div class="toolbar-container">
+                <div class="toolbar-capsule">
+                    
+                    <!-- Highlight Tools -->
+                    <div class="toolbar-group">
+                        <div class="color-pills-row">
+                            <div class="color-pill pill-yellow" title="Highlight Yellow" onclick="addQuickAnnotation('Highlight Yellow')"></div>
+                            <div class="color-pill pill-pink" title="Highlight Pink" onclick="addQuickAnnotation('Highlight Pink', 'pink')"></div>
+                            <div class="color-pill pill-blue" title="Highlight Blue" onclick="addQuickAnnotation('Highlight Blue', 'blue')"></div>
+                        </div>
+                        <button class="tool-btn" onclick="promptCustomNote()">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                            <span>Note</span>
+                        </button>
+                        <button class="tool-btn" onclick="addQuickAnnotation('Saved Bookmark', 'yellow')">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
+                            <span>Bookmark</span>
+                        </button>
+                    </div>
+
+                    <!-- View Options -->
+                    <div class="toolbar-group">
+                        <button class="tool-btn" onclick="applyFit('width')">Fit Width</button>
+                        <button class="tool-btn" onclick="applyFit('page')">Fit Page</button>
+                    </div>
+
+                    <!-- Zoom -->
+                    <div class="zoom-controls">
+                        <button class="btn-zoom" onclick="changeZoom(-0.25)" title="Zoom Out">−</button>
+                        <span class="zoom-display" id="zoom-percent-text">100%</span>
+                        <button class="btn-zoom" onclick="changeZoom(0.25)" title="Zoom In">+</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PDF Viewport -->
+            <div class="pdf-scroll-viewport" id="pdf-viewport">
+                
+                <div class="loader-stage" id="loader">
+                    <div class="spinner-ring"></div>
+                    <h2 style="font-size: 1.1rem; font-weight: 600;">Loading document...</h2>
+                    <p style="font-size: 0.85rem;">Preparing your study material.</p>
+                </div>
+
+                <div id="pdf-container" style="position: relative; width: 100%; display: flex; flex-direction: column; align-items: center;">
+                    <!-- Dynamically rendered PDF canvases will go here -->
+                    <!-- Watermark Overlay -->
+                    <div class="secure-watermark-overlay" id="watermark-grid-container">
+                        <!-- Watermark tiles injected via JS -->
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Pagination -->
+            <div class="bottom-pagination-bar">
+                <button class="btn-page-nav" onclick="changePageBy(-1)">
+                    <span>← Prev</span>
+                </button>
+                <div class="page-counter-capsule">
+                    <span>Page</span>
+                    <input type="number" id="page-input" class="page-input-inline" min="1" value="1" onchange="jumpToPageNumber(parseInt(this.value))">
+                    <span id="total-pages-display">/ ?</span>
+                </div>
+                <button class="btn-page-nav" onclick="changePageBy(1)">
+                    <span>Next →</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- Right Panel: Notes -->
+        <aside class="panel-right" id="notes-panel">
+            <div class="panel-header">
+                <span>Notes</span>
+                <span style="cursor:pointer; color:var(--text-sub); font-weight:600;" title="More options">•••</span>
+            </div>
+            <div class="notes-header-sub">
+                <span class="notes-title-h3">Study Notes</span>
+            </div>
+            <div class="notes-scroll-list" id="notes-list-container">
+                <!-- Saved user notes and annotations load here -->
+                <div class="note-card border-yellow" id="default-note-1">
+                    <div class="note-top-meta">
+                        <span>(p. 1) Highlight • Core Topic</span>
+                        <span>Just now</span>
+                    </div>
+                    <div class="note-content-text">[Fluid Mosaic Model & Membrane Structure]</div>
+                    <div class="note-actions">
+                        <button class="btn-note-icon" onclick="deleteNoteCard('default-note-1')">🗑️</button>
+                    </div>
+                </div>
+
+                <div class="note-card border-blue" id="default-note-2">
+                    <div class="note-top-meta">
+                        <span>(p. 2) Note • Exam Tip</span>
+                        <span>5 mins ago</span>
+                    </div>
+                    <div class="note-content-text">[Important definition: Lipid raft composition & proteins]</div>
+                    <div class="note-actions">
+                        <button class="btn-note-icon" onclick="deleteNoteCard('default-note-2')">🗑️</button>
+                    </div>
+                </div>
+            </div>
+            <div class="notes-footer-action">
+                <button class="btn-add-note" onclick="promptCustomNote()">+ Add note for this page</button>
+            </div>
+        </aside>
+
+    </main>
+
+    <!-- ===== Custom Add Note Modal ===== -->
+    <div class="note-modal-backdrop" id="note-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="note-modal-heading">
+        <div class="note-modal-box" id="note-modal-box">
+
+            <!-- Header -->
+            <div class="note-modal-header">
+                <div class="note-modal-title">
+                    <div class="note-modal-icon">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 id="note-modal-heading">Add Study Note</h3>
+                        <p id="note-modal-page-label">Page 1</p>
+                    </div>
+                </div>
+                <button class="note-modal-close" id="note-modal-close-btn" title="Close" aria-label="Close modal">&times;</button>
+            </div>
+
+            <!-- Body -->
+            <div class="note-modal-body">
+
+                <!-- Note type chips -->
+                <div class="note-type-row">
+                    <button class="note-type-chip selected" data-type="Custom Note">📝 Note</button>
+                    <button class="note-type-chip" data-type="Important">⭐ Important</button>
+                    <button class="note-type-chip" data-type="Exam Tip">🎯 Exam Tip</button>
+                    <button class="note-type-chip" data-type="Formula">📐 Formula</button>
+                </div>
+
+                <!-- Color selector -->
+                <div class="note-color-row">
+                    <span class="note-color-label">Color</span>
+                    <div class="note-color-options">
+                        <div class="note-color-opt note-color-opt-yellow selected" data-color="yellow" title="Yellow"></div>
+                        <div class="note-color-opt note-color-opt-blue" data-color="blue" title="Blue"></div>
+                        <div class="note-color-opt note-color-opt-pink" data-color="pink" title="Pink"></div>
+                        <div class="note-color-opt note-color-opt-green" data-color="green" title="Green"></div>
+                    </div>
+                </div>
+
+                <!-- Textarea -->
+                <div class="note-textarea-wrap">
+                    <textarea
+                        class="note-modal-textarea"
+                        id="note-modal-textarea"
+                        placeholder="Write your study note here..."
+                        maxlength="500"
+                        aria-label="Note text"
+                    ></textarea>
+                    <span class="note-char-count" id="note-char-count">0 / 500</span>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="note-modal-footer">
+                <button class="btn-note-cancel" id="note-modal-cancel-btn">Cancel</button>
+                <button class="btn-note-save" id="note-modal-save-btn" disabled>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                    Save Note
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Configuration and Backend Base URL -->
+    <script src="config.js"></script>
+    <!-- PDF.js Library â€” Sequential CDN Fallback Chain (load ONE, fallback to next on error) -->
+    <script>
+        (function loadPdfJs() {
+            const cdns = [
+                'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js',
+                'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js',
+                'https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.min.js'
+            ];
+            let idx = 0;
+            function tryNext() {
+                if (idx >= cdns.length) {
+                    console.error('All PDF.js CDNs failed to load.');
+                    return;
+                }
+                const script = document.createElement('script');
+                script.src = cdns[idx];
+                script.onload = function() {
+                    console.log('PDF.js loaded from:', cdns[idx]);
+                    window._pdfJsLoaded = true;
+                    // Dispatch custom event so init code knows library is ready
+                    window.dispatchEvent(new Event('pdfjsready'));
+                };
+                script.onerror = function() {
+                    console.warn('PDF.js CDN failed:', cdns[idx]);
+                    idx++;
+                    tryNext();
+                };
+                document.head.appendChild(script);
+            }
+            tryNext();
+        })();
+    </script>
+    <script>
+        /* ===================================================================
+           SKILLOX SECURE STUDY VIEWER & ANNOTATION ENGINE
+           =================================================================== */
+
+        // 1. SECURITY MEASURES: Block shortcuts and inspection
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && ['s', 'p', 'u'].includes(e.key.toLowerCase())) {
+                e.preventDefault();
+                alert('ðŸ›¡ï¸ Security Protection: Downloading and printing are disabled for premium Skillox study material.');
+            }
+            if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && e.key === 'I')) {
+                e.preventDefault();
+            }
+        });
+
+        // 2. USER GMAIL IDENTITY & WATERMARK GENERATION (Executed immediately!)
+        const userEmail = localStorage.getItem('skillox_auth_email') || sessionStorage.getItem('skillox_auth_email') || 'student.study@gmail.com';
+        try {
+            const emailElem = document.getElementById('navbar-email-display');
+            const initialElem = document.getElementById('user-initial');
+            if (emailElem) emailElem.textContent = userEmail;
+            if (initialElem) initialElem.textContent = userEmail.charAt(0).toUpperCase();
+
+            // Inject 15 repeating watermark tiles over the entire canvas grid
+            const wmContainer = document.getElementById('watermark-grid-container');
+            if (wmContainer) {
+                wmContainer.innerHTML = '';
+                for (let i = 0; i < 15; i++) {
+                    const tile = document.createElement('div');
+                    tile.className = 'watermark-tile';
+                    tile.innerHTML = `
+                        <div class="wm-brand">SKILLOX STUDY</div>
+                        <div class="wm-email">${userEmail}</div>
+                    `;
+                    wmContainer.appendChild(tile);
+                }
+            }
+        } catch (e) { console.error('Error initializing user watermark badge:', e); }
+
+        // 3. UI PANELS TOGGLE CONTROLS
+        function toggleLeftPanel() {
+            const panel = document.getElementById('toc-panel');
+            const btn = document.getElementById('btn-toggle-toc');
+            if (panel && btn) {
+                panel.classList.toggle('collapsed');
+                btn.classList.toggle('active', !panel.classList.contains('collapsed'));
+            }
+        }
+
+        function toggleRightPanel() {
+            const panel = document.getElementById('notes-panel');
+            const btn = document.getElementById('btn-toggle-notes');
+            if (panel && btn) {
+                panel.classList.toggle('collapsed');
+                btn.classList.toggle('active', !panel.classList.contains('collapsed'));
+            }
+        }
+
+        function toggleDarkModeStyle() {
+            const currentBg = document.body.style.backgroundColor;
+            if (!currentBg || currentBg === '' || currentBg === 'var(--bg-shell)') {
+                document.body.style.backgroundColor = '#030712';
+                document.querySelector('.pane-reading-stage').style.backgroundColor = '#000000';
+            } else {
+                document.body.style.backgroundColor = '';
+                document.querySelector('.pane-reading-stage').style.backgroundColor = '';
+            }
+        }
+
+        // 4. DOCUMENT & ZOOM STATE MANAGEMENT
+        let currentScale = window.innerWidth < 850 ? 1.1 : 1.5;
+        let currentPageIndex = 1;
+        let totalDocumentPages = 1;
+        let pdfDocInstance = null;
+        const pageCanvases = [];
+
+        function changeZoom(delta) {
+            currentScale = Math.max(0.6, Math.min(3.0, currentScale + delta));
+            const zoomEl = document.getElementById('zoom-percent-text');
+            if (zoomEl) zoomEl.textContent = Math.round(currentScale * 100) + '%';
+            if (pdfDocInstance) {
+                renderAllPdfPages(pdfDocInstance, currentScale);
+            }
+        }
+
+        function applyFit(type) {
+            if (type === 'width') {
+                currentScale = window.innerWidth < 850 ? 1.0 : 1.65;
+            } else {
+                currentScale = 1.25;
+            }
+            const zoomEl = document.getElementById('zoom-percent-text');
+            if (zoomEl) zoomEl.textContent = Math.round(currentScale * 100) + '%';
+            if (pdfDocInstance) renderAllPdfPages(pdfDocInstance, currentScale);
+        }
+
+        // 5. PAGE NAVIGATION & JUMPING
+        function jumpToPageNumber(pageNum) {
+            if (!pdfDocInstance) return;
+            pageNum = Math.max(1, Math.min(totalDocumentPages, pageNum));
+            currentPageIndex = pageNum;
+            const inputEl = document.getElementById('page-input');
+            if (inputEl) inputEl.value = pageNum;
+            
+            const targetCanvas = document.getElementById('page-canvas-' + pageNum);
+            const viewport = document.getElementById('pdf-viewport');
+            if (targetCanvas && viewport) {
+                targetCanvas.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+
+            document.querySelectorAll('.toc-item').forEach(item => item.classList.remove('active'));
+        }
+
+        function changePageBy(delta) {
+            jumpToPageNumber(currentPageIndex + delta);
+        }
+
+        // 6. ANNOTATIONS & STUDY NOTES ENGINE (WITH LOCALSTORAGE)
+        const fileParamRaw = new URLSearchParams(window.location.search).get('file');
+        const titleParam = new URLSearchParams(window.location.search).get('title');
+        const fileParam = fileParamRaw ? fileParamRaw.replace(/\\/g, '/') : null;
+        const notesStorageKey = 'skillox_notes_' + (fileParam || 'default');
+
+        function loadSavedNotes() {
+            const saved = localStorage.getItem(notesStorageKey);
+            if (saved) {
+                try {
+                    const notes = JSON.parse(saved);
+                    const container = document.getElementById('notes-list-container');
+                    if (container) {
+                        container.innerHTML = '';
+                        notes.forEach(note => renderNoteCardDOM(note));
+                    }
+                } catch(e) { console.error('Error parsing saved notes', e); }
+            }
+        }
+
+        function saveNotesToStorage() {
+            const cards = document.querySelectorAll('#notes-list-container .note-card');
+            const notes = [];
+            cards.forEach(card => {
+                const metaEl = card.querySelector('.note-top-meta span:first-child');
+                const timeEl = card.querySelector('.note-top-meta span:last-child');
+                const textEl = card.querySelector('.note-content-text');
+                notes.push({
+                    id: card.id,
+                    colorClass: card.className.includes('border-pink') ? 'pink' : (card.className.includes('border-blue') ? 'blue' : 'yellow'),
+                    meta: metaEl ? metaEl.textContent : '',
+                    time: timeEl ? timeEl.textContent : 'Just now',
+                    text: textEl ? textEl.textContent : ''
+                });
+            });
+            localStorage.setItem(notesStorageKey, JSON.stringify(notes));
+        }
+
+        function renderNoteCardDOM(note) {
+            const container = document.getElementById('notes-list-container');
+            if (!container) return;
+            const card = document.createElement('div');
+            card.className = `note-card border-${note.colorClass || 'yellow'}`;
+            card.id = note.id || 'note-' + Date.now();
+            card.innerHTML = `
+                <div class="note-top-meta">
+                    <span>${note.meta}</span>
+                    <span>${note.time}</span>
+                </div>
+                <div class="note-content-text">${note.text}</div>
+                <div class="note-actions">
+                    <button class="btn-note-icon" onclick="deleteNoteCard('${card.id}')">ðŸ—‘ï¸</button>
+                </div>
+            `;
+            container.prepend(card);
+        }
+
+        function addQuickAnnotation(title, color = 'yellow') {
+            const newNote = {
+                id: 'note-' + Date.now(),
+                colorClass: color,
+                meta: `(p. ${currentPageIndex}) ${title}`,
+                time: 'Just now',
+                text: `[Saved marker on page ${currentPageIndex}]`
+            };
+            renderNoteCardDOM(newNote);
+            saveNotesToStorage();
+        }
+
+        // ─── Custom Note Modal Logic ───────────────────────────────────────────
+        (function initNoteModal() {
+            const backdrop    = document.getElementById('note-modal-backdrop');
+            const closeBtn    = document.getElementById('note-modal-close-btn');
+            const cancelBtn   = document.getElementById('note-modal-cancel-btn');
+            const saveBtn     = document.getElementById('note-modal-save-btn');
+            const textarea    = document.getElementById('note-modal-textarea');
+            const charCount   = document.getElementById('note-char-count');
+            const pageLabel   = document.getElementById('note-modal-page-label');
+            const typeChips   = document.querySelectorAll('.note-type-chip');
+            const colorOpts   = document.querySelectorAll('.note-color-opt');
+
+            let selectedType  = 'Custom Note';
+            let selectedColor = 'yellow';
+
+            // Type chip selection
+            typeChips.forEach(chip => {
+                chip.addEventListener('click', () => {
+                    typeChips.forEach(c => c.classList.remove('selected'));
+                    chip.classList.add('selected');
+                    selectedType = chip.dataset.type;
+                });
+            });
+
+            // Color option selection
+            colorOpts.forEach(opt => {
+                opt.addEventListener('click', () => {
+                    colorOpts.forEach(o => o.classList.remove('selected'));
+                    opt.classList.add('selected');
+                    selectedColor = opt.dataset.color;
+                });
+            });
+
+            // Character counter & save button state
+            textarea.addEventListener('input', () => {
+                const len = textarea.value.length;
+                charCount.textContent = len + ' / 500';
+                saveBtn.disabled = len.toString().trim() === '0' || textarea.value.trim() === '';
+            });
+
+            // Close helpers
+            function closeModal() {
+                backdrop.classList.remove('open');
+                setTimeout(() => {
+                    textarea.value = '';
+                    charCount.textContent = '0 / 500';
+                    saveBtn.disabled = true;
+                    // Reset chips & colors to defaults
+                    typeChips.forEach(c => c.classList.remove('selected'));
+                    typeChips[0].classList.add('selected');
+                    selectedType = 'Custom Note';
+                    colorOpts.forEach(o => o.classList.remove('selected'));
+                    colorOpts[0].classList.add('selected');
+                    selectedColor = 'yellow';
+                }, 200);
+            }
+
+            closeBtn.addEventListener('click', closeModal);
+            cancelBtn.addEventListener('click', closeModal);
+
+            // Close on backdrop click (outside the box)
+            backdrop.addEventListener('click', (e) => {
+                if (e.target === backdrop) closeModal();
+            });
+
+            // Close on Escape key
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && backdrop.classList.contains('open')) closeModal();
+            });
+
+            // Save note
+            saveBtn.addEventListener('click', () => {
+                const text = textarea.value.trim();
+                if (!text) return;
+                const newNote = {
+                    id: 'note-' + Date.now(),
+                    colorClass: selectedColor,
+                    meta: `(p. ${currentPageIndex}) ${selectedType}`,
+                    time: 'Just now',
+                    text: text
+                };
+                renderNoteCardDOM(newNote);
+                saveNotesToStorage();
+                // Auto-open notes panel so user sees their new note
+                const notesPanel = document.getElementById('notes-panel');
+                const notesBtn   = document.getElementById('btn-toggle-notes');
+                if (notesPanel && notesPanel.classList.contains('collapsed')) {
+                    notesPanel.classList.remove('collapsed');
+                    if (notesBtn) notesBtn.classList.add('active');
+                }
+                closeModal();
+            });
+
+            // Expose open function to global scope
+            window._openNoteModal = function(pageNum) {
+                pageLabel.textContent = 'Page ' + pageNum;
+                backdrop.classList.add('open');
+                // Focus textarea after animation
+                setTimeout(() => textarea.focus(), 220);
+            };
+        })();
+
+        function promptCustomNote() {
+            window._openNoteModal(currentPageIndex);
+        }
+
+        function deleteNoteCard(id) {
+            const el = document.getElementById(id);
+            if (el) {
+                el.remove();
+                saveNotesToStorage();
+            }
+        }
+
+        // 7. SAFE PDF.JS INITIALIZATION & SUPABASE FETCH
+        function initializePdfReader() {
+            const loader = document.getElementById('loader');
+
+            if (!fileParam) {
+                if (loader) loader.innerHTML = '<h2>No Study PDF Specified</h2><p style="margin-top:8px; color:#94a3b8;">Please launch this reader by selecting a study guide from the main library.</p><br><button onclick="window.close()" style="padding:11px 24px; background:var(--primary); color:white; border:none; border-radius:10px; font-weight:700; cursor:pointer;">Close Viewer</button>';
+                return;
+            }
+
+            // Display clean title from URL parameters or file name
+            const cleanTitle = titleParam ? titleParam : fileParam.split('/').pop().replace(/[-_]/g, ' ').replace(/\.pdf$/i, '').toUpperCase();
+            const docTitleEl = document.getElementById('display-doc-title');
+            if (docTitleEl) docTitleEl.textContent = cleanTitle || 'CBSE Study & Revision Guide';
+
+            // Wait for PDF.js library to load via the CDN fallback chain
+            if (typeof pdfjsLib === 'undefined') {
+                // If the CDN fallback chain hasn't fired yet, wait for it
+                if (!window._pdfJsWaiting) {
+                    window._pdfJsWaiting = true;
+                    window.addEventListener('pdfjsready', function() {
+                        initializePdfReader();
+                    });
+                    // Also set a timeout fallback in case the event was already fired
+                    setTimeout(function checkPdfJs() {
+                        if (typeof pdfjsLib !== 'undefined') {
+                            initializePdfReader();
+                        } else {
+                            // Keep polling for up to 15 seconds total
+                            if (!window._pdfJsTimeout) window._pdfJsTimeout = 0;
+                            window._pdfJsTimeout += 300;
+                            if (window._pdfJsTimeout < 15000) {
+                                setTimeout(checkPdfJs, 300);
+                            } else {
+                                if (loader) loader.innerHTML = '<h2>PDF Library Failed to Load</h2><p style="margin-top:8px; color:#cbd5e1;">Could not connect to document rendering CDNs. Please verify internet connectivity.</p><br><button onclick="window.location.reload()" style="padding:11px 24px; background:var(--primary); color:white; border:none; border-radius:10px; font-weight:700; cursor:pointer;">Reload Reader</button>';
+                            }
+                        }
+                    }, 300);
+                }
+                return;
+            }
+
+            // Prevent double-init
+            if (window._pdfInitStarted) return;
+            window._pdfInitStarted = true;
+
+            try {
+                pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+            } catch(e) { console.error('Worker init notice:', e); }
+
+            const baseUrl = (typeof API_BASE_URL !== 'undefined') ? API_BASE_URL : '';
+
+            // Securely fetch URL from Supabase backend with session cookies and proxy stream fallback
+            fetch(`${baseUrl}/api/pdf-url?file=${encodeURIComponent(fileParam)}`, { credentials: 'include' })
+                .then(async response => {
+                    const data = await response.json().catch(() => ({}));
+                    if (response.status === 401) {
+                        throw new Error('Unauthorized access. Please make sure you are logged into your Skillox account.');
+                    }
+                    if (response.status === 403) {
+                        throw new Error(data.error || 'Access strictly denied.');
+                    }
+                    if (!response.ok || !data.success || !data.url) {
+                        throw new Error(data.error || 'Unable to secure PDF connection from Supabase servers.');
+                    }
+
+                    const targetUrl = data.url.startsWith('/') ? (baseUrl + data.url) : data.url;
+                    const isSameOrigin = targetUrl.startsWith('/') || targetUrl.startsWith(window.location.origin);
+                    const pdfOptions = {
+                        url: targetUrl,
+                        withCredentials: !isSameOrigin,  // Only set for cross-origin requests; same-origin sends cookies automatically
+                        disableRange: true,     // Essential for Supabase & cloud proxy streams to prevent Range CORS failures
+                        disableStream: true     // Complete download before rendering ensures stability & avoids chunk errors
+                    };
+
+                    try {
+                        return await pdfjsLib.getDocument(pdfOptions).promise;
+                    } catch (primaryErr) {
+                        console.warn('Primary stream error, trying fallback Supabase URL:', primaryErr);
+                        if (data.fallbackUrl || data.signedUrl) {
+                            return await pdfjsLib.getDocument({
+                                url: data.fallbackUrl || data.signedUrl,
+                                disableRange: true,
+                                disableStream: true,
+                                withCredentials: false
+                            }).promise;
+                        }
+                        throw primaryErr;
+                    }
+                })
+                .then(async pdfDoc => {
+                    pdfDocInstance = pdfDoc;
+                    totalDocumentPages = pdfDoc.numPages;
+                    const totalPagesEl = document.getElementById('total-pages-display');
+                    const pageInputEl = document.getElementById('page-input');
+                    if (totalPagesEl) totalPagesEl.textContent = '/ ' + totalDocumentPages;
+                    if (pageInputEl) pageInputEl.max = totalDocumentPages;
+
+                    if (loader) loader.style.display = 'none';
+                    await renderAllPdfPages(pdfDoc, currentScale);
+
+                    // Load saved study notes
+                    loadSavedNotes();
+                })
+                .catch(err => {
+                    if (loader) {
+                        const isLoginErr = (err.message && err.message.toLowerCase().includes('logged in')) || (err.message && err.message.toLowerCase().includes('unauthorized'));
+                        const actionBtn = isLoginErr 
+                            ? `<button onclick="window.opener ? window.close() : (window.location.href='index.html')" style="padding:11px 24px; background:var(--primary); color:white; border:none; border-radius:10px; font-weight:700; cursor:pointer; margin-top:12px;">Log In to Skillox</button>`
+                            : `<button onclick="window.location.reload()" style="padding:11px 24px; background:var(--primary); color:white; border:none; border-radius:10px; font-weight:700; cursor:pointer; margin-top:12px;">Retry Loading</button>`;
+                        
+                        loader.innerHTML = `<h2>Study Access Notice</h2><p style="margin-top:8px; max-width:480px; color:#cbd5e1;">${err.message || 'Connecting to study backend servers...'}</p>${actionBtn}`;
+                    }
+                    console.error('Supabase Document Load Error:', err);
+                });
+        }
+
+        async function renderAllPdfPages(pdfDoc, scale) {
+            const container = document.getElementById('pdf-container');
+            if (!container) return;
+            const existingCanvases = container.querySelectorAll('.canvas-card-wrapper');
+            existingCanvases.forEach(c => c.remove());
+            pageCanvases.length = 0;
+
+            for (let num = 1; num <= pdfDoc.numPages; num++) {
+                const page = await pdfDoc.getPage(num);
+                const viewport = page.getViewport({ scale });
+
+                const canvas = document.createElement('canvas');
+                canvas.id = 'page-canvas-' + num;
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+
+                const cardWrapper = document.createElement('div');
+                cardWrapper.className = 'canvas-card-wrapper';
+                cardWrapper.appendChild(canvas);
+
+                const wmGrid = document.getElementById('watermark-grid-container');
+                container.insertBefore(cardWrapper, wmGrid);
+                pageCanvases.push(canvas);
+
+                const renderCtx = {
+                    canvasContext: canvas.getContext('2d'),
+                    viewport: viewport
+                };
+                await page.render(renderCtx).promise;
+            }
+
+            setTimeout(() => {
+                const totalHeight = container.scrollHeight;
+                const tilesCount = Math.ceil(totalHeight / 240) * 3;
+                const wmGrid = document.getElementById('watermark-grid-container');
+                if (wmGrid) {
+                    wmGrid.innerHTML = '';
+                    for (let i = 0; i < Math.max(15, tilesCount); i++) {
+                        const tile = document.createElement('div');
+                        tile.className = 'watermark-tile';
+                        tile.innerHTML = `<div class="wm-brand">SKILLOX STUDY</div><div class="wm-email">${userEmail}</div>`;
+                        wmGrid.appendChild(tile);
+                    }
+                }
+            }, 500);
+        }
+
+        // Start initialization on load
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializePdfReader);
+        } else {
+            initializePdfReader();
+        }
+    </script>
+</body>
+</html>

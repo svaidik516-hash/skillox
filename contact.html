@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Support Center | Skillox</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css?v=24.0">
+    <style>
+        :root {
+            --orange-primary: #f97316;
+            --orange-hover: #ea580c;
+            --orange-light: #fff7ed;
+            --orange-border: #fed7aa;
+            --text-main: #0f172a;
+            --text-sub: #64748b;
+            --bg-page: #f8fafc;
+            --bg-card: #ffffff;
+            --border-color: #e2e8f0;
+            --input-fill: #f1f5f9;
+            --shadow-soft: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+            --shadow-hover: 0 10px 25px -3px rgba(249, 115, 22, 0.15);
+        }
+
+        body {
+            background-color: var(--bg-page);
+            font-family: 'Inter', sans-serif;
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Top Navigation Override for White Theme */
+        .support-nav {
+            background: #ffffff;
+            border-bottom: 1px solid var(--border-color);
+            padding: 0 5%;
+            height: 72px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .support-nav .logo-area {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            gap: 12px;
+        }
+
+        .support-nav .logo-badge {
+            width: 38px;
+            height: 38px;
+            background: linear-gradient(135deg, var(--orange-primary), var(--orange-hover));
+            color: white;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            font-size: 1.4rem;
+            box-shadow: 0 4px 10px rgba(249, 115, 22, 0.3);
+        }
+
+        .support-nav .logo-text {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin: 0;
+        }
+
+        .support-nav-links {
+            display: flex;
+            gap: 28px;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            align-items: center;
+        }
+
+        .support-nav-links a {
+            color: var(--text-main);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: color 0.2s;
+        }
+
+        .support-nav-links a:hover {
+            color: var(--orange-primary);
+        }
+
+        .nav-btn-support {
+            border: 2px solid var(--orange-primary) !important;
+            color: var(--orange-primary) !important;
+            padding: 6px 18px !important;
+            border-radius: 8px;
+            font-weight: 600 !important;
+            background: var(--orange-light);
+        }
+
+        /* Main Container */
+        .support-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 32px 4% 60px;
+        }
+
+        /* Breadcrumb & Header */
+        .breadcrumb {
+            font-size: 0.85rem;
+            color: var(--text-sub);
+            margin-bottom: 24px;
+        }
+
+        .breadcrumb a {
+            color: var(--text-sub);
+            text-decoration: none;
+        }
+
+        .support-header {
+            margin-bottom: 32px;
+        }
+
+        .support-header h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin: 0 0 16px;
+        }
+
+        .support-header .greeting {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-main);
+            margin: 0 0 24px;
+        }
+
+        .text-orange {
+            color: var(--orange-primary);
+        }
+
+        .header-divider {
+            height: 1px;
+            background: var(--border-color);
+            margin-bottom: 36px;
+        }
+
+        /* 2-Column Grid */
+        .support-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 36px;
+            align-items: start;
+        }
+
+        .section-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin: 0 0 20px;
+        }
+
+        /* Left Column: FAQs & Search */
+        .faq-search-wrapper {
+            position: relative;
+            margin-bottom: 24px;
+        }
+
+        .faq-search-wrapper input {
+            width: 100%;
+            padding: 14px 56px 14px 44px;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            background: #ffffff;
+            font-size: 0.95rem;
+            color: var(--text-main);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+            box-sizing: border-box;
+            transition: border 0.2s, box-shadow 0.2s;
+        }
+
+        .faq-search-wrapper input:focus {
+            outline: none;
+            border-color: var(--orange-primary);
+            box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.15);
+        }
+
+        .search-icon-left {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-sub);
+            width: 20px;
+            height: 20px;
+        }
+
+        .search-btn-right {
+            position: absolute;
+            right: 6px;
+            top: 6px;
+            bottom: 6px;
+            width: 40px;
+            background: var(--orange-primary);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .search-btn-right:hover {
+            background: var(--orange-hover);
+        }
+
+        /* Accordions */
+        .faq-accordion-group {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .accordion-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            box-shadow: var(--shadow-soft);
+            overflow: hidden;
+            transition: border-color 0.2s;
+        }
+
+        .accordion-card.expanded {
+            border-color: var(--orange-border);
+        }
+
+        .accordion-header {
+            padding: 18px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            user-select: none;
+            background: var(--bg-card);
+        }
+
+        .accordion-header-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            font-weight: 600;
+            font-size: 1.05rem;
+        }
+
+        .cat-icon-box {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            background: var(--orange-light);
+            color: var(--orange-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .accordion-chevron {
+            color: var(--text-sub);
+            transition: transform 0.3s;
+        }
+
+        .accordion-card.expanded .accordion-chevron {
+            transform: rotate(180deg);
+        }
+
+        .accordion-content {
+            display: none;
+            padding: 0 20px 20px;
+            border-top: 1px solid #f1f5f9;
+        }
+
+        .accordion-card.expanded .accordion-content {
+            display: block;
+        }
+
+        /* Individual QA Items */
+        .qa-item {
+            padding-top: 16px;
+            border-bottom: 1px dashed var(--border-color);
+            padding-bottom: 16px;
+        }
+
+        .qa-item:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .qa-question {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            color: var(--text-main);
+        }
+
+        .qa-toggle-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #f1f5f9;
+            color: var(--text-sub);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+            transition: background 0.2s, color 0.2s;
+            flex-shrink: 0;
+        }
+
+        .qa-item.active .qa-toggle-icon {
+            background: var(--orange-primary);
+            color: white;
+        }
+
+        .qa-answer {
+            display: none;
+            margin-top: 10px;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: var(--text-sub);
+        }
+
+        .qa-item.active .qa-answer {
+            display: block;
+        }
+
+        /* Right Column: Contact Card & Action Cards */
+        .message-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 28px;
+            box-shadow: var(--shadow-soft);
+            margin-bottom: 32px;
+        }
+
+        .message-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 22px;
+        }
+
+        .message-card-header h3 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .badge-message-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--orange-primary);
+            color: white;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(249, 115, 22, 0.25);
+        }
+
+        .form-grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .form-field {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 16px;
+        }
+
+        .form-field label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: var(--text-main);
+        }
+
+        .form-field input, .form-field select, .form-field textarea {
+            padding: 12px 14px;
+            border-radius: 10px;
+            border: 1px solid #cbd5e1;
+            background-color: var(--input-fill);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.92rem;
+            color: var(--text-main);
+            transition: border-color 0.2s, background 0.2s;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .form-field input:focus, .form-field select:focus, .form-field textarea:focus {
+            outline: none;
+            border-color: var(--orange-primary);
+            background-color: #ffffff;
+            box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.12);
+        }
+
+        .form-field textarea {
+            min-height: 110px;
+            resize: vertical;
+        }
+
+        .btn-ticket-submit {
+            width: 100%;
+            background: var(--orange-primary);
+            color: white;
+            border: none;
+            padding: 14px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+            box-shadow: 0 4px 14px rgba(249, 115, 22, 0.3);
+            margin-top: 6px;
+        }
+
+        .btn-ticket-submit:hover {
+            background: var(--orange-hover);
+            box-shadow: 0 6px 18px rgba(249, 115, 22, 0.4);
+        }
+
+        .btn-ticket-submit:disabled {
+            background: #94a3b8;
+            box-shadow: none;
+            cursor: not-allowed;
+        }
+
+        /* Community & Chat Cards */
+        .action-cards-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .support-action-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: var(--shadow-soft);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .support-action-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-hover);
+            border-color: var(--orange-border);
+        }
+
+        .icon-circle-badge {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: var(--orange-light);
+            color: var(--orange-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 16px;
+            border: 1px solid var(--orange-border);
+        }
+
+        .support-action-card h4 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin: 0 0 4px;
+        }
+
+        .support-action-card p {
+            font-size: 0.85rem;
+            color: var(--text-sub);
+            margin: 0 0 16px;
+        }
+
+        .status-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.82rem;
+            font-weight: 500;
+            color: var(--text-main);
+            margin-bottom: 20px;
+        }
+
+        .pulsing-dot {
+            width: 10px;
+            height: 10px;
+            background: #10b981;
+            border-radius: 50%;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+            display: inline-block;
+        }
+
+        .clock-icon {
+            color: var(--text-sub);
+            width: 16px;
+            height: 16px;
+        }
+
+        .btn-action-card {
+            width: 100%;
+            background: var(--orange-primary);
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            font-weight: 600;
+            font-size: 0.92rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+            box-shadow: 0 2px 8px rgba(249, 115, 22, 0.2);
+        }
+
+        .btn-action-card:hover {
+            background: var(--orange-hover);
+        }
+
+        /* Footer */
+        .support-footer {
+            border-top: 1px solid var(--border-color);
+            padding: 24px 0;
+            margin-top: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.88rem;
+            color: var(--text-sub);
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 24px;
+        }
+
+        .footer-links a {
+            color: var(--text-sub);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .footer-links a:hover {
+            color: var(--orange-primary);
+        }
+
+        /* Responsive Breakpoints */
+        @media (max-width: 968px) {
+            .support-grid {
+                grid-template-columns: 1fr;
+                gap: 40px;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .form-grid-2 {
+                grid-template-columns: 1fr;
+            }
+            .action-cards-grid {
+                grid-template-columns: 1fr;
+            }
+            .support-nav-links {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Top Navbar (Clean White Theme) -->
+    <nav class="support-nav">
+        <a href="index.html" class="logo-area">
+            <div class="logo-badge">S</div>
+            <span class="logo-text">Skillox</span>
+        </a>
+        <ul class="support-nav-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="textbooks.html">Textbooks</a></li>
+            <li><a href="revision.html">Quick Revision</a></li>
+            <li><a href="bookmarks.html">My Shelf</a></li>
+            <li><a href="contact.html" class="nav-btn-support">Support</a></li>
+            <li><a href="login.html">My Account</a></li>
+        </ul>
+    </nav>
+
+    <!-- Main Support Center Content -->
+    <div class="support-container">
+        
+        <div class="breadcrumb">
+            <a href="index.html">Help Center</a> &gt; <span>Support & FAQ</span>
+        </div>
+
+        <div class="support-header">
+            <h1>Student Support Center</h1>
+            <div class="greeting">Hi <span class="text-orange" id="user-greeting-name">Student</span>! How can we help you today?</div>
+            <div class="header-divider"></div>
+        </div>
+
+        <div class="support-grid">
+            
+            <!-- Left Column: Popular Help Topics & FAQ Accordions -->
+            <div class="left-column">
+                <h2 class="section-title">Popular Help Topics</h2>
+                
+                <!-- Search Box -->
+                <div class="faq-search-wrapper">
+                    <!-- Search Icon SVG -->
+                    <svg class="search-icon-left" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                    <input type="text" id="faq-search" placeholder="Search FAQs, articles, resources...">
+                    <button id="faq-search-btn" class="search-btn-right" aria-label="Search">
+                        <svg width="18" height="18" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Accordion Groups -->
+                <div class="faq-accordion-group" id="faq-container">
+                    
+                    <!-- Category 1: Study Assistance -->
+                    <div class="accordion-card expanded" data-category="study">
+                        <div class="accordion-header">
+                            <div class="accordion-header-left">
+                                <div class="cat-icon-box">
+                                    <svg width="20" height="20" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                                    </svg>
+                                </div>
+                                <span>Study Assistance</span>
+                            </div>
+                            <svg class="accordion-chevron" width="20" height="20" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </div>
+                        <div class="accordion-content">
+                            <div class="qa-item active">
+                                <div class="qa-question">
+                                    <span>How do I access course materials and textbooks?</span>
+                                    <div class="qa-toggle-icon">&minus;</div>
+                                </div>
+                                <div class="qa-answer">
+                                    To access study materials, navigate to the Textbooks or Quick Revision sections from the top navigation bar. Select your educational board (CBSE, ICSE, or UP Board) and choose your target subject to immediately view or download high-resolution notes and chapters.
+                                </div>
+                            </div>
+                            <div class="qa-item">
+                                <div class="qa-question">
+                                    <span>What do I do if I need last-minute revision formula sheets?</span>
+                                    <div class="qa-toggle-icon">&plus;</div>
+                                </div>
+                                <div class="qa-answer">
+                                    Our 'Quick Revision' section offers condensed formula flashcards and summary study sheets specifically curated for fast examination prep across Mathematics, Physics, Chemistry, and more.
+                                </div>
+                            </div>
+                            <div class="qa-item">
+                                <div class="qa-question">
+                                    <span>Can I download PDFs for offline study reading?</span>
+                                    <div class="qa-toggle-icon">&plus;</div>
+                                </div>
+                                <div class="qa-answer">
+                                    Yes! When viewing any textbook or coaching note in our PDF viewer, simply click the Download button in the toolbar to save a permanent local copy directly to your desktop or mobile device.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Category 2: Account & Profile -->
+                    <div class="accordion-card" data-category="account">
+                        <div class="accordion-header">
+                            <div class="accordion-header-left">
+                                <div class="cat-icon-box">
+                                    <svg width="20" height="20" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                    </svg>
+                                </div>
+                                <span>Account & Profile</span>
+                            </div>
+                            <svg class="accordion-chevron" width="20" height="20" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </div>
+                        <div class="accordion-content">
+                            <div class="qa-item">
+                                <div class="qa-question">
+                                    <span>How do I set up Two-Factor Authentication (2FA)?</span>
+                                    <div class="qa-toggle-icon">&plus;</div>
+                                </div>
+                                <div class="qa-answer">
+                                    Go to your account profile settings and select 'Security & 2FA'. You can enroll your preferred authenticator app or email OTP verification to protect your saved bookmarks and student progress.
+                                </div>
+                            </div>
+                            <div class="qa-item">
+                                <div class="qa-question">
+                                    <span>How do I reset my forgotten student password?</span>
+                                    <div class="qa-toggle-icon">&plus;</div>
+                                </div>
+                                <div class="qa-answer">
+                                    Click 'Log In' from the navigation bar, then select 'Forgot Password?'. Enter your registered email address to receive a secure recovery verification link immediately.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Category 3: Academic Material & Bookmarks -->
+                    <div class="accordion-card" data-category="material">
+                        <div class="accordion-header">
+                            <div class="accordion-header-left">
+                                <div class="cat-icon-box">
+                                    <svg width="20" height="20" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                                    </svg>
+                                </div>
+                                <span>Academic Shelf & Bookmarks</span>
+                            </div>
+                            <svg class="accordion-chevron" width="20" height="20" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </div>
+                        <div class="accordion-content">
+                            <div class="qa-item">
+                                <div class="qa-question">
+                                    <span>Where are my bookmarked chapters saved?</span>
+                                    <div class="qa-toggle-icon">&plus;</div>
+                                </div>
+                                <div class="qa-answer">
+                                    Whenever you click the bookmark ribbon icon on any textbook or document, it is automatically saved to your 'My Shelf' bookmarks page for one-click jumping back into your study session.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Category 4: Technical Support -->
+                    <div class="accordion-card" data-category="technical">
+                        <div class="accordion-header">
+                            <div class="accordion-header-left">
+                                <div class="cat-icon-box">
+                                    <svg width="20" height="20" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    </svg>
+                                </div>
+                                <span>Technical Support</span>
+                            </div>
+                            <svg class="accordion-chevron" width="20" height="20" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </div>
+                        <div class="accordion-content">
+                            <div class="qa-item">
+                                <div class="qa-question">
+                                    <span>What if a PDF document fails to load or shows a blank page?</span>
+                                    <div class="qa-toggle-icon">&plus;</div>
+                                </div>
+                                <div class="qa-answer">
+                                    Please verify your internet connection and clear your browser cache. If an asset continues to malfunction, report the specific textbook title using the 'Send Us a Message' ticket form on the right.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- Right Column: Get in Touch Form & Direct Community Support -->
+            <div class="right-column">
+                <h2 class="section-title">Get in Touch</h2>
+
+                <!-- Message Card -->
+                <div class="message-card">
+                    <div class="message-card-header">
+                        <h3>Send Us a Message</h3>
+                        <div class="badge-message-icon">
+                            <svg width="22" height="22" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                            </svg>
+                        </div>
+                    </div>
+
+                    <form id="contact-form">
+                        <div class="form-grid-2">
+                            <div class="form-field">
+                                <label for="contact-name">Name</label>
+                                <input type="text" id="contact-name" placeholder="Sarah Jenkins" required>
+                            </div>
+                            <div class="form-field">
+                                <label for="contact-email">Email</label>
+                                <input type="email" id="contact-email" placeholder="sarahj@uni.edu" required>
+                            </div>
+                        </div>
+                        <div class="form-field">
+                            <label for="contact-subject">Subject</label>
+                            <select id="contact-subject" required>
+                                <option value="Study Assistance">Select Option: "Study Assistance"</option>
+                                <option value="Textbook Inquiry">Textbook & Sample Paper Inquiry</option>
+                                <option value="Account & 2FA Help">Account & 2FA Security Help</option>
+                                <option value="Technical Bug Report">Technical Support & Bug Report</option>
+                                <option value="General Feedback">General Feedback & Suggestions</option>
+                            </select>
+                        </div>
+                        <div class="form-field">
+                            <label for="contact-message">Message</label>
+                            <textarea id="contact-message" placeholder="Type your question here..." required></textarea>
+                        </div>
+                        <button type="submit" id="contact-submit" class="btn-ticket-submit">Submit Ticket</button>
+                    </form>
+                </div>
+
+                <h2 class="section-title">Direct Community & Chat Support</h2>
+
+                <!-- Action Cards -->
+                <div class="action-cards-grid">
+                    
+                    <!-- Card 1: Community Forums -->
+                    <div class="support-action-card">
+                        <div>
+                            <div class="icon-circle-badge">
+                                <svg width="24" height="24" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" />
+                                </svg>
+                            </div>
+                            <h4>Community Forums</h4>
+                            <p>Discuss topics with peers</p>
+                            <div class="status-badge">
+                                <span class="pulsing-dot"></span>
+                                <span>24 Online</span>
+                            </div>
+                        </div>
+                        <button id="join-forum-btn" class="btn-action-card" type="button">Join Forum</button>
+                    </div>
+
+                    <!-- Card 2: Live Student Chat -->
+                    <div class="support-action-card">
+                        <div>
+                            <div class="icon-circle-badge">
+                                <svg width="24" height="24" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                                </svg>
+                            </div>
+                            <h4>Live Student Chat</h4>
+                            <p>Chat with a Support Agent</p>
+                            <div class="status-badge">
+                                <svg class="clock-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <span>Wait time: &lt;5 mins</span>
+                            </div>
+                        </div>
+                        <button id="start-chat-btn" class="btn-action-card" type="button">Start Chat</button>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Minimalist Footer -->
+        <footer class="support-footer">
+            <div class="copyright">Skillox &copy; 2026</div>
+            <div class="footer-links">
+                <a href="contact.html">Contact</a>
+                <a href="#">Terms</a>
+                <a href="#">Privacy</a>
+            </div>
+        </footer>
+
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div class="toast" id="toast">Message</div>
+
+    <script src="config.js"></script>
+    <script src="script.js"></script>
+    <script src="contact.js"></script>
+</body>
+</html>

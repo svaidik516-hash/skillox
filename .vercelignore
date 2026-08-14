@@ -1,0 +1,8 @@
+# Local databases and secrets
+skillox.db
+skillox.db-shm
+skillox.db-wal
+.env
+node_modules/
+pdfs/
+start-backend.bat
