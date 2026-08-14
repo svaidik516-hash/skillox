@@ -200,12 +200,16 @@ document.addEventListener('DOMContentLoaded', () => {
             navAuthBtn.textContent = btnText;
             navAuthBtn.href = btnHref;
             if (isLoggedIn) {
-                if (navAuthBtn.parentNode && !document.getElementById('nav-profile-link')) {
-                    const profileLink = document.createElement('a');
-                    profileLink.id = 'nav-profile-link';
-                    profileLink.href = 'profile.html';
-                    profileLink.className = 'nav-profile-btn';
-                    profileLink.title = 'My Profile & Settings';
+                if (navAuthBtn.parentNode) {
+                    let profileLink = document.getElementById('nav-profile-link');
+                    if (!profileLink) {
+                        profileLink = document.createElement('a');
+                        profileLink.id = 'nav-profile-link';
+                        profileLink.href = 'profile.html';
+                        profileLink.className = 'nav-profile-btn';
+                        profileLink.title = 'My Profile & Settings';
+                        navAuthBtn.parentNode.insertBefore(profileLink, navAuthBtn);
+                    }
                     const initials = (authEmail ? authEmail.charAt(0).toUpperCase() : 'U');
                     const customAvatar = localStorage.getItem('skillox_custom_avatar');
                     if (customAvatar) {
@@ -213,7 +217,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     } else {
                         profileLink.innerHTML = `<span class="nav-profile-avatar">${initials}</span>`;
                     }
-                    navAuthBtn.parentNode.insertBefore(profileLink, navAuthBtn);
                 }
                 if (navAuthBtn.parentNode && !document.getElementById('nav-mailbox')) {
                     const mailBtn = document.createElement('button');
@@ -414,7 +417,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const togglePasswordBtns = document.querySelectorAll('.toggle-password');
     togglePasswordBtns.forEach(btn => {
         btn.addEventListener('click', () => {
-            const wrapper = btn.closest('.password-wrapper');
+            const wrapper = btn.closest('.password-wrapper') || btn.closest('.pill-input-group');
+            if (!wrapper) return;
             const input = wrapper.querySelector('input');
             const eyeOpen = btn.querySelector('.eye-open');
             const eyeClosed = btn.querySelector('.eye-closed');
