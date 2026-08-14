@@ -74,15 +74,34 @@
                         </div>
                         <script>
                             function changeAvatar() {
-                                const url = prompt("Enter an image URL for your profile picture (or leave blank to use default initials):");
-                                if (url !== null) {
-                                    if (url.trim() === '') {
+                                if (localStorage.getItem('skillox_custom_avatar')) {
+                                    if (confirm('Do you want to remove your current profile picture and return to the default initials? \n\n(Click Cancel to upload a new photo from your device)')) {
                                         localStorage.removeItem('skillox_custom_avatar');
-                                    } else {
-                                        localStorage.setItem('skillox_custom_avatar', url.trim());
+                                        window.location.reload();
+                                        return;
                                     }
-                                    window.location.reload();
                                 }
+                                
+                                const input = document.createElement('input');
+                                input.type = 'file';
+                                input.accept = 'image/*';
+                                input.onchange = (e) => {
+                                    const file = e.target.files[0];
+                                    if (file) {
+                                        // Max 3MB file size limit for localStorage
+                                        if (file.size > 3 * 1024 * 1024) {
+                                            alert('File is too large. Please select an image under 3MB.');
+                                            return;
+                                        }
+                                        const reader = new FileReader();
+                                        reader.onload = (event) => {
+                                            localStorage.setItem('skillox_custom_avatar', event.target.result);
+                                            window.location.reload();
+                                        };
+                                        reader.readAsDataURL(file);
+                                    }
+                                };
+                                input.click();
                             }
                             
                             // Load custom avatar on profile page
