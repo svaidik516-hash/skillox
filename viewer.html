@@ -787,7 +787,7 @@
         <div class="navbar-left">
             <div class="brand-logo-box">S</div>
             <div class="brand-title">Skillox<span>Study</span></div>
-            <button class="btn-toggle-panel active" id="btn-toggle-toc" onclick="toggleLeftPanel()">
+            <button class="btn-toggle-panel" id="btn-toggle-toc" onclick="toggleLeftPanel()">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
                 <span>Contents</span>
             </button>
@@ -801,7 +801,7 @@
         </div>
 
         <div class="navbar-right">
-            <button class="btn-toggle-panel active" id="btn-toggle-notes" onclick="toggleRightPanel()">
+            <button class="btn-toggle-panel" id="btn-toggle-notes" onclick="toggleRightPanel()">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
                 <span>Notes</span>
             </button>
@@ -817,7 +817,7 @@
     <main class="workspace-body">
 
         <!-- Left Panel: Table of Contents -->
-        <aside class="panel-left" id="toc-panel">
+        <aside class="panel-left collapsed" id="toc-panel">
             <div class="panel-header">
                 <span>Table of Contents</span>
                 <button class="btn-panel-close" onclick="toggleLeftPanel()" title="Hide">×</button>
@@ -929,7 +929,7 @@
         </section>
 
         <!-- Right Panel: Notes -->
-        <aside class="panel-right" id="notes-panel">
+        <aside class="panel-right collapsed" id="notes-panel">
             <div class="panel-header">
                 <span>Notes</span>
                 <span style="cursor:pointer; color:var(--text-sub); font-weight:600;" title="More options">•••</span>
@@ -1475,6 +1475,30 @@
 
                     // Load saved study notes
                     loadSavedNotes();
+
+                    // Scroll tracking to update page number
+                    const viewport = document.getElementById('pdf-viewport');
+                    if (viewport) {
+                        viewport.addEventListener('scroll', () => {
+                            const viewCenter = viewport.scrollTop + (viewport.clientHeight / 2);
+                            const canvases = document.querySelectorAll('.canvas-card-wrapper');
+                            let minDiff = Infinity;
+                            let currentPage = 1;
+                            
+                            canvases.forEach((card, index) => {
+                                const cardCenter = card.offsetTop + (card.clientHeight / 2);
+                                const diff = Math.abs(viewCenter - cardCenter);
+                                if (diff < minDiff) {
+                                    minDiff = diff;
+                                    currentPage = index + 1;
+                                }
+                            });
+                            
+                            if (pageInputEl && parseInt(pageInputEl.value) !== currentPage) {
+                                pageInputEl.value = currentPage;
+                            }
+                        });
+                    }
                 })
                 .catch(err => {
                     if (loader) {
