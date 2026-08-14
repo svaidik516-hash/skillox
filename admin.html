@@ -1289,11 +1289,11 @@
                     : '<span class="status-pill online">● Online / Active</span>';
                 
                 const actionBtns = isBanned
-                    ? `<button onclick="unbanUserUI('${escapeHtml(u.email)}')" class="btn-table-action btn-edit-blue">Unban</button>`
-                    : `<button onclick="banUserUI('${escapeHtml(u.email)}')" class="btn-table-action btn-warn-amber">Ban</button>`;
+                    ? `<button onclick="unbanUserUI('${escapeHtml(u.email)}')" class="btn-table-action btn-edit-blue" style="border-radius: 6px; padding: 6px 14px; font-weight: 600; min-width: 65px; transition: all 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">Unban</button>`
+                    : `<button onclick="banUserUI('${escapeHtml(u.email)}')" class="btn-table-action btn-warn-amber" style="border-radius: 6px; padding: 6px 14px; font-weight: 600; min-width: 65px; transition: all 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">Ban</button>`;
                 
-                const msgBtn = `<button onclick="openSendMsgModal('${escapeHtml(u.email)}', '${escapeHtml(u.name)}') " class="btn-table-action btn-edit-blue">✉ Msg</button>`;
-                const deleteBtn = `<button onclick="deleteUserUI('${escapeHtml(u.email)}')" class="btn-table-action btn-del-red">Del</button>`;
+                const msgBtn = `<button onclick="openSendMsgModal('${escapeHtml(u.email)}', '${escapeHtml(u.name)}') " class="btn-table-action btn-edit-blue" style="border-radius: 6px; padding: 6px 14px; font-weight: 600; min-width: 65px; transition: all 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">✉ Msg</button>`;
+                const deleteBtn = `<button onclick="deleteUserUI('${escapeHtml(u.email)}')" class="btn-table-action btn-del-red" style="border-radius: 6px; padding: 6px 14px; font-weight: 600; min-width: 65px; transition: all 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">Del</button>`;
                 
                 // Assign consistent avatar color based on index
                 const colorIdx = (i % 5) + 1;
@@ -1315,7 +1315,11 @@
                     <td class="date-text">${formatDate(u.created_at)}</td>
                     <td class="date-text">${formatDate(u.last_login)}</td>
                     <td style="font-weight: 800; color: var(--primary); font-size:1.05rem;">${u.login_count}</td>
-                    <td>${msgBtn}${actionBtns}${deleteBtn}</td>
+                    <td>
+                        <div style="display: flex; gap: 8px; align-items: center; justify-content: flex-start; flex-wrap: nowrap; min-width: max-content;">
+                            ${msgBtn}${actionBtns}${deleteBtn}
+                        </div>
+                    </td>
                 </tr>
                 `;
             }).join('');
