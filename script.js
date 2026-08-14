@@ -1411,11 +1411,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const updateAvatars = (name, email) => {
             const initials = getInitials(name || email || 'Skillox User');
-            if (avatarInitials) avatarInitials.textContent = initials;
-            if (topbarAvatarBadge) topbarAvatarBadge.textContent = initials;
+            const customAvatar = localStorage.getItem('skillox_custom_avatar');
+            
+            if (avatarInitials) {
+                if (customAvatar) {
+                    avatarInitials.innerHTML = `<img src="${customAvatar}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">`;
+                } else {
+                    avatarInitials.textContent = initials;
+                }
+            }
+            if (topbarAvatarBadge) {
+                if (customAvatar) {
+                    topbarAvatarBadge.innerHTML = `<img src="${customAvatar}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">`;
+                } else {
+                    topbarAvatarBadge.textContent = initials;
+                }
+            }
             const navProfileLink = document.getElementById('nav-profile-link');
             if (navProfileLink) {
-                navProfileLink.innerHTML = `<span class="nav-profile-avatar">${initials.charAt(0)}</span>`;
+                if (customAvatar) {
+                    navProfileLink.innerHTML = `<img src="${customAvatar}" style="width: 24px; height: 24px; object-fit: cover; border-radius: 50%; border: 1.5px solid white;">`;
+                } else {
+                    navProfileLink.innerHTML = `<span class="nav-profile-avatar">${initials.charAt(0)}</span>`;
+                }
             }
         };
 

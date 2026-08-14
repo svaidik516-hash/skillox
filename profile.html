@@ -73,15 +73,19 @@
                             </div>
                         </div>
                         <script>
-                            function changeAvatar() {
-                                if (localStorage.getItem('skillox_custom_avatar')) {
-                                    if (confirm('Do you want to remove your current profile picture and return to the default initials? \n\n(Click Cancel to upload a new photo from your device)')) {
-                                        localStorage.removeItem('skillox_custom_avatar');
-                                        window.location.reload();
-                                        return;
-                                    }
-                                }
-                                
+                            <div id="custom-avatar-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+                                <div style="background: white; border-radius: 12px; padding: 24px; width: 90%; max-width: 400px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); text-align: center;">
+                                    <h3 id="avatar-modal-title" style="margin-top: 0; color: #0f172a; font-size: 1.25rem;">Update Profile Picture</h3>
+                                    <p id="avatar-modal-msg" style="color: #64748b; font-size: 0.95rem; margin-bottom: 24px;">Do you want to remove your current profile picture, or upload a new photo?</p>
+                                    <div id="avatar-modal-actions" style="display: flex; gap: 12px; justify-content: center;">
+                                        <button id="btn-avatar-remove" class="btn-action-pill" style="background: #fef2f2; color: #ef4444; border: 1px solid #fecaca; width: 100%;">Remove Photo</button>
+                                        <button id="btn-avatar-upload" class="btn-action-pill btn-primary" style="width: 100%;">Upload New</button>
+                                    </div>
+                                    <button id="btn-avatar-cancel" style="margin-top: 16px; background: none; border: none; color: #94a3b8; font-size: 0.9rem; cursor: pointer; text-decoration: underline;">Cancel</button>
+                                </div>
+                            </div>
+                            
+                            function triggerUpload() {
                                 const input = document.createElement('input');
                                 input.type = 'file';
                                 input.accept = 'image/*';
@@ -97,7 +101,6 @@
                                                 let width = img.width;
                                                 let height = img.height;
                                                 
-                                                // Calculate aspect ratio for max 256px
                                                 if (width > height) {
                                                     if (width > MAX_SIZE) {
                                                         height = Math.round((height * MAX_SIZE) / width);
@@ -115,14 +118,19 @@
                                                 const ctx = canvas.getContext('2d');
                                                 ctx.drawImage(img, 0, 0, width, height);
                                                 
-                                                // Compress to WebP or JPEG to drastically reduce local storage footprint
                                                 const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.85);
                                                 
                                                 try {
                                                     localStorage.setItem('skillox_custom_avatar', compressedDataUrl);
                                                     window.location.reload();
-                                                } catch(e) {
-                                                    alert('Storage error: Even after compression, the image is too large for local storage.');
+                                                } catch(err) {
+                                                    const modal = document.getElementById('custom-avatar-modal');
+                                                    document.getElementById('avatar-modal-title').textContent = 'Storage Error';
+                                                    document.getElementById('avatar-modal-msg').textContent = 'The image is too large for local storage even after compression.';
+                                                    document.getElementById('avatar-modal-actions').style.display = 'none';
+                                                    modal.style.display = 'flex';
+                                                    document.getElementById('btn-avatar-cancel').textContent = 'Close';
+                                                    document.getElementById('btn-avatar-cancel').onclick = () => modal.style.display = 'none';
                                                 }
                                             };
                                             img.src = event.target.result;
@@ -131,6 +139,34 @@
                                     }
                                 };
                                 input.click();
+                            }
+
+                            function changeAvatar() {
+                                if (localStorage.getItem('skillox_custom_avatar')) {
+                                    const modal = document.getElementById('custom-avatar-modal');
+                                    document.getElementById('avatar-modal-title').textContent = 'Update Profile Picture';
+                                    document.getElementById('avatar-modal-msg').textContent = 'Do you want to remove your current profile picture, or upload a new photo?';
+                                    document.getElementById('avatar-modal-actions').style.display = 'flex';
+                                    document.getElementById('btn-avatar-cancel').textContent = 'Cancel';
+                                    
+                                    modal.style.display = 'flex';
+                                    
+                                    document.getElementById('btn-avatar-remove').onclick = () => {
+                                        localStorage.removeItem('skillox_custom_avatar');
+                                        window.location.reload();
+                                    };
+                                    
+                                    document.getElementById('btn-avatar-upload').onclick = () => {
+                                        modal.style.display = 'none';
+                                        triggerUpload();
+                                    };
+                                    
+                                    document.getElementById('btn-avatar-cancel').onclick = () => {
+                                        modal.style.display = 'none';
+                                    };
+                                } else {
+                                    triggerUpload();
+                                }
                             }
                             
                             // Load custom avatar on profile page
