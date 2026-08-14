@@ -1192,7 +1192,12 @@
            =================================================================== */
         function formatDate(dateStr) {
             if (!dateStr) return '—';
-            const d = new Date(dateStr + 'Z');
+            // Prevent appending 'Z' twice if it's already an ISO string
+            const safeDateStr = dateStr.endsWith('Z') ? dateStr : (dateStr.includes('T') ? dateStr : dateStr + 'Z');
+            const d = new Date(safeDateStr);
+            
+            if (isNaN(d.getTime())) return 'Invalid Date';
+            
             return d.toLocaleString('en-IN', {
                 day: '2-digit', month: 'short', year: 'numeric',
                 hour: '2-digit', minute: '2-digit', second: '2-digit',
