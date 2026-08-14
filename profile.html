@@ -88,15 +88,44 @@
                                 input.onchange = (e) => {
                                     const file = e.target.files[0];
                                     if (file) {
-                                        // Max 3MB file size limit for localStorage
-                                        if (file.size > 3 * 1024 * 1024) {
-                                            alert('File is too large. Please select an image under 3MB.');
-                                            return;
-                                        }
                                         const reader = new FileReader();
                                         reader.onload = (event) => {
-                                            localStorage.setItem('skillox_custom_avatar', event.target.result);
-                                            window.location.reload();
+                                            const img = new Image();
+                                            img.onload = () => {
+                                                const canvas = document.createElement('canvas');
+                                                const MAX_SIZE = 256;
+                                                let width = img.width;
+                                                let height = img.height;
+                                                
+                                                // Calculate aspect ratio for max 256px
+                                                if (width > height) {
+                                                    if (width > MAX_SIZE) {
+                                                        height = Math.round((height * MAX_SIZE) / width);
+                                                        width = MAX_SIZE;
+                                                    }
+                                                } else {
+                                                    if (height > MAX_SIZE) {
+                                                        width = Math.round((width * MAX_SIZE) / height);
+                                                        height = MAX_SIZE;
+                                                    }
+                                                }
+                                                
+                                                canvas.width = width;
+                                                canvas.height = height;
+                                                const ctx = canvas.getContext('2d');
+                                                ctx.drawImage(img, 0, 0, width, height);
+                                                
+                                                // Compress to WebP or JPEG to drastically reduce local storage footprint
+                                                const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.85);
+                                                
+                                                try {
+                                                    localStorage.setItem('skillox_custom_avatar', compressedDataUrl);
+                                                    window.location.reload();
+                                                } catch(e) {
+                                                    alert('Storage error: Even after compression, the image is too large for local storage.');
+                                                }
+                                            };
+                                            img.src = event.target.result;
                                         };
                                         reader.readAsDataURL(file);
                                     }
