@@ -232,6 +232,19 @@ async function getLoginLogs(limit = 200) {
 }
 
 /**
+ * Delete a specific login log by ID.
+ */
+async function deleteLoginLog(id) {
+    try {
+        await sql`DELETE FROM login_logs WHERE id = ${id}`;
+        return true;
+    } catch (error) {
+        console.error('Error in deleteLoginLog:', error);
+        throw error;
+    }
+}
+
+/**
  * Get summary statistics.
  */
 async function getStats() {
@@ -580,5 +593,6 @@ module.exports = {
     saveUserSession,
     getUserSessions,
     revokeUserSession,
-    revokeOtherUserSessions
+    revokeOtherUserSessions,
+    deleteLoginLog
 };

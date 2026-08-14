@@ -13,7 +13,7 @@ require('dotenv').config();
 
 const speakeasy = require('speakeasy');
 const qrcode = require('qrcode');
-const { initDb, createUser, getUserByEmail, updateUserPassword, recordLoginSuccess, logLogin, getAllUsers, getLoginLogs, getStats, saveOtpRequest, getOtpRequest, deleteOtpRequest, incrementOtpAttempts, saveContactMessage, getContactMessages, markMessageRead, banUser, unbanUser, deleteUser, saveUserMessage, getUserMessages, markUserMessageRead, updateUser2FA, updateUserProfile, updateUserTOTP, getDecodedUserTOTP, saveUserSession, getUserSessions, revokeUserSession, revokeOtherUserSessions } = require('./database');
+const { initDb, createUser, getUserByEmail, updateUserPassword, recordLoginSuccess, logLogin, getAllUsers, getLoginLogs, getStats, saveOtpRequest, getOtpRequest, deleteOtpRequest, incrementOtpAttempts, saveContactMessage, getContactMessages, markMessageRead, banUser, unbanUser, deleteUser, saveUserMessage, getUserMessages, markUserMessageRead, updateUser2FA, updateUserProfile, updateUserTOTP, getDecodedUserTOTP, saveUserSession, getUserSessions, revokeUserSession, revokeOtherUserSessions, deleteLoginLog } = require('./database');
 
 function checkTotp(code, secret) {
     try {
@@ -1198,6 +1198,17 @@ app.get('/api/admin/logs', adminLimiter, verifyAdmin, async (req, res) => {
     } catch (error) {
         console.error('Error fetching logs:', error);
         res.status(500).json({ error: 'Failed to fetch logs' });
+    }
+});
+
+// Delete a login log
+app.delete('/api/admin/logs/:id', adminLimiter, verifyAdmin, async (req, res) => {
+    try {
+        await deleteLoginLog(req.params.id);
+        res.json({ success: true, message: 'Log deleted' });
+    } catch (error) {
+        console.error('Error deleting log:', error);
+        res.status(500).json({ error: 'Failed to delete log' });
     }
 });
 
