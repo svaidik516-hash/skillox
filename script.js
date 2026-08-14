@@ -56,9 +56,16 @@ document.addEventListener('DOMContentLoaded', () => {
             badge.href = 'profile.html';
             badge.className = 'mobile-top-avatar-badge';
             badge.title = 'User Profile';
+            const userName = localStorage.getItem('skillox_user_name') || 'S';
+            const initial = userName.charAt(0).toUpperCase();
+            const customAvatar = localStorage.getItem('skillox_custom_avatar');
+            const avatarContent = customAvatar 
+                ? `<img src="${customAvatar}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">`
+                : `<span style="font-weight:800;color:#ea580c;font-family:Outfit,sans-serif;font-size:1.1rem;">${initial}</span>`;
+                
             badge.innerHTML = `
                 <div style="width: 40px; height: 40px; border-radius: 50%; border: 2.5px solid #ea580c; padding: 2px; background: #ffe4c4; overflow: hidden; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 14px rgba(234, 88, 12, 0.3);">
-                    <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80" alt="Profile" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;" onerror="this.outerHTML='<span style=\\'font-weight:800;color:#ea580c;font-family:Outfit,sans-serif;font-size:1.1rem;\\'>S</span>'">
+                    ${avatarContent}
                 </div>
             `;
             const hamburger = navbar.querySelector('.hamburger');

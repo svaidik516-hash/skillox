@@ -66,9 +66,34 @@
                     <!-- Hero Security Profile Card (Matches User Mockup) -->
                     <div class="profile-hero-card" style="margin-top: 48px; position: relative; background: #ffffff; border-radius: 28px; box-shadow: 0 16px 40px -10px rgba(0, 0, 0, 0.08); border: 1px solid rgba(226, 232, 240, 0.9); text-align: center; overflow: visible; margin-bottom: 36px;">
                         <!-- Overlapping Avatar with Orange Ring -->
-                        <div style="width: 88px; height: 88px; border-radius: 50%; border: 4px solid #e8740c; padding: 4px; background: #ffffff; box-shadow: 0 10px 25px -4px rgba(232, 116, 12, 0.35); position: absolute; top: -44px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; justify-content: center; box-sizing: border-box; z-index: 5;">
-                            <div id="profile-avatar-initials" style="width: 100%; height: 100%; border-radius: 50%; background: #fed7aa; color: #7c2d12; font-size: 1.55rem; font-weight: 800; display: flex; align-items: center; justify-content: center; letter-spacing: -1px;"></div>
+                        <div style="width: 88px; height: 88px; border-radius: 50%; border: 4px solid #e8740c; padding: 4px; background: #ffffff; box-shadow: 0 10px 25px -4px rgba(232, 116, 12, 0.35); position: absolute; top: -44px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; justify-content: center; box-sizing: border-box; z-index: 5; cursor: pointer;" onclick="changeAvatar()" title="Edit Profile Picture">
+                            <div id="profile-avatar-initials" style="width: 100%; height: 100%; border-radius: 50%; background: #fed7aa; color: #7c2d12; font-size: 1.55rem; font-weight: 800; display: flex; align-items: center; justify-content: center; letter-spacing: -1px; overflow: hidden; position: relative;"></div>
+                            <div style="position: absolute; bottom: -5px; right: -5px; background: #ea580c; color: white; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border: 2px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                            </div>
                         </div>
+                        <script>
+                            function changeAvatar() {
+                                const url = prompt("Enter an image URL for your profile picture (or leave blank to use default initials):");
+                                if (url !== null) {
+                                    if (url.trim() === '') {
+                                        localStorage.removeItem('skillox_custom_avatar');
+                                    } else {
+                                        localStorage.setItem('skillox_custom_avatar', url.trim());
+                                    }
+                                    window.location.reload();
+                                }
+                            }
+                            
+                            // Load custom avatar on profile page
+                            document.addEventListener('DOMContentLoaded', () => {
+                                const customAvatar = localStorage.getItem('skillox_custom_avatar');
+                                const initialEl = document.getElementById('profile-avatar-initials');
+                                if (customAvatar && initialEl) {
+                                    initialEl.innerHTML = '<img src="' + customAvatar + '" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">';
+                                }
+                            });
+                        </script>
 
                         <div style="padding: 56px 24px 22px 24px;">
                             <h2 id="display-user-name" style="font-size: 1.45rem; font-weight: 800; color: #0f172a; margin: 0; letter-spacing: -0.5px;"></h2>

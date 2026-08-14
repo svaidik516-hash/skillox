@@ -2,7 +2,13 @@
   "textbooks": {
     "Class_1": {
       "Math": {
-        "_files": []
+        "_files": [
+          {
+            "filename": "Cyber Threat Landscape Analysis-compressed.pdf",
+            "title": "Cyber Threat Landscape Analysis Compressed",
+            "url": "textbooks/Class_1/Maths/Cyber Threat Landscape Analysis-compressed.pdf"
+          }
+        ]
       },
       "Science": {
         "_files": [
@@ -39,20 +45,17 @@
             "url": "textbooks/Class_1/Hindi/Cyber Threat Landscape Analysis-compressed.pdf"
           }
         ]
-      },
-      "Maths": {
-        "_files": [
-          {
-            "filename": "Cyber Threat Landscape Analysis-compressed.pdf",
-            "title": "Cyber Threat Landscape Analysis Compressed",
-            "url": "textbooks/Class_1/Maths/Cyber Threat Landscape Analysis-compressed.pdf"
-          }
-        ]
       }
     },
     "Class_2": {
       "Math": {
-        "_files": []
+        "_files": [
+          {
+            "filename": "Cyber Threat Landscape Analysis-compressed.pdf",
+            "title": "Cyber Threat Landscape Analysis Compressed",
+            "url": "textbooks/Class_2/Maths/Cyber Threat Landscape Analysis-compressed.pdf"
+          }
+        ]
       },
       "Science": {
         "_files": [
@@ -87,15 +90,6 @@
             "filename": "Cyber Threat Landscape Analysis-compressed.pdf",
             "title": "Cyber Threat Landscape Analysis Compressed",
             "url": "textbooks/Class_2/Hindi/Cyber Threat Landscape Analysis-compressed.pdf"
-          }
-        ]
-      },
-      "Maths": {
-        "_files": [
-          {
-            "filename": "Cyber Threat Landscape Analysis-compressed.pdf",
-            "title": "Cyber Threat Landscape Analysis Compressed",
-            "url": "textbooks/Class_2/Maths/Cyber Threat Landscape Analysis-compressed.pdf"
           }
         ]
       }

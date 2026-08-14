@@ -35,10 +35,24 @@
             <a href="login.html" id="nav-auth-btn" class="btn btn-outline btn-sm">Log In</a>
             <a href="signup.html" id="nav-signup-btn" class="btn btn-primary btn-sm" style="margin-left: 10px;">Sign Up</a>
         </div>
-        <a href="profile.html" class="mobile-top-avatar-badge" style="display: none; text-decoration: none;" title="User Profile">
+        <a href="profile.html" class="mobile-top-avatar-badge" style="display: none; text-decoration: none;" title="User Profile" id="index-mobile-avatar-link">
             <div style="width: 40px; height: 40px; border-radius: 50%; border: 2.5px solid #ea580c; padding: 2px; background: #ffe4c4; overflow: hidden; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 14px rgba(234, 88, 12, 0.3);">
-                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80" alt="Profile" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;" onerror="this.outerHTML='<span style=\\'font-weight:800;color:#ea580c;font-family:Outfit,sans-serif;font-size:1.1rem;\\'>S</span>'">
+                <span id="index-mobile-avatar-initial" style="font-weight:800;color:#ea580c;font-family:Outfit,sans-serif;font-size:1.1rem;">S</span>
             </div>
+            <script>
+                document.addEventListener('DOMContentLoaded', () => {
+                    const userName = localStorage.getItem('skillox_user_name');
+                    const customAvatar = localStorage.getItem('skillox_custom_avatar');
+                    const wrapper = document.getElementById('index-mobile-avatar-link').querySelector('div');
+                    
+                    if (customAvatar) {
+                        wrapper.innerHTML = '<img src="' + customAvatar + '" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">';
+                    } else if (userName) {
+                        const el = document.getElementById('index-mobile-avatar-initial');
+                        if (el) el.textContent = userName.charAt(0).toUpperCase();
+                    }
+                });
+            </script>
         </a>
         <button class="hamburger" id="hamburger" aria-label="Toggle menu">
             <span></span><span></span><span></span>

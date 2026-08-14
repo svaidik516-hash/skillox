@@ -104,6 +104,7 @@ function buildTree(paths) {
         let currentLevel = tree;
 
         parts.forEach(part => {
+            if (part === 'Maths') part = 'Math';
             if (!currentLevel[part]) {
                 currentLevel[part] = {};
             }
