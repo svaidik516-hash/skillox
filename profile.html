@@ -72,19 +72,18 @@
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
                             </div>
                         </div>
-                        <script>
-                            <div id="custom-avatar-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
-                                <div style="background: white; border-radius: 12px; padding: 24px; width: 90%; max-width: 400px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); text-align: center;">
-                                    <h3 id="avatar-modal-title" style="margin-top: 0; color: #0f172a; font-size: 1.25rem;">Update Profile Picture</h3>
-                                    <p id="avatar-modal-msg" style="color: #64748b; font-size: 0.95rem; margin-bottom: 24px;">Do you want to remove your current profile picture, or upload a new photo?</p>
-                                    <div id="avatar-modal-actions" style="display: flex; gap: 12px; justify-content: center;">
-                                        <button id="btn-avatar-remove" class="btn-action-pill" style="background: #fef2f2; color: #ef4444; border: 1px solid #fecaca; width: 100%;">Remove Photo</button>
-                                        <button id="btn-avatar-upload" class="btn-action-pill btn-primary" style="width: 100%;">Upload New</button>
-                                    </div>
-                                    <button id="btn-avatar-cancel" style="margin-top: 16px; background: none; border: none; color: #94a3b8; font-size: 0.9rem; cursor: pointer; text-decoration: underline;">Cancel</button>
+                        <div id="custom-avatar-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+                            <div style="background: white; border-radius: 12px; padding: 24px; width: 90%; max-width: 400px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); text-align: center;">
+                                <h3 id="avatar-modal-title" style="margin-top: 0; color: #0f172a; font-size: 1.25rem;">Update Profile Picture</h3>
+                                <p id="avatar-modal-msg" style="color: #64748b; font-size: 0.95rem; margin-bottom: 24px;">Do you want to remove your current profile picture, or upload a new photo?</p>
+                                <div id="avatar-modal-actions" style="display: flex; gap: 12px; justify-content: center;">
+                                    <button id="btn-avatar-remove" class="btn-action-pill" style="background: #fef2f2; color: #ef4444; border: 1px solid #fecaca; width: 100%;">Remove Photo</button>
+                                    <button id="btn-avatar-upload" class="btn-action-pill btn-primary" style="width: 100%;">Upload New</button>
                                 </div>
+                                <button id="btn-avatar-cancel" style="margin-top: 16px; background: none; border: none; color: #94a3b8; font-size: 0.9rem; cursor: pointer; text-decoration: underline;">Cancel</button>
                             </div>
-                            
+                        </div>
+                        <script>
                             function triggerUpload() {
                                 const input = document.createElement('input');
                                 input.type = 'file';
