@@ -207,7 +207,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     profileLink.className = 'nav-profile-btn';
                     profileLink.title = 'My Profile & Settings';
                     const initials = (authEmail ? authEmail.charAt(0).toUpperCase() : 'U');
-                    profileLink.innerHTML = `<span class="nav-profile-avatar">${initials}</span>`;
+                    const customAvatar = localStorage.getItem('skillox_custom_avatar');
+                    if (customAvatar) {
+                        profileLink.innerHTML = `<img src="${customAvatar}" style="width: 38px; height: 38px; object-fit: cover; border-radius: 50%; display: block; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">`;
+                    } else {
+                        profileLink.innerHTML = `<span class="nav-profile-avatar">${initials}</span>`;
+                    }
                     navAuthBtn.parentNode.insertBefore(profileLink, navAuthBtn);
                 }
                 if (navAuthBtn.parentNode && !document.getElementById('nav-mailbox')) {
