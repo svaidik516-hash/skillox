@@ -3218,5 +3218,122 @@ input:checked + .slider-green:before {
         justify-self: flex-end !important;
         display: block !important;
     }
-}
+    /* Auth Pages Mobile (Login, Signup) */
+    .auth-container {
+        padding: 20px 16px !important;
+        background: #faf5ee !important;
+        align-items: flex-start !important;
+    }
+    .auth-card {
+        border: none !important;
+        box-shadow: none !important;
+        background: transparent !important;
+        padding: 10px 0 !important;
+    }
+    .auth-header h2 {
+        font-size: 2.2rem !important;
+        text-align: left !important;
+        color: #0f172a !important;
+    }
+    .auth-header p {
+        text-align: left !important;
+        font-size: 1rem !important;
+    }
+    .form-control {
+        border-radius: 16px !important;
+        padding: 18px 20px !important;
+        background: #ffffff !important;
+        border: 1px solid rgba(0,0,0,0.05) !important;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.03) !important;
+    }
+    .auth-card .btn-primary {
+        border-radius: 16px !important;
+        padding: 18px 20px !important;
+        font-size: 1.1rem !important;
+        background: #ea580c !important;
+        box-shadow: 0 8px 20px rgba(234, 88, 12, 0.3) !important;
+        width: 100% !important;
+    }
 
+    /* Content Pages Grid -> List conversion */
+    .cards-grid, .board-cards, .worksheet-grid, .features-grid, .mobile-capsule-stack {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 12px !important;
+    }
+    .content-card, .board-card, .worksheet-card {
+        display: grid !important;
+        grid-template-columns: 56px 1fr auto !important;
+        gap: 6px 16px !important;
+        padding: 16px 20px !important;
+        border-radius: 22px !important;
+        background: #ffffff !important;
+        align-items: center !important;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04) !important;
+        border: 1px solid rgba(0, 0, 0, 0.04) !important;
+    }
+    .card-icon, .board-card::before, .worksheet-card::before {
+        grid-column: 1 / 2 !important;
+        grid-row: 1 / 3 !important;
+        margin: 0 !important;
+        width: 56px !important;
+        height: 56px !important;
+        border-radius: 16px !important;
+    }
+    .content-card h3, .board-card h3, .worksheet-card h3 {
+        grid-column: 2 / 3 !important;
+        grid-row: 1 / 2 !important;
+        margin: 0 !important;
+        font-size: 1.1rem !important;
+        align-self: end !important;
+        color: #0f172a !important;
+    }
+    .content-card p, .board-card > p, .worksheet-card p {
+        grid-column: 2 / 3 !important;
+        grid-row: 2 / 3 !important;
+        margin: 0 !important;
+        font-size: 0.9rem !important;
+        align-self: start !important;
+        color: #475569 !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        white-space: nowrap !important;
+    }
+    .card-tags, .board-features, .board-card .btn, .worksheet-card .ws-subjects, .featured-label {
+        display: none !important; 
+    }
+
+    /* Profile & Settings Pages */
+    .dashboard-layout {
+        display: flex !important;
+        flex-direction: column !important;
+    }
+    .profile-sidebar {
+        display: none !important;
+    }
+    .dashboard-content, .profile-content {
+        padding: 20px 16px !important;
+        width: 100% !important;
+    }
+    .user-profile-header {
+        flex-direction: column !important;
+        align-items: center !important;
+        text-align: center !important;
+        gap: 16px !important;
+        background: #ffffff !important;
+        border-radius: 24px !important;
+        padding: 30px 20px !important;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.05) !important;
+    }
+    .user-avatar-large {
+        width: 100px !important;
+        height: 100px !important;
+        font-size: 2.5rem !important;
+        margin: 0 auto !important;
+    }
+    .settings-grid, .stats-grid {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 16px !important;
+    }
+}
