@@ -78,8 +78,9 @@ app.use((req, res, next) => {
     res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
     res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
     // Content-Security-Policy — restricts what resources can load, mitigates XSS damage
+    // SECURITY FIX: Removed 'unsafe-eval' — it neutralized XSS protection
     res.setHeader('Content-Security-Policy', 
-        "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.supabase.co https://*.ngrok-free.app https://*.ngrok.io blob:; worker-src 'self' blob: https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com; frame-ancestors 'none';");
+        "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.supabase.co https://*.ngrok-free.app https://*.ngrok.io blob:; worker-src 'self' blob: https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com; frame-ancestors 'none';");
     // HSTS — only on production (HTTPS)
     if (req.secure || req.headers['x-forwarded-proto'] === 'https') {
         res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
@@ -109,8 +110,23 @@ app.use(cors({
 // Body parser with size limit (prevents DoS via large payloads)
 app.use(express.json({ limit: '16kb' }));
 
+// SECURITY FIX: Block access to sensitive server-side files before static middleware
+const ALLOWED_JS_FILES = new Set(['/script.js', '/config.js', '/sw.js', '/board-pages.js', '/contact.js', '/textbooks.js', '/revision.js', '/add_bottom_nav.js', '/three-showcase.js']);
+app.use((req, res, next) => {
+    const reqPath = decodeURIComponent(req.path).toLowerCase();
+    // Block server source code, database files, batch scripts, and package manifests
+    if (reqPath === '/server.js' || reqPath === '/database.js' || reqPath === '/crypto-utils.js' ||
+        reqPath.endsWith('.db') || reqPath.endsWith('.db-shm') || reqPath.endsWith('.db-wal') ||
+        reqPath.endsWith('.bat') || reqPath === '/package.json' || reqPath === '/package-lock.json' ||
+        reqPath === '/.env' || reqPath === '/.gitignore' || reqPath === '/vercel.json') {
+        return res.status(403).json({ error: 'Forbidden' });
+    }
+    next();
+});
+
 // Serve static frontend files with caching for better performance
 app.use(express.static(path.join(__dirname), {
+    dotfiles: 'deny',
     setHeaders: (res, filePath) => {
         if (filePath.endsWith('.json') || filePath.endsWith('.html')) {
             // Do not cache JSON data and HTML files to ensure fresh content
@@ -212,8 +228,13 @@ function isValidEmail(email) {
 }
 
 // Validate password strength (server-side enforcement)
+// SECURITY FIX: Require at least one uppercase, one lowercase, and one digit
 function isValidPassword(password) {
-    return typeof password === 'string' && password.length >= 8 && password.length <= 128;
+    if (typeof password !== 'string' || password.length < 8 || password.length > 128) return false;
+    if (!/[A-Z]/.test(password)) return false; // at least one uppercase
+    if (!/[a-z]/.test(password)) return false; // at least one lowercase
+    if (!/[0-9]/.test(password)) return false; // at least one digit
+    return true;
 }
 
 // Validate name
@@ -268,7 +289,7 @@ app.post('/api/signup-request', otpRequestLimiter, async (req, res) => {
         return res.status(400).json({ error: 'Please enter a valid email address' });
     }
     if (!isValidPassword(password)) {
-        return res.status(400).json({ error: 'Password must be between 8 and 128 characters' });
+        return res.status(400).json({ error: 'Password must be 8-128 characters with at least one uppercase letter, one lowercase letter, and one digit' });
     }
 
     try {
@@ -357,9 +378,10 @@ app.post('/api/signup-verify', otpVerifyLimiter, async (req, res) => {
             await recordLoginSuccess(email);
             await logLogin(email, ip, 'success');
             
-            const token = jwt.sign({ email }, process.env.JWT_SECRET, { expiresIn: '7d' });
+            // SECURITY FIX: Reduced token lifetime from 7 days to 24 hours
+            const token = jwt.sign({ email }, process.env.JWT_SECRET, { expiresIn: '24h' });
             const isSecure = req.secure || req.headers['x-forwarded-proto'] === 'https';
-            res.cookie('skillox_token', token, { httpOnly: true, secure: isSecure, sameSite: 'lax', maxAge: 7 * 24 * 60 * 60 * 1000 });
+            res.cookie('skillox_token', token, { httpOnly: true, secure: isSecure, sameSite: 'lax', maxAge: 24 * 60 * 60 * 1000 });
             
             res.json({ success: true, message: 'Account created successfully' });
         } catch (error) {
@@ -431,7 +453,7 @@ app.post('/api/forgot-password-reset', otpVerifyLimiter, async (req, res) => {
     }
 
     if (!isValidPassword(newPassword)) {
-        return res.status(400).json({ error: 'Password must be between 8 and 128 characters' });
+        return res.status(400).json({ error: 'Password must be 8-128 characters with at least one uppercase letter, one lowercase letter, and one digit' });
     }
 
     let record;
@@ -544,9 +566,10 @@ app.post('/api/login', loginLimiter, async (req, res) => {
         
         const sessionId = crypto.randomUUID();
         await saveUserSession(sessionId, email, getDeviceInfo(req), ip);
-        const token = jwt.sign({ email: user.email, sessionId: sessionId }, process.env.JWT_SECRET, { expiresIn: '7d' });
+        // SECURITY FIX: Reduced token lifetime from 7 days to 24 hours
+        const token = jwt.sign({ email: user.email, sessionId: sessionId }, process.env.JWT_SECRET, { expiresIn: '24h' });
         const isSecure = req.secure || req.headers['x-forwarded-proto'] === 'https';
-        res.cookie('skillox_token', token, { httpOnly: true, secure: isSecure, sameSite: 'lax', maxAge: 7 * 24 * 60 * 60 * 1000 });
+        res.cookie('skillox_token', token, { httpOnly: true, secure: isSecure, sameSite: 'lax', maxAge: 24 * 60 * 60 * 1000 });
         
         res.json({ 
             success: true, 
@@ -598,9 +621,10 @@ app.post('/api/login-verify-2fa', otpVerifyLimiter, async (req, res) => {
 
             const sessionId = crypto.randomUUID();
             await saveUserSession(sessionId, email, getDeviceInfo(req), ip);
-            const token = jwt.sign({ email: user.email, sessionId: sessionId }, process.env.JWT_SECRET, { expiresIn: '7d' });
+            // SECURITY FIX: Reduced token lifetime from 7 days to 24 hours
+            const token = jwt.sign({ email: user.email, sessionId: sessionId }, process.env.JWT_SECRET, { expiresIn: '24h' });
             const isSecure = req.secure || req.headers['x-forwarded-proto'] === 'https';
-            res.cookie('skillox_token', token, { httpOnly: true, secure: isSecure, sameSite: 'lax', maxAge: 7 * 24 * 60 * 60 * 1000 });
+            res.cookie('skillox_token', token, { httpOnly: true, secure: isSecure, sameSite: 'lax', maxAge: 24 * 60 * 60 * 1000 });
 
             return res.json({ success: true, message: '2FA verification successful', user: { name: user.name, email: user.email } });
         } else {
@@ -632,9 +656,10 @@ app.post('/api/login-verify-totp', otpVerifyLimiter, async (req, res) => {
 
             const sessionId = crypto.randomUUID();
             await saveUserSession(sessionId, email, getDeviceInfo(req), ip);
-            const token = jwt.sign({ email: user.email, sessionId: sessionId }, process.env.JWT_SECRET, { expiresIn: '7d' });
+            // SECURITY FIX: Reduced token lifetime from 7 days to 24 hours
+            const token = jwt.sign({ email: user.email, sessionId: sessionId }, process.env.JWT_SECRET, { expiresIn: '24h' });
             const isSecure = req.secure || req.headers['x-forwarded-proto'] === 'https';
-            res.cookie('skillox_token', token, { httpOnly: true, secure: isSecure, sameSite: 'lax', maxAge: 7 * 24 * 60 * 60 * 1000 });
+            res.cookie('skillox_token', token, { httpOnly: true, secure: isSecure, sameSite: 'lax', maxAge: 24 * 60 * 60 * 1000 });
             return res.json({ success: true, message: 'Authenticator Verified Successfully', user: { name: user.name, email: user.email } });
         } else {
             return res.status(400).json({ error: 'Invalid authenticator verification code. Please try again.' });
@@ -661,6 +686,38 @@ async function getCachedUser(email) {
     const user = await getUserByEmail(email);
     userVerificationCache.set(email, { user, expiresAt: now + 60000 }); // Cache valid for 60 seconds
     return user;
+}
+
+// SECURITY FIX: Centralized auth middleware with session revocation check
+// All protected endpoints should use this instead of manually verifying JWTs
+async function requireAuth(req, res, next) {
+    const token = req.cookies.skillox_token;
+    if (!token) return res.status(401).json({ error: 'Unauthorized' });
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        // Check if session has been revoked
+        if (decoded.sessionId) {
+            const sessions = await getUserSessions(decoded.email);
+            if (!sessions.find(s => s.id === decoded.sessionId)) {
+                res.clearCookie('skillox_token');
+                return res.status(401).json({ error: 'Session has been revoked. Please log in again.' });
+            }
+        }
+        const user = await getCachedUser(decoded.email);
+        if (!user) {
+            res.clearCookie('skillox_token');
+            return res.status(401).json({ error: 'User not found' });
+        }
+        if (user.status === 'banned') {
+            res.clearCookie('skillox_token');
+            userVerificationCache.delete(decoded.email);
+            return res.status(403).json({ error: 'YOU ARE BANNED FOR VIOLATING THE RULES' });
+        }
+        req.user = { email: decoded.email, sessionId: decoded.sessionId, user };
+        next();
+    } catch (err) {
+        return res.status(401).json({ error: 'Invalid or expired session' });
+    }
 }
 
 app.get('/api/check-auth', async (req, res) => {
@@ -690,6 +747,7 @@ app.get('/api/check-auth', async (req, res) => {
    ============================================= */
 const fs = require('fs');
 
+// SECURITY FIX: PDF auth defaults to deny; only explicitly skip in development mode
 app.get('/api/pdf-url', async (req, res) => {
     const { file } = req.query;
     const token = req.cookies.skillox_token || (req.headers.authorization ? req.headers.authorization.split(' ')[1] : null);
@@ -698,7 +756,10 @@ app.get('/api/pdf-url', async (req, res) => {
         return res.status(400).json({ error: 'File parameter is required' });
     }
 
-    if (!token && process.env.NODE_ENV === 'production') {
+    // SECURITY FIX: Default-deny auth — only skip in explicit development mode
+    const isDev = process.env.NODE_ENV === 'development';
+
+    if (!token && !isDev) {
         return res.status(401).json({ error: 'Unauthorized: No session cookie' });
     }
 
@@ -713,7 +774,7 @@ app.get('/api/pdf-url', async (req, res) => {
                     return res.status(403).json({ error: 'YOU ARE BANNED FOR VIOLATING THE RULES' });
                 }
             } catch (jwtErr) {
-                if (process.env.NODE_ENV === 'production') {
+                if (!isDev) {
                     return res.status(401).json({ error: 'Unauthorized: Invalid or expired session' });
                 }
             }
@@ -753,9 +814,15 @@ app.get('/api/pdf-url', async (req, res) => {
 app.get('/api/pdf-stream', async (req, res) => {
     const { file } = req.query;
     const token = req.cookies.skillox_token || (req.headers.authorization ? req.headers.authorization.split(' ')[1] : null);
+    const isDev = process.env.NODE_ENV === 'development';
 
     if (!file) {
         return res.status(400).send('File parameter is required');
+    }
+
+    // SECURITY FIX: Default-deny auth for PDF streaming
+    if (!token && !isDev) {
+        return res.status(401).send('Unauthorized');
     }
 
     try {
@@ -767,7 +834,7 @@ app.get('/api/pdf-stream', async (req, res) => {
                     return res.status(403).send('Banned account');
                 }
             } catch (jwtErr) {
-                if (process.env.NODE_ENV === 'production') {
+                if (!isDev) {
                     return res.status(401).send('Session expired');
                 }
             }
@@ -789,7 +856,7 @@ app.get('/api/pdf-stream', async (req, res) => {
                     res.setHeader('Content-Type', 'application/pdf');
                     res.setHeader('Content-Length', buffer.length);
                     res.setHeader('Accept-Ranges', 'bytes');
-                    res.setHeader('Access-Control-Allow-Origin', '*');
+                    // SECURITY FIX: Removed Access-Control-Allow-Origin: * — CORS is handled by the app-level middleware
                     return res.send(buffer);
                 }
             }
@@ -802,7 +869,6 @@ app.get('/api/pdf-stream', async (req, res) => {
         if (fs.existsSync(localPath)) {
             res.setHeader('Content-Type', 'application/pdf');
             res.setHeader('Accept-Ranges', 'bytes');
-            res.setHeader('Access-Control-Allow-Origin', '*');
             return fs.createReadStream(localPath).pipe(res);
         }
 
@@ -810,7 +876,6 @@ app.get('/api/pdf-stream', async (req, res) => {
         if (fs.existsSync(altLocalPath)) {
             res.setHeader('Content-Type', 'application/pdf');
             res.setHeader('Accept-Ranges', 'bytes');
-            res.setHeader('Access-Control-Allow-Origin', '*');
             return fs.createReadStream(altLocalPath).pipe(res);
         }
 
@@ -824,23 +889,18 @@ app.get('/api/pdf-stream', async (req, res) => {
 /* =============================================
    USER MAILBOX ENDPOINTS
    ============================================= */
-app.get('/api/user/messages', async (req, res) => {
-    const token = req.cookies.skillox_token;
-    if (!token) return res.status(401).json({ error: 'Unauthorized' });
+// SECURITY FIX: All user endpoints now use requireAuth middleware (includes session revocation check)
+app.get('/api/user/messages', requireAuth, async (req, res) => {
     try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        const messages = await getUserMessages(decoded.email);
+        const messages = await getUserMessages(req.user.email);
         res.json({ success: true, messages });
     } catch (err) {
-        return res.status(401).json({ error: 'Invalid session' });
+        return res.status(500).json({ error: 'Failed to fetch messages' });
     }
 });
 
-app.post('/api/user/messages/:id/read', async (req, res) => {
-    const token = req.cookies.skillox_token;
-    if (!token) return res.status(401).json({ error: 'Unauthorized' });
+app.post('/api/user/messages/:id/read', requireAuth, async (req, res) => {
     try {
-        jwt.verify(token, process.env.JWT_SECRET);
         await markUserMessageRead(req.params.id);
         res.json({ success: true });
     } catch (err) {
@@ -851,13 +911,9 @@ app.post('/api/user/messages/:id/read', async (req, res) => {
 /* =============================================
    USER SETTINGS ENDPOINTS
    ============================================= */
-app.get('/api/user/settings', async (req, res) => {
-    const token = req.cookies.skillox_token;
-    if (!token) return res.status(401).json({ error: 'Unauthorized' });
+app.get('/api/user/settings', requireAuth, async (req, res) => {
     try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        const user = await getUserByEmail(decoded.email);
-        if (!user) return res.status(404).json({ error: 'User not found' });
+        const user = req.user.user;
         res.json({
             success: true,
             user: {
@@ -868,7 +924,7 @@ app.get('/api/user/settings', async (req, res) => {
             }
         });
     } catch (err) {
-        return res.status(401).json({ error: 'Invalid session' });
+        return res.status(500).json({ error: 'Failed to fetch settings' });
     }
 });
 
@@ -1044,27 +1100,21 @@ app.post('/api/2fa/totp/verify', otpVerifyLimiter, async (req, res) => {
 /* =============================================
    HIGH-SECURITY: ACTIVE SESSION MANAGEMENT
    ============================================= */
-app.get('/api/user/sessions', async (req, res) => {
-    const token = req.cookies.skillox_token;
-    if (!token) return res.status(401).json({ error: 'Unauthorized' });
+app.get('/api/user/sessions', requireAuth, async (req, res) => {
     try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        const sessions = await getUserSessions(decoded.email);
-        res.json({ success: true, currentSessionId: decoded.sessionId || '', sessions: sessions });
+        const sessions = await getUserSessions(req.user.email);
+        res.json({ success: true, currentSessionId: req.user.sessionId || '', sessions: sessions });
     } catch (error) {
         console.error('Error fetching sessions:', error);
         res.status(500).json({ error: 'Failed to retrieve active sessions' });
     }
 });
 
-app.post('/api/user/sessions/:id/revoke', async (req, res) => {
-    const token = req.cookies.skillox_token;
-    if (!token) return res.status(401).json({ error: 'Unauthorized' });
+app.post('/api/user/sessions/:id/revoke', requireAuth, async (req, res) => {
     try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
         const sessionId = req.params.id;
-        await revokeUserSession(sessionId, decoded.email);
-        if (decoded.sessionId === sessionId) {
+        await revokeUserSession(sessionId, req.user.email);
+        if (req.user.sessionId === sessionId) {
             res.clearCookie('skillox_token');
             return res.json({ success: true, revokedSelf: true });
         }
@@ -1075,12 +1125,9 @@ app.post('/api/user/sessions/:id/revoke', async (req, res) => {
     }
 });
 
-app.post('/api/user/sessions/revoke-others', async (req, res) => {
-    const token = req.cookies.skillox_token;
-    if (!token) return res.status(401).json({ error: 'Unauthorized' });
+app.post('/api/user/sessions/revoke-others', requireAuth, async (req, res) => {
     try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        await revokeOtherUserSessions(decoded.sessionId || '', decoded.email);
+        await revokeOtherUserSessions(req.user.sessionId || '', req.user.email);
         res.json({ success: true, message: 'All other active device sessions terminated immediately' });
     } catch (error) {
         console.error('Error revoking other sessions:', error);
@@ -1088,11 +1135,8 @@ app.post('/api/user/sessions/revoke-others', async (req, res) => {
     }
 });
 
-app.post('/api/user/profile', async (req, res) => {
-    const token = req.cookies.skillox_token;
-    if (!token) return res.status(401).json({ error: 'Unauthorized' });
+app.post('/api/user/profile', requireAuth, async (req, res) => {
     try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
         const { name } = req.body;
         if (!name || !name.trim()) {
             return res.status(400).json({ error: 'Name cannot be empty' });
@@ -1101,8 +1145,8 @@ app.post('/api/user/profile', async (req, res) => {
         if (!isValidName(name.trim())) {
             return res.status(400).json({ error: 'Name must be between 1 and 100 characters' });
         }
-        await updateUserProfile(decoded.email, name.trim());
-        userVerificationCache.delete(decoded.email); // Invalidate cache
+        await updateUserProfile(req.user.email, name.trim());
+        userVerificationCache.delete(req.user.email); // Invalidate cache
         res.json({ success: true, name: name.trim() });
     } catch (err) {
         console.error('Error updating profile:', err);
@@ -1114,8 +1158,22 @@ app.post('/api/user/profile', async (req, res) => {
    ADMIN API ENDPOINTS
    ============================================= */
 
-// Admin Authentication Middleware — uses constant-time comparison
+// Admin Authentication Middleware — supports JWT admin session OR password header
+// SECURITY FIX: Admin now logs in once and gets a short-lived JWT in an httpOnly cookie,
+// instead of storing the raw password in sessionStorage on every request
 function verifyAdmin(req, res, next) {
+    // 1. Check for admin JWT cookie first (preferred, secure method)
+    const adminToken = req.cookies.skillox_admin_token;
+    if (adminToken) {
+        try {
+            const decoded = jwt.verify(adminToken, process.env.JWT_SECRET);
+            if (decoded.role === 'admin') return next();
+        } catch (e) {
+            // Token expired or invalid — fall through to password check
+        }
+    }
+
+    // 2. Fallback: Check x-admin-password header (backward compatibility)
     const provided = req.headers['x-admin-password'];
     const expected = process.env.ADMIN_PASSWORD;
     
@@ -1123,7 +1181,7 @@ function verifyAdmin(req, res, next) {
         return res.status(500).json({ error: 'ADMIN_PASSWORD not configured on server' });
     }
     if (!provided) {
-        return res.status(401).json({ error: 'Unauthorized: Admin password required' });
+        return res.status(401).json({ error: 'Unauthorized: Admin session expired or password required' });
     }
 
     // SECURITY FIX: Use constant-time comparison to prevent timing attacks
@@ -1135,6 +1193,47 @@ function verifyAdmin(req, res, next) {
     }
     next();
 }
+
+// SECURITY FIX: Admin login endpoint — issues a short-lived JWT cookie instead of storing password client-side
+app.post('/api/admin/login', adminLimiter, (req, res) => {
+    const { password } = req.body;
+    const expected = process.env.ADMIN_PASSWORD;
+
+    if (!expected) {
+        return res.status(500).json({ error: 'ADMIN_PASSWORD not configured on server' });
+    }
+    if (!password) {
+        return res.status(400).json({ error: 'Password is required' });
+    }
+
+    const providedBuf = Buffer.from(String(password));
+    const expectedBuf = Buffer.from(String(expected));
+
+    if (providedBuf.length !== expectedBuf.length || !crypto.timingSafeEqual(providedBuf, expectedBuf)) {
+        return res.status(401).json({ error: 'Invalid Admin Password' });
+    }
+
+    // Issue a short-lived admin JWT (2 hours)
+    const adminJwt = jwt.sign({ role: 'admin' }, process.env.JWT_SECRET, { expiresIn: '2h' });
+    const isSecure = req.secure || req.headers['x-forwarded-proto'] === 'https';
+    res.cookie('skillox_admin_token', adminJwt, {
+        httpOnly: true,
+        secure: isSecure,
+        sameSite: 'lax',
+        maxAge: 2 * 60 * 60 * 1000 // 2 hours
+    });
+    res.json({ success: true, message: 'Admin session established' });
+});
+
+// Admin logout — clear the admin JWT cookie
+app.post('/api/admin/logout', (req, res) => {
+    res.clearCookie('skillox_admin_token', {
+        httpOnly: true,
+        sameSite: 'lax',
+        secure: req.secure || req.headers['x-forwarded-proto'] === 'https'
+    });
+    res.json({ success: true, message: 'Admin session terminated' });
+});
 
 // Get all registered users
 app.get('/api/admin/users', adminLimiter, verifyAdmin, async (req, res) => {

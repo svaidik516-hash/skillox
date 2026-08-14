@@ -3,7 +3,10 @@ require('dotenv').config();
 
 // Derive a steady 32-byte (256-bit) encryption key from environment secret
 function getEncryptionKey() {
-    const secret = process.env.ENCRYPTION_KEY || process.env.JWT_SECRET || 'fallback_skillox_secure_master_key_2026_default';
+    const secret = process.env.ENCRYPTION_KEY || process.env.JWT_SECRET;
+    if (!secret) {
+        throw new Error('FATAL: No encryption key configured. Set ENCRYPTION_KEY or JWT_SECRET in your environment.');
+    }
     return crypto.createHash('sha256').update(secret).digest();
 }
 
