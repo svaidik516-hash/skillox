@@ -832,8 +832,26 @@
                         </div>
                         <div class="form-field">
                             <label for="contact-message">Message</label>
-                            <textarea id="contact-message" placeholder="Type your question here..." required maxlength="1000"></textarea>
-                            <div style="text-align: right; font-size: 0.75rem; color: #94a3b8; margin-top: 4px;">Max 1000 characters (approx. 200 words)</div>
+                            <textarea id="contact-message" placeholder="Type your question here..." required maxlength="1000" oninput="updateCharCount()"></textarea>
+                            <div id="char-counter" style="text-align: right; font-size: 0.75rem; color: #94a3b8; margin-top: 4px; transition: color 0.2s;">1000 characters remaining</div>
+                            <script>
+                                function updateCharCount() {
+                                    const msg = document.getElementById('contact-message');
+                                    const counter = document.getElementById('char-counter');
+                                    const remaining = 1000 - msg.value.length;
+                                    counter.textContent = `${remaining} characters remaining`;
+                                    if (remaining <= 50) {
+                                        counter.style.color = '#ef4444'; // Red when running out
+                                        counter.style.fontWeight = '700';
+                                    } else if (remaining <= 200) {
+                                        counter.style.color = '#e8740c'; // Orange warning
+                                        counter.style.fontWeight = '600';
+                                    } else {
+                                        counter.style.color = '#94a3b8'; // Default grey
+                                        counter.style.fontWeight = '400';
+                                    }
+                                }
+                            </script>
                         </div>
                         <button type="submit" id="contact-submit" class="btn-ticket-submit">Submit Ticket</button>
                     </form>
