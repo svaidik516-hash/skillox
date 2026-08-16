@@ -505,6 +505,7 @@
             display: flex;
             flex-direction: column;
             gap: 28px;
+            min-width: 0;
         }
 
         .table-panel-card {
@@ -515,6 +516,7 @@
             overflow: hidden;
             display: flex;
             flex-direction: column;
+            min-width: 0;
         }
 
         .panel-header {
@@ -598,7 +600,7 @@
         }
 
         th {
-            padding: 16px 24px;
+            padding: 14px 16px;
             font-size: 0.78rem;
             font-weight: 700;
             text-transform: uppercase;
@@ -609,17 +611,34 @@
         }
 
         td {
-            padding: 18px 24px;
+            padding: 16px 16px;
             font-size: 0.90rem;
             color: #334155;
             border-bottom: 1px solid rgba(15, 23, 42, 0.05);
             vertical-align: middle;
         }
 
+        th:last-child, td:last-child {
+            position: sticky;
+            right: 0;
+            z-index: 1;
+            box-shadow: -4px 0 8px rgba(0, 0, 0, 0.02);
+        }
+        th:last-child {
+            background: #f8fafc;
+            z-index: 2;
+        }
+        td:last-child {
+            background: var(--bg-card);
+            border-left: 1px solid rgba(15, 23, 42, 0.03);
+        }
         tbody tr {
             transition: background 0.15s ease;
         }
         tbody tr:hover {
+            background: #fffaf5;
+        }
+        tbody tr:hover td:last-child {
             background: #fffaf5;
         }
 
@@ -803,31 +822,31 @@
 
             <div class="sidebar-nav">
                 <div class="nav-label">Main Navigation</div>
-                <button class="sidebar-item active" onclick="scrollToSection('top')">
+                <button class="sidebar-item active" data-action="scrollToSection" data-section="top">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
                     <span>Dashboard</span>
                 </button>
 
                 <div class="nav-label">Management & Users</div>
-                <button class="sidebar-item" onclick="scrollToSection('section-users')">
+                <button class="sidebar-item" data-action="scrollToSection" data-section="section-users">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
                     <span>Student Records</span>
                 </button>
-                <button class="sidebar-item" onclick="scrollToSection('section-logs')">
+                <button class="sidebar-item" data-action="scrollToSection" data-section="section-logs">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
                     <span>Login Activity</span>
                 </button>
-                <button class="sidebar-item" onclick="scrollToSection('section-messages')">
+                <button class="sidebar-item" data-action="scrollToSection" data-section="section-messages">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
                     <span>Contact Inbox</span>
                 </button>
-                <button class="sidebar-item" onclick="openSendMsgModal('ALL', 'All Registered Users')">
+                <button class="sidebar-item" data-action="openSendMsgModal" data-email="ALL" data-name="All Registered Users">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
                     <span>Broadcast Notice</span>
                 </button>
 
                 <div class="nav-label">System Status</div>
-                <button class="sidebar-item" onclick="loadAllData()">
+                <button class="sidebar-item" data-action="loadAllData">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
                     <span>Real-Time Sync</span>
                 </button>
@@ -838,7 +857,7 @@
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
                     <span>Back to Main Site</span>
                 </a>
-                <button onclick="lockAdminDashboard()" class="sidebar-item" style="padding: 10px 14px; color: #ef4444;">
+                <button data-action="lockAdminDashboard" class="sidebar-item" style="padding: 10px 14px; color: #ef4444;">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
                     <span>Lock Dashboard</span>
                 </button>
@@ -862,7 +881,7 @@
                         <span class="action-badge-dot" id="unread-dot" style="display:none;"></span>
                     </a>
 
-                    <button class="btn-refresh" id="btn-refresh" onclick="loadAllData()">
+                    <button class="btn-refresh" id="btn-refresh" data-action="loadAllData">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"></path></svg>
                         Refresh Data
                     </button>
@@ -1034,11 +1053,11 @@
                             </div>
                             <div class="panel-tools">
                                 <input type="text" class="table-search-box" id="search-users" placeholder="Search student name or email..." oninput="filterTable('users')">
-                                <button class="btn-action-pill btn-blue" onclick="openSendMsgModal('ALL', 'All Registered Users')">
+                                <button class="btn-action-pill btn-blue" data-action="openSendMsgModal" data-email="ALL" data-name="All Registered Users">
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
                                     Broadcast Notice
                                 </button>
-                                <button class="btn-action-pill btn-grey" onclick="exportCSV('users')">Export CSV</button>
+                                <button class="btn-action-pill btn-grey" data-action="exportCSV" data-type="users">Export CSV</button>
                             </div>
                         </div>
                         <div class="table-wrap">
@@ -1075,7 +1094,7 @@
                             </div>
                             <div class="panel-tools">
                                 <input type="text" class="table-search-box" id="search-logs" placeholder="Search email or IP..." oninput="filterTable('logs')">
-                                <button class="btn-action-pill btn-grey" onclick="exportCSV('logs')">Export CSV</button>
+                                <button class="btn-action-pill btn-grey" data-action="exportCSV" data-type="logs">Export CSV</button>
                             </div>
                         </div>
                         <div class="table-wrap">
@@ -1111,7 +1130,7 @@
                             </div>
                             <div class="panel-tools">
                                 <input type="text" class="table-search-box" id="search-messages" placeholder="Search inquiries..." oninput="filterTable('messages')">
-                                <button class="btn-action-pill btn-grey" onclick="exportCSV('messages')">Export CSV</button>
+                                <button class="btn-action-pill btn-grey" data-action="exportCSV" data-type="messages">Export CSV</button>
                             </div>
                         </div>
                         <div class="table-wrap">
@@ -1157,9 +1176,9 @@
                 <div style="margin-top:18px; padding:20px; background:#f8fafc; border-radius:14px; border:1px solid var(--border-color); white-space:pre-wrap; word-break:break-word; max-height:300px; overflow-y:auto;" id="modal-msg-body"></div>
             </div>
             <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:24px; padding-top:16px; border-top:1px solid var(--border-color);">
-                <button onclick="markCurrentMsgRead()" id="btn-modal-mark-read" class="btn-refresh" style="padding:9px 18px; background:#10b981;">Mark Read</button>
+                <button data-action="markCurrentMsgRead" id="btn-modal-mark-read" class="btn-refresh" style="padding:9px 18px; background:#10b981;">Mark Read</button>
                 <a id="btn-modal-reply" href="#" class="btn-action-pill btn-blue" style="text-decoration:none;">↗ Reply via Email</a>
-                <button onclick="closeContactModal()" class="btn-action-pill btn-grey">Close</button>
+                <button data-action="closeContactModal" class="btn-action-pill btn-grey">Close</button>
             </div>
         </div>
     </div>
@@ -1179,14 +1198,41 @@
                 <textarea id="send-msg-body-input" class="form-input-box" style="height:140px; resize:vertical; font-family:inherit;" placeholder="Type your formal student notification here..."></textarea>
             </div>
             <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:10px;">
-                <button onclick="submitUserMessage()" id="btn-submit-msg" class="btn-refresh" style="padding:11px 22px;">Send Notice Now</button>
-                <button onclick="closeSendMsgModal()" class="btn-action-pill btn-grey">Cancel</button>
+                <button data-action="submitUserMessage" id="btn-submit-msg" class="btn-refresh" style="padding:11px 22px;">Send Notice Now</button>
+                <button data-action="closeSendMsgModal" class="btn-action-pill btn-grey">Cancel</button>
             </div>
         </div>
     </div>
 
     <script src="config.js?v=21.0"></script>
     <script>
+        /* ===================================================================
+           GLOBAL EVENT DELEGATION (CSP SAFE)
+           =================================================================== */
+        document.addEventListener('click', (e) => {
+            const btn = e.target.closest('[data-action]');
+            if (!btn) return;
+            
+            const action = btn.getAttribute('data-action');
+            
+            if (action === 'scrollToSection') scrollToSection(btn.getAttribute('data-section'));
+            else if (action === 'loadAllData') loadAllData();
+            else if (action === 'lockAdminDashboard') lockAdminDashboard();
+            else if (action === 'markCurrentMsgRead') markCurrentMsgRead();
+            else if (action === 'closeContactModal') closeContactModal();
+            else if (action === 'submitUserMessage') submitUserMessage();
+            else if (action === 'closeSendMsgModal') closeSendMsgModal();
+            else if (action === 'exportCSV') exportCSV(btn.getAttribute('data-type'));
+            else if (action === 'openSendMsgModal') openSendMsgModal(btn.getAttribute('data-email'), btn.getAttribute('data-name'));
+            else if (action === 'unbanUserUI') updateUserStatus(btn.getAttribute('data-email'), 'unban');
+            else if (action === 'banUserUI') updateUserStatus(btn.getAttribute('data-email'), 'ban');
+            else if (action === 'deleteUserUI') deleteUserUI(btn.getAttribute('data-email'));
+            else if (action === 'viewDetailsUI') viewDetailsUI(btn.getAttribute('data-email'));
+            else if (action === 'deleteLog') deleteLog(btn.getAttribute('data-id'));
+            else if (action === 'openContactModal') openContactModal(Number(btn.getAttribute('data-id')));
+            else if (action === 'markAsRead') markAsRead(Number(btn.getAttribute('data-id')));
+        });
+
         /* ===================================================================
            SKILLOX MASTER ADMIN DASHBOARD — ENGINE
            =================================================================== */
@@ -1285,27 +1331,49 @@
             }
             body.innerHTML = users.map((u, i) => {
                 const isBanned = u.status === 'banned';
-                const statusPill = isBanned
-                    ? '<span class="status-pill banned">● Banned</span>' 
-                    : '<span class="status-pill online">● Online / Active</span>';
+                
+                let isOnline = false;
+                if (u.last_login) {
+                    const lastLoginDate = new Date(u.last_login.endsWith('Z') ? u.last_login : (u.last_login.includes('T') ? u.last_login : u.last_login + 'Z'));
+                    const now = new Date();
+                    // 2 hours in milliseconds = 7200000
+                    if ((now - lastLoginDate) < 7200000) {
+                        isOnline = true;
+                    }
+                }
+
+                let statusPill = '';
+                if (isBanned) {
+                    statusPill = '<span class="status-pill banned">● Banned</span>';
+                } else if (isOnline) {
+                    statusPill = '<span class="status-pill online">● Online / Active</span>';
+                } else {
+                    statusPill = '<span class="status-pill offline" style="background:#f1f5f9; color:#64748b; border:none;">○ Offline</span>';
+                }
                 
                 const actionBtns = isBanned
-                    ? `<button onclick="unbanUserUI('${escapeHtml(u.email)}')" class="btn-table-action btn-edit-blue" style="border-radius: 6px; padding: 6px 14px; font-weight: 600; min-width: 65px; transition: all 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">Unban</button>`
-                    : `<button onclick="banUserUI('${escapeHtml(u.email)}')" class="btn-table-action btn-warn-amber" style="border-radius: 6px; padding: 6px 14px; font-weight: 600; min-width: 65px; transition: all 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">Ban</button>`;
+                    ? `<button data-action="unbanUserUI" data-email="${escapeHtml(u.email)}" class="btn-table-action btn-edit-blue" style="border-radius: 6px; padding: 6px 14px; font-weight: 600; min-width: 65px; transition: all 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">Unban</button>`
+                    : `<button data-action="banUserUI" data-email="${escapeHtml(u.email)}" class="btn-table-action btn-warn-amber" style="border-radius: 6px; padding: 6px 14px; font-weight: 600; min-width: 65px; transition: all 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">Ban</button>`;
                 
-                const msgBtn = `<button onclick="openSendMsgModal('${escapeHtml(u.email)}', '${escapeHtml(u.name)}') " class="btn-table-action btn-edit-blue" style="border-radius: 6px; padding: 6px 14px; font-weight: 600; min-width: 65px; transition: all 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">✉ Msg</button>`;
-                const deleteBtn = `<button onclick="deleteUserUI('${escapeHtml(u.email)}')" class="btn-table-action btn-del-red" style="border-radius: 6px; padding: 6px 14px; font-weight: 600; min-width: 65px; transition: all 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">Del</button>`;
+                const viewBtn = `<button data-action="viewDetailsUI" data-email="${escapeHtml(u.email)}" class="btn-table-action" style="background: #f1f5f9; color: #475569; border-radius: 6px; padding: 6px 14px; font-weight: 600; min-width: 65px; transition: all 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.05); border: 1px solid #cbd5e1;">👁 View</button>`;
+                const msgBtn = `<button data-action="openSendMsgModal" data-email="${escapeHtml(u.email)}" data-name="${escapeHtml(u.name)}" class="btn-table-action btn-edit-blue" style="border-radius: 6px; padding: 6px 14px; font-weight: 600; min-width: 65px; transition: all 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">✉ Msg</button>`;
+                const deleteBtn = `<button data-action="deleteUserUI" data-email="${escapeHtml(u.email)}" class="btn-table-action btn-del-red" style="border-radius: 6px; padding: 6px 14px; font-weight: 600; min-width: 65px; transition: all 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">Del</button>`;
                 
                 // Assign consistent avatar color based on index
                 const colorIdx = (i % 5) + 1;
                 const initial = (u.name || 'S').charAt(0).toUpperCase();
+                
+                let avatarHtml = `<div class="student-avatar-circle avatar-bg-${colorIdx}">${initial}</div>`;
+                if (u.profile_picture && u.profile_picture !== 'removed') {
+                    avatarHtml = `<img src="${escapeHtml(u.profile_picture)}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid #e2e8f0; box-shadow: 0 2px 4px rgba(0,0,0,0.05);" alt="Profile">`;
+                }
 
                 return `
                 <tr>
                     <td style="color: #64748b; font-weight:600; font-size: 0.82rem;">${i + 1}</td>
                     <td>
                         <div class="user-cell-flex">
-                            <div class="student-avatar-circle avatar-bg-${colorIdx}">${initial}</div>
+                            ${avatarHtml}
                             <div>
                                 <div style="font-weight: 700; color: #0f172a;">${escapeHtml(u.name)}</div>
                                 <div class="email-text">${escapeHtml(u.email)}</div>
@@ -1318,7 +1386,7 @@
                     <td style="font-weight: 800; color: var(--primary); font-size:1.05rem;">${u.login_count}</td>
                     <td>
                         <div style="display: flex; gap: 8px; align-items: center; justify-content: flex-start; flex-wrap: nowrap; min-width: max-content;">
-                            ${msgBtn}${actionBtns}${deleteBtn}
+                            ${viewBtn}${msgBtn}${actionBtns}${deleteBtn}
                         </div>
                     </td>
                 </tr>
@@ -1387,7 +1455,7 @@
                     </td>
                     <td class="date-text">${formatDate(l.created_at)}</td>
                     <td>
-                        <button class="btn-action-pill" style="color: #ef4444; border-color: #fecaca; background: #fef2f2;" onclick="deleteLog('${l.id}')">Delete</button>
+                        <button class="btn-action-pill" style="color: #ef4444; border-color: #fecaca; background: #fef2f2;" data-action="deleteLog" data-id="${l.id}">Delete</button>
                     </td>
                 </tr>
             `).join('');
@@ -1447,8 +1515,8 @@
                     </td>
                     <td class="date-text">${formatDate(m.created_at)}</td>
                     <td>
-                        <button onclick="openContactModal(${m.id})" class="btn-table-action btn-edit-blue">👁️ Open</button>
-                        ${m.status === 'unread' ? `<button onclick="markAsRead(${m.id})" class="btn-table-action btn-warn-amber">Mark Read</button>` : ''}
+                        <button data-action="openContactModal" data-id="${m.id}" class="btn-table-action btn-edit-blue">👁️ Open</button>
+                        ${m.status === 'unread' ? `<button data-action="markAsRead" data-id="${m.id}" class="btn-table-action btn-warn-amber">Mark Read</button>` : ''}
                     </td>
                 </tr>
             `).join('');
@@ -1582,7 +1650,8 @@
                         document.getElementById('admin-auth-overlay').style.display = 'none';
                         document.getElementById('admin-app-container').style.display = 'flex';
                         loadAllData();
-                        setInterval(loadAllData, 30000);
+                        if (window.adminDataInterval) clearInterval(window.adminDataInterval);
+                        window.adminDataInterval = setInterval(loadAllData, 30000);
                     } else {
                         document.getElementById('admin-password-input').addEventListener('keypress', (e) => {
                             if (e.key === 'Enter') handleAdminLogin();
@@ -1619,7 +1688,8 @@
                     document.getElementById('admin-auth-overlay').style.display = 'none';
                     document.getElementById('admin-app-container').style.display = 'flex';
                     loadAllData();
-                    setInterval(loadAllData, 30000);
+                    if (window.adminDataInterval) clearInterval(window.adminDataInterval);
+                    window.adminDataInterval = setInterval(loadAllData, 30000);
                 } else {
                     document.getElementById('admin-error').style.display = 'block';
                     btn.textContent = 'Unlock Dashboard';
@@ -1727,39 +1797,79 @@
             }
         }
 
+        window.viewDetailsUI = function(email) {
+            const user = allUsers.find(u => u.email === email);
+            if (!user) return;
+            
+            const overlay = document.createElement('div');
+            overlay.style.position = 'fixed';
+            overlay.style.top = '0'; overlay.style.left = '0';
+            overlay.style.width = '100vw'; overlay.style.height = '100vh';
+            overlay.style.backgroundColor = 'rgba(15, 23, 42, 0.6)';
+            overlay.style.backdropFilter = 'blur(6px)';
+            overlay.style.zIndex = '999999';
+            overlay.style.display = 'flex';
+            overlay.style.alignItems = 'center';
+            overlay.style.justifyContent = 'center';
+            overlay.style.animation = 'fadeIn 0.2s ease';
+            
+            let avatarHtml = `<div style="width: 72px; height: 72px; background: #f1f5f9; color: #475569; border-radius: 50%; display:flex; align-items:center; justify-content:center; font-size: 28px; font-weight:bold; border: 1px solid #e2e8f0;">${user.name.charAt(0).toUpperCase()}</div>`;
+            if (user.profile_picture && user.profile_picture !== 'removed') {
+                avatarHtml = `<img src="${escapeHtml(user.profile_picture)}" style="width: 72px; height: 72px; border-radius: 50%; object-fit: cover; border: 3px solid #e8740c; box-shadow: 0 4px 12px rgba(232, 116, 12, 0.2);">`;
+            }
+
+            overlay.innerHTML = `
+                <div style="background: white; padding: 32px; border-radius: 24px; width: 480px; max-width: 90%; font-family: 'Inter', sans-serif; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px;">
+                        <div style="display: flex; gap: 20px; align-items: center;">
+                            ${avatarHtml}
+                            <div>
+                                <h2 style="margin: 0 0 6px 0; font-size: 22px; color: #0f172a; font-weight: 700;">${escapeHtml(user.name)}</h2>
+                                <div style="color: #64748b; font-size: 14px; display: flex; align-items: center; gap: 6px;">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                                    ${escapeHtml(user.email)}
+                                </div>
+                                <div style="margin-top: 10px;">
+                                    <span style="background: #fff7ed; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600; color: #ea580c; border: 1px solid #ffedd5;">Logins: ${user.login_count}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <button onclick="this.closest('div[style*=\\'position: fixed\\']').remove()" style="background: #f1f5f9; border: none; font-size: 20px; color: #64748b; cursor: pointer; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: all 0.2s;">&times;</button>
+                    </div>
+                    
+                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 16px; padding: 24px;">
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 20px;">
+                            <div style="width: 8px; height: 8px; border-radius: 50%; background: #e8740c;"></div>
+                            <h3 style="margin: 0; font-size: 14px; color: #0f172a; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700;">Onboarding Details</h3>
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: 110px 1fr; gap: 12px; margin-bottom: 16px; align-items: start;">
+                            <div style="font-weight: 600; color: #64748b; font-size: 14px;">Age</div>
+                            <div style="color: #0f172a; font-size: 15px; font-weight: 500;">${user.age ? escapeHtml(user.age.toString()) + ' years old' : '<span style="color:#94a3b8;font-style:italic;">Not provided</span>'}</div>
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: 110px 1fr; gap: 12px; margin-bottom: 16px; align-items: start;">
+                            <div style="font-weight: 600; color: #64748b; font-size: 14px;">Qualification</div>
+                            <div style="color: #0f172a; font-size: 15px; font-weight: 500;">${user.qualification ? escapeHtml(user.qualification) : '<span style="color:#94a3b8;font-style:italic;">Not provided</span>'}</div>
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: 110px 1fr; gap: 12px; align-items: start;">
+                            <div style="font-weight: 600; color: #64748b; font-size: 14px;">Address</div>
+                            <div style="color: #0f172a; font-size: 15px; font-weight: 500; line-height: 1.5;">${user.address ? escapeHtml(user.address) : '<span style="color:#94a3b8;font-style:italic;">Not provided</span>'}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Highlight close button on hover dynamically
+            const closeBtn = overlay.querySelector('button');
+            closeBtn.onmouseenter = () => { closeBtn.style.background = '#e2e8f0'; closeBtn.style.color = '#0f172a'; };
+            closeBtn.onmouseleave = () => { closeBtn.style.background = '#f1f5f9'; closeBtn.style.color = '#64748b'; };
+
+            document.body.appendChild(overlay);
+        };
+
         initAdminAuth();
     </script>
-
-    <!-- Mobile Bottom Navigation -->
-    <div class="mobile-bottom-nav">
-        <a href="index.html" class="bottom-nav-item" id="nav-home">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-            <span>Home</span>
-        </a>
-        <a href="textbooks.html" class="bottom-nav-item" id="nav-library">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
-            <span>Library</span>
-        </a>
-        <a href="bookmarks.html" class="bottom-nav-item" id="nav-saved">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
-            <span>Saved</span>
-        </a>
-        <a href="profile.html" class="bottom-nav-item" id="nav-profile">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-            <span>Profile</span>
-        </a>
-    </div>
-    
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            const path = window.location.pathname;
-            const page = path.split("/").pop();
-            if(page === "" || page === "index.html") document.getElementById("nav-home")?.classList.add("active");
-            else if(["textbooks.html", "cbse.html", "icse.html", "up-board.html", "revision.html"].includes(page)) document.getElementById("nav-library")?.classList.add("active");
-            else if(page === "bookmarks.html") document.getElementById("nav-saved")?.classList.add("active");
-            else if(page === "profile.html" || page === "login.html" || page === "signup.html" || page === "admin.html") document.getElementById("nav-profile")?.classList.add("active");
-        });
-    </script>
-
 </body>
 </html>

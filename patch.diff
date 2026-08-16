@@ -1,0 +1,457 @@
+diff --git a/server.js b/server.js
+index 6b71bd8..5ff5897 100644
+--- a/server.js
++++ b/server.js
+@@ -77,10 +77,11 @@ app.use((req, res, next) => {
+     res.setHeader('X-XSS-Protection', '1; mode=block');
+     res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+     res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+-    // Content-Security-Policy — restricts what resources can load, mitigates XSS damage
+-    // SECURITY FIX: Removed 'unsafe-eval' — it neutralized XSS protection
++    
++    // ALLOW Google Identity Services for login
+     res.setHeader('Content-Security-Policy', 
+-        "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.supabase.co https://*.ngrok-free.app https://*.ngrok.io blob:; worker-src 'self' blob: https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com; frame-ancestors 'none';");
++        "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com https://accounts.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.supabase.co https://*.ngrok-free.app https://*.ngrok.io blob: https://accounts.google.com; frame-src 'self' https://accounts.google.com; worker-src 'self' blob: https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com; frame-ancestors 'none';");
++        
+     // HSTS — only on production (HTTPS)
+     if (req.secure || req.headers['x-forwarded-proto'] === 'https') {
+         res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+@@ -88,7 +89,7 @@ app.use((req, res, next) => {
+     next();
+ });
+ 
+-// CORS — allow Vercel frontend + local development (FIXED: actually reject unknown origins)
++// CORS — allow Vercel frontend + local development
+ app.use(cors({
+     origin: function (origin, callback) {
+         // Allow requests with no origin (server-to-server, mobile apps, curl)
+@@ -173,9 +174,18 @@ const otpVerifyLimiter = rateLimit({
+ });
+ 
+ // Rate limiter for admin endpoints
++const adminLoginLimiter = rateLimit({
++    windowMs: 15 * 60 * 1000,
++    max: 10,
++    message: { error: 'Too many login attempts. Please try again later.' },
++    standardHeaders: true,
++    legacyHeaders: false,
++    keyGenerator: (req) => getClientIP(req)
++});
++
+ const adminLimiter = rateLimit({
+     windowMs: 15 * 60 * 1000,
+-    max: 30,
++    max: 2000,
+     message: { error: 'Too many admin requests. Please slow down.' },
+     standardHeaders: true,
+     legacyHeaders: false,
+@@ -287,388 +297,6 @@ app.post('/api/signup-request', otpRequestLimiter, async (req, res) => {
+     }
+     if (!isValidEmail(email)) {
+         return res.status(400).json({ error: 'Please enter a valid email address' });
+-    }
+-    if (!isValidPassword(password)) {
+-        return res.status(400).json({ error: 'Password must be 8-128 characters with at least one uppercase letter, one lowercase letter, and one digit' });
+-    }
+-
+-    try {
+-        // Check if user already exists
+-        const existing = await getUserByEmail(email);
+-        if (existing) {
+-            // SECURITY FIX: Don't reveal whether an email is registered
+-            // Return the same success message to prevent email enumeration
+-            return res.json({ success: true, message: 'If this email is available, an OTP has been sent.' });
+-        }
+-
+-        const otp = generateSecureOTP();
+-        const hashedOtp = await bcrypt.hash(otp, 10);
+-        const expiresAt = Date.now() + 5 * 60 * 1000; // 5 minutes
+-
+-        // SECURITY FIX: Hash password BEFORE storing in otp_requests
+-        const hashedPassword = await bcrypt.hash(password, 10);
+-        await saveOtpRequest(email, hashedOtp, name, hashedPassword, 'signup', expiresAt);
+-
+-        const transporter = await createTransporter();
+-        const info = await transporter.sendMail({
+-            from: '"Skillox Accounts" <noreply@skillox.com>',
+-            to: email,
+-            subject: 'Your Skillox Signup Verification Code',
+-            html: `
+-                <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 32px; background: #fff7ed; border-radius: 16px;">
+-                    <div style="text-align: center; margin-bottom: 24px;">
+-                        <h2 style="margin: 12px 0 0; color: #1e1e1e; font-size: 22px;">Skillox</h2>
+-                    </div>
+-                    <div style="background: white; border-radius: 12px; padding: 28px; text-align: center; border: 1px solid rgba(0,0,0,0.06);">
+-                        <p style="color: #6b7280; margin: 0 0 20px; font-size: 15px;">Your signup verification code is:</p>
+-                        <div style="font-size: 36px; font-weight: 700; letter-spacing: 8px; color: #e8740c; margin: 16px 0; font-family: monospace;">${otp}</div>
+-                        <p style="color: #9ca3af; margin: 20px 0 0; font-size: 13px;">This code will expire in 5 minutes.</p>
+-                    </div>
+-                </div>
+-            `
+-        });
+-
+-        console.log(`📧 Signup OTP sent to ${maskEmail(email)}`);
+-        res.json({ success: true, message: 'OTP sent to email' });
+-    } catch (error) {
+-        console.error('Signup Request error:', error);
+-        res.status(500).json({ error: 'Failed to send OTP' });
+-    }
+-});
+-
+-// Endpoint to Verify Signup (Creates Account)
+-app.post('/api/signup-verify', otpVerifyLimiter, async (req, res) => {
+-    const { email, otp } = req.body;
+-    const ip = getClientIP(req);
+-
+-    if (!email || !otp) {
+-        return res.status(400).json({ error: 'Email and OTP are required' });
+-    }
+-
+-    let record;
+-    try {
+-        record = await getOtpRequest(email, 'signup');
+-    } catch (err) {
+-        console.error('Error fetching OTP request:', err);
+-        return res.status(500).json({ error: 'Internal server error' });
+-    }
+-
+-    if (!record) {
+-        return res.status(400).json({ error: 'No signup request found for this email or it has expired' });
+-    }
+-
+-    if (Date.now() > Number(record.expires_at)) {
+-        await deleteOtpRequest(email);
+-        return res.status(400).json({ error: 'OTP has expired' });
+-    }
+-
+-    // SECURITY FIX: Check OTP attempt count before verifying
+-    const attempts = await incrementOtpAttempts(email);
+-    if (attempts > MAX_OTP_ATTEMPTS) {
+-        await deleteOtpRequest(email);
+-        return res.status(429).json({ error: 'Too many failed OTP attempts. Please request a new code.' });
+-    }
+-
+-    if (await bcrypt.compare(otp, record.otp)) {
+-        // Success — password is already hashed from signup-request
+-        try {
+-            await createUser(record.name, email, record.password);
+-            
+-            await deleteOtpRequest(email);
+-            await recordLoginSuccess(email);
+-            await logLogin(email, ip, 'success');
+-            
+-            // SECURITY FIX: Reduced token lifetime from 7 days to 24 hours
+-            const token = jwt.sign({ email }, process.env.JWT_SECRET, { expiresIn: '24h' });
+-            const isSecure = req.secure || req.headers['x-forwarded-proto'] === 'https';
+-            res.cookie('skillox_token', token, { httpOnly: true, secure: isSecure, sameSite: 'lax', maxAge: 24 * 60 * 60 * 1000 });
+-            
+-            res.json({ success: true, message: 'Account created successfully' });
+-        } catch (error) {
+-            console.error('Signup Verify error:', error);
+-            res.status(500).json({ error: 'Failed to create account in database' });
+-        }
+-    } else {
+-        return res.status(400).json({ error: `Invalid OTP. ${MAX_OTP_ATTEMPTS - attempts} attempts remaining.` });
+-    }
+-});
+-
+-// Endpoint to Request Forgot Password OTP
+-app.post('/api/forgot-password-request', otpRequestLimiter, async (req, res) => {
+-    const { email } = req.body;
+-
+-    if (!email) {
+-        return res.status(400).json({ error: 'Email is required' });
+-    }
+-
+-    if (!isValidEmail(email)) {
+-        return res.status(400).json({ error: 'Please enter a valid email address' });
+-    }
+-
+-    try {
+-        const user = await getUserByEmail(email);
+-        if (!user) {
+-            // For security, don't reveal if user exists or not
+-            return res.json({ success: true, message: 'If that email is registered, an OTP was sent.' });
+-        }
+-
+-        const otp = generateSecureOTP();
+-        const hashedOtp = await bcrypt.hash(otp, 10);
+-        const expiresAt = Date.now() + 10 * 60 * 1000; // 10 minutes
+-        await saveOtpRequest(email, hashedOtp, null, null, 'reset', expiresAt);
+-
+-        const transporter = await createTransporter();
+-        const info = await transporter.sendMail({
+-            from: '"Skillox Accounts" <noreply@skillox.com>',
+-            to: email,
+-            subject: 'Skillox Password Reset',
+-            html: `
+-                <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 32px; background: #fff7ed; border-radius: 16px;">
+-                    <div style="text-align: center; margin-bottom: 24px;">
+-                        <h2 style="margin: 12px 0 0; color: #1e1e1e; font-size: 22px;">Skillox</h2>
+-                    </div>
+-                    <div style="background: white; border-radius: 12px; padding: 28px; text-align: center; border: 1px solid rgba(0,0,0,0.06);">
+-                        <p style="color: #6b7280; margin: 0 0 20px; font-size: 15px;">Your password reset code is:</p>
+-                        <div style="font-size: 36px; font-weight: 700; letter-spacing: 8px; color: #e8740c; margin: 16px 0; font-family: monospace;">${otp}</div>
+-                        <p style="color: #9ca3af; margin: 20px 0 0; font-size: 13px;">This code will expire in 10 minutes.</p>
+-                    </div>
+-                </div>
+-            `
+-        });
+-
+-        console.log(`📧 Password reset OTP sent to ${maskEmail(email)}`);
+-        res.json({ success: true, message: 'OTP sent to email' });
+-    } catch (error) {
+-        console.error('Forgot Password Request error:', error);
+-        res.status(500).json({ error: 'Failed to send reset email' });
+-    }
+-});
+-
+-// Endpoint to Reset Password
+-app.post('/api/forgot-password-reset', otpVerifyLimiter, async (req, res) => {
+-    const { email, otp, newPassword } = req.body;
+-
+-    if (!email || !otp || !newPassword) {
+-        return res.status(400).json({ error: 'Email, OTP, and new password are required' });
+-    }
+-
+-    if (!isValidPassword(newPassword)) {
+-        return res.status(400).json({ error: 'Password must be 8-128 characters with at least one uppercase letter, one lowercase letter, and one digit' });
+-    }
+-
+-    let record;
+-    try {
+-        record = await getOtpRequest(email, 'reset');
+-    } catch (err) {
+-        console.error('Error fetching reset request:', err);
+-        return res.status(500).json({ error: 'Internal server error' });
+-    }
+-
+-    if (!record) {
+-        return res.status(400).json({ error: 'No reset request found or it has expired' });
+-    }
+-
+-    if (Date.now() > Number(record.expires_at)) {
+-        await deleteOtpRequest(email);
+-        return res.status(400).json({ error: 'OTP has expired' });
+-    }
+-
+-    // SECURITY FIX: Check OTP attempt count before verifying
+-    const attempts = await incrementOtpAttempts(email);
+-    if (attempts > MAX_OTP_ATTEMPTS) {
+-        await deleteOtpRequest(email);
+-        return res.status(429).json({ error: 'Too many failed OTP attempts. Please request a new code.' });
+-    }
+-
+-    if (await bcrypt.compare(otp, record.otp)) {
+-        try {
+-            const hash = await bcrypt.hash(newPassword, 10);
+-            await updateUserPassword(email, hash);
+-            await deleteOtpRequest(email);
+-            res.json({ success: true, message: 'Password reset successfully' });
+-        } catch (error) {
+-            console.error('Password Reset error:', error);
+-            res.status(500).json({ error: 'Failed to update password' });
+-        }
+-    } else {
+-        return res.status(400).json({ error: `Invalid OTP. ${MAX_OTP_ATTEMPTS - attempts} attempts remaining.` });
+-    }
+-});
+-
+-// Endpoint to Login
+-app.post('/api/login', loginLimiter, async (req, res) => {
+-    const { email, password } = req.body;
+-    const ip = getClientIP(req);
+-
+-    if (!email || !password) {
+-        return res.status(400).json({ error: 'Email and password are required' });
+-    }
+-
+-    try {
+-        const user = await getUserByEmail(email);
+-        
+-        if (!user) {
+-            await logLogin(email, ip, 'failed');
+-            return res.status(400).json({ error: 'Invalid email or password' });
+-        }
+-
+-        const isValid = await bcrypt.compare(password, user.password_hash);
+-        
+-        if (!isValid) {
+-            await logLogin(email, ip, 'failed');
+-            return res.status(400).json({ error: 'Invalid email or password' });
+-        }
+-        
+-        if (user.status === 'banned') {
+-            await logLogin(email, ip, 'failed');
+-            return res.status(403).json({ error: 'YOU ARE BANNED FOR VIOLATING THE RULES' });
+-        }
+-
+-        // High-Security Check: Is TOTP Authenticator App enabled?
+-        const totpInfo = await getDecodedUserTOTP(email);
+-        if (totpInfo && totpInfo.totp_enabled) {
+-            return res.json({ success: true, requireTotp: true, email: user.email, message: 'Please enter your 6-digit Authenticator App verification code.' });
+-        }
+-
+-        // Check if 2FA (Email OTP) is enabled on user's account
+-        if (user.two_factor_enabled) {
+-            const otp = generateSecureOTP();
+-            const hashedOtp = await bcrypt.hash(otp, 10);
+-            const expiresAt = Date.now() + 5 * 60 * 1000; // 5 minutes
+-            const targetEmail = user.two_factor_email || user.email;
+-            await saveOtpRequest(email, hashedOtp, targetEmail, null, '2fa', expiresAt);
+-
+-            const transporter = await createTransporter();
+-            await transporter.sendMail({
+-                from: '"Skillox Security" <noreply@skillox.com>',
+-                to: targetEmail,
+-                subject: 'Your Skillox Two-Factor Authentication Code',
+-                html: `
+-                    <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 32px; background: #fff7ed; border-radius: 16px;">
+-                        <div style="text-align: center; margin-bottom: 24px;">
+-                            <h2 style="margin: 12px 0 0; color: #1e1e1e; font-size: 22px;">Skillox Security</h2>
+-                        </div>
+-                        <div style="background: white; border-radius: 12px; padding: 28px; text-align: center; border: 1px solid rgba(0,0,0,0.06);">
+-                            <p style="color: #6b7280; margin: 0 0 20px; font-size: 15px;">Your two-factor login verification code is:</p>
+-                            <div style="font-size: 36px; font-weight: 700; letter-spacing: 8px; color: #e8740c; margin: 16px 0; font-family: monospace;">${otp}</div>
+-                            <p style="color: #9ca3af; margin: 20px 0 0; font-size: 13px;">This code will expire in 5 minutes.</p>
+-                        </div>
+-                    </div>
+-                `
+-            });
+-            console.log(`📧 2FA Login OTP sent to ${maskEmail(targetEmail)}`);
+-            return res.json({ success: true, require2fa: true, email: user.email, targetEmail: maskEmail(targetEmail), message: `2FA verification code sent to ${maskEmail(targetEmail)}` });
+-        }
+-
+-        // Success
+-        await recordLoginSuccess(email);
+-        await logLogin(email, ip, 'success');
+-        
+-        const sessionId = crypto.randomUUID();
+-        await saveUserSession(sessionId, email, getDeviceInfo(req), ip);
+-        // SECURITY FIX: Reduced token lifetime from 7 days to 24 hours
+-        const token = jwt.sign({ email: user.email, sessionId: sessionId }, process.env.JWT_SECRET, { expiresIn: '24h' });
+-        const isSecure = req.secure || req.headers['x-forwarded-proto'] === 'https';
+-        res.cookie('skillox_token', token, { httpOnly: true, secure: isSecure, sameSite: 'lax', maxAge: 24 * 60 * 60 * 1000 });
+-        
+-        res.json({ 
+-            success: true, 
+-            message: 'Logged in successfully',
+-            user: { name: user.name, email: user.email }
+-        });
+-    } catch (error) {
+-        console.error('Login error:', error);
+-        res.status(500).json({ error: 'An error occurred during login' });
+-    }
+-});
+-
+-// Endpoint to Verify 2FA code during login
+-app.post('/api/login-verify-2fa', otpVerifyLimiter, async (req, res) => {
+-    const { email, otp } = req.body;
+-    const ip = getClientIP(req);
+-
+-    if (!email || !otp) {
+-        return res.status(400).json({ error: 'Email and OTP are required' });
+-    }
+-
+-    try {
+-        const record = await getOtpRequest(email, '2fa');
+-        if (!record) {
+-            return res.status(400).json({ error: 'No verification request found or code expired' });
+-        }
+-
+-        if (Date.now() > record.expires_at) {
+-            await deleteOtpRequest(email);
+-            return res.status(400).json({ error: 'OTP has expired' });
+-        }
+-
+-        const attempts = await incrementOtpAttempts(email);
+-        if (attempts > MAX_OTP_ATTEMPTS) {
+-            await deleteOtpRequest(email);
+-            await logLogin(email, ip, 'failed');
+-            return res.status(429).json({ error: 'Too many failed OTP attempts. Please try logging in again.' });
+-        }
+-
+-        if (await bcrypt.compare(otp, record.otp)) {
+-            await deleteOtpRequest(email);
+-            const user = await getUserByEmail(email);
+-            if (!user || user.status === 'banned') {
+-                return res.status(403).json({ error: 'YOU ARE BANNED FOR VIOLATING THE RULES' });
+-            }
+-
+-            await recordLoginSuccess(email);
+-            await logLogin(email, ip, 'success');
+-
+-            const sessionId = crypto.randomUUID();
+-            await saveUserSession(sessionId, email, getDeviceInfo(req), ip);
+-            // SECURITY FIX: Reduced token lifetime from 7 days to 24 hours
+-            const token = jwt.sign({ email: user.email, sessionId: sessionId }, process.env.JWT_SECRET, { expiresIn: '24h' });
+-            const isSecure = req.secure || req.headers['x-forwarded-proto'] === 'https';
+-            res.cookie('skillox_token', token, { httpOnly: true, secure: isSecure, sameSite: 'lax', maxAge: 24 * 60 * 60 * 1000 });
+-
+-            return res.json({ success: true, message: '2FA verification successful', user: { name: user.name, email: user.email } });
+-        } else {
+-            return res.status(400).json({ error: `Invalid OTP. ${MAX_OTP_ATTEMPTS - attempts} attempts remaining.` });
+-        }
+-    } catch (error) {
+-        console.error('2FA verify error:', error);
+-        res.status(500).json({ error: 'Verification failed due to a server error' });
+-    }
+-});
+-
+-// Endpoint to Verify Google Authenticator TOTP code during login
+-app.post('/api/login-verify-totp', otpVerifyLimiter, async (req, res) => {
+-    const { email, totpCode } = req.body;
+-    const ip = getClientIP(req);
+-    if (!email || !totpCode) return res.status(400).json({ error: 'Email and authenticator code are required' });
+-
+-    try {
+-        const totpInfo = await getDecodedUserTOTP(email);
+-        if (!totpInfo || !totpInfo.totp_enabled || !totpInfo.totp_secret) {
+-            return res.status(400).json({ error: 'TOTP authentication is not enabled for this account' });
+-        }
+-
+-        const isValid = checkTotp(totpCode, totpInfo.totp_secret);
+-        if (isValid) {
+-            const user = await getUserByEmail(email);
+-            await recordLoginSuccess(email);
+-            await logLogin(email, ip, 'success');
+-
+-            const sessionId = crypto.randomUUID();
+-            await saveUserSession(sessionId, email, getDeviceInfo(req), ip);
+-            // SECURITY FIX: Reduced token lifetime from 7 days to 24 hours
+-            const token = jwt.sign({ email: user.email, sessionId: sessionId }, process.env.JWT_SECRET, { expiresIn: '24h' });
+-            const isSecure = req.secure || req.headers['x-forwarded-proto'] === 'https';
+-            res.cookie('skillox_token', token, { httpOnly: true, secure: isSecure, sameSite: 'lax', maxAge: 24 * 60 * 60 * 1000 });
+-            return res.json({ success: true, message: 'Authenticator Verified Successfully', user: { name: user.name, email: user.email } });
+-        } else {
+-            return res.status(400).json({ error: 'Invalid authenticator verification code. Please try again.' });
+-        }
+-    } catch (error) {
+-        console.error('TOTP login verify error:', error);
+-        res.status(500).json({ error: 'Verification failed due to a server error' });
+-    }
+-});
+ 
+ /* =============================================
+    PERFORMANCE CACHING & SESSION VERIFICATION
+@@ -1195,7 +823,7 @@ function verifyAdmin(req, res, next) {
+ }
+ 
+ // SECURITY FIX: Admin login endpoint — issues a short-lived JWT cookie instead of storing password client-side
+-app.post('/api/admin/login', adminLimiter, (req, res) => {
++app.post('/api/admin/login', adminLoginLimiter, (req, res) => {
+     const { password } = req.body;
+     const expected = process.env.ADMIN_PASSWORD;
+ 
+@@ -1219,8 +847,8 @@ app.post('/api/admin/login', adminLimiter, (req, res) => {
+     res.cookie('skillox_admin_token', adminJwt, {
+         httpOnly: true,
+         secure: isSecure,
+-        sameSite: 'lax',
+-        maxAge: 2 * 60 * 60 * 1000 // 2 hours
++        sameSite: 'lax'
++        // maxAge removed so it acts as a Session Cookie
+     });
+     res.json({ success: true, message: 'Admin session established' });
+ });

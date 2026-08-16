@@ -42,25 +42,41 @@ function decryptField(encryptedText) {
     if (!encryptedText || typeof encryptedText !== 'string' || !encryptedText.startsWith('ENC:')) {
         return encryptedText;
     }
-    try {
-        const parts = encryptedText.split(':');
-        if (parts.length < 4) return encryptedText;
 
-        const iv = Buffer.from(parts[1], 'base64');
-        const ciphertext = parts[2];
-        const tag = Buffer.from(parts[3], 'base64');
-        const key = getEncryptionKey();
+    const parts = encryptedText.split(':');
+    if (parts.length < 4) return encryptedText;
 
-        const decipher = crypto.createDecipheriv('aes-256-gcm', key, iv);
-        decipher.setAuthTag(tag);
+    const iv = Buffer.from(parts[1], 'base64');
+    const ciphertext = parts[2];
+    const tag = Buffer.from(parts[3], 'base64');
 
-        let cleartext = decipher.update(ciphertext, 'base64', 'utf8');
-        cleartext += decipher.final('utf8');
-        return cleartext;
-    } catch (err) {
-        console.warn('Decryption failed (possible tampering or key alteration):', err.message);
-        return '[Encrypted Security Record]';
+    // Attempt decryption with a specific secret
+    const attemptDecrypt = (secret) => {
+        if (!secret) return null;
+        try {
+            const key = crypto.createHash('sha256').update(secret).digest();
+            const decipher = crypto.createDecipheriv('aes-256-gcm', key, iv);
+            decipher.setAuthTag(tag);
+            let cleartext = decipher.update(ciphertext, 'base64', 'utf8');
+            cleartext += decipher.final('utf8');
+            return cleartext;
+        } catch (err) {
+            return null;
+        }
+    };
+
+    // Try primary ENCRYPTION_KEY first
+    let result = attemptDecrypt(process.env.ENCRYPTION_KEY);
+    
+    // If it fails, fallback to JWT_SECRET (for older records)
+    if (!result && process.env.JWT_SECRET) {
+        result = attemptDecrypt(process.env.JWT_SECRET);
     }
+
+    if (result) return result;
+
+    console.warn('Decryption failed for record. Both keys failed.');
+    return '[Encrypted Security Record]';
 }
 
 module.exports = {

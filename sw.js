@@ -1,4 +1,4 @@
-const CACHE_NAME = 'skillox-app-cache-v1';
+const CACHE_NAME = 'skillox-app-cache-v3';
 const PDF_CACHE_NAME = 'skillox-pdf-cache-v1';
 
 // Core assets to pre-cache instantly
@@ -9,9 +9,18 @@ const CORE_ASSETS = [
     '/signup.html',
     '/textbooks.html',
     '/styles.css',
-    '/script.js',
     '/pdf-list.json'
 ];
+
+// Files that should NEVER be cached (always fetch from network)
+const NEVER_CACHE = [
+    'script.js',
+    'config.js'
+];
+
+function shouldNeverCache(url) {
+    return NEVER_CACHE.some(file => url.pathname.includes(file));
+}
 
 // Install Event: Pre-cache core assets
 self.addEventListener('install', event => {
@@ -50,6 +59,12 @@ self.addEventListener('fetch', event => {
         return;
     }
 
+    // NEVER cache script.js or config.js — always fetch fresh from network
+    if (shouldNeverCache(url)) {
+        event.respondWith(fetch(event.request));
+        return;
+    }
+
     // PDF Caching Strategy: Cache-First, fallback to Network
     if (url.pathname.endsWith('.pdf')) {
         event.respondWith(
@@ -71,20 +86,15 @@ self.addEventListener('fetch', event => {
         return;
     }
 
-    // Default Strategy for HTML/CSS/JS: Stale-While-Revalidate
+    // Default Strategy for HTML/CSS: Network-First with cache fallback
     event.respondWith(
-        caches.match(event.request).then(cachedResponse => {
-            const networkFetch = fetch(event.request).then(networkResponse => {
-                return caches.open(CACHE_NAME).then(cache => {
-                    cache.put(event.request, networkResponse.clone());
-                    return networkResponse;
-                });
-            }).catch(() => {
-                // Ignore network errors on static assets if offline
+        fetch(event.request).then(networkResponse => {
+            return caches.open(CACHE_NAME).then(cache => {
+                cache.put(event.request, networkResponse.clone());
+                return networkResponse;
             });
-            
-            // Return cached response immediately if available, while updating cache in background
-            return cachedResponse || networkFetch;
+        }).catch(() => {
+            return caches.match(event.request);
         })
     );
 });

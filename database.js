@@ -19,9 +19,32 @@ async function initDb() {
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 last_login TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 login_count INTEGER DEFAULT 1,
-                status VARCHAR(20) DEFAULT 'active'
+                status VARCHAR(20) DEFAULT 'active',
+                profile_picture TEXT,
+                age INTEGER,
+                address TEXT,
+                qualification VARCHAR(255),
+                is_onboarded BOOLEAN DEFAULT false
             );
         `;
+
+        // Safe alterations to add new columns to existing schema
+        const alterStatements = [
+            `ALTER TABLE users ADD COLUMN IF NOT EXISTS profile_picture TEXT`,
+            `ALTER TABLE users ADD COLUMN IF NOT EXISTS age INTEGER`,
+            `ALTER TABLE users ADD COLUMN IF NOT EXISTS address TEXT`,
+            `ALTER TABLE users ADD COLUMN IF NOT EXISTS qualification VARCHAR(255)`,
+            `ALTER TABLE users ADD COLUMN IF NOT EXISTS is_onboarded BOOLEAN DEFAULT false`
+        ];
+        
+        for (const stmt of alterStatements) {
+            try {
+                // Using dynamic query execution for safe altering
+                await sql.query(stmt);
+            } catch (e) {
+                // Ignore errors if columns already exist (some postgres versions don't fully support IF NOT EXISTS in all alters perfectly)
+            }
+        }
 
         await sql`
             CREATE TABLE IF NOT EXISTS otp_requests (
@@ -202,7 +225,7 @@ async function logLogin(email, ipAddress, status) {
 async function getAllUsers() {
     try {
         const result = await sql`
-            SELECT id, name, email, created_at, last_login, login_count, status
+            SELECT id, name, email, created_at, last_login, login_count, status, profile_picture, age, address, qualification, is_onboarded
             FROM users
             ORDER BY last_login DESC
         `;
@@ -236,10 +259,36 @@ async function getLoginLogs(limit = 200) {
  */
 async function deleteLoginLog(id) {
     try {
-        await sql`DELETE FROM login_logs WHERE id = ${id}`;
-        return true;
+        const result = await sql`DELETE FROM login_logs WHERE id = ${id} RETURNING *`;
+        return result.rows[0];
     } catch (error) {
         console.error('Error in deleteLoginLog:', error);
+        throw error;
+    }
+}
+
+async function updateUserOnboarding(email, age, address, qualification, name) {
+    try {
+        await sql`
+            UPDATE users 
+            SET age = ${age}, address = ${address}, qualification = ${qualification}, name = ${name}, is_onboarded = true 
+            WHERE email = ${email}
+        `;
+    } catch (error) {
+        console.error('Error in updateUserOnboarding:', error);
+        throw error;
+    }
+}
+
+async function updateUserProfilePicture(email, pictureUrl) {
+    try {
+        await sql`
+            UPDATE users 
+            SET profile_picture = ${pictureUrl} 
+            WHERE email = ${email}
+        `;
+    } catch (error) {
+        console.error('Error in updateUserProfilePicture:', error);
         throw error;
     }
 }
@@ -594,5 +643,7 @@ module.exports = {
     getUserSessions,
     revokeUserSession,
     revokeOtherUserSessions,
-    deleteLoginLog
+    deleteLoginLog,
+    updateUserOnboarding,
+    updateUserProfilePicture
 };

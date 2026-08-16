@@ -1993,7 +1993,10 @@ input:checked + .slider:before {
     align-items: center;
     justify-content: center;
     box-shadow: 0 2px 8px rgba(232, 116, 12, 0.25);
-    font-family: 'Outfit', sans-serif;
+    border: 2px solid white;
+}
+.mobile-top-avatar-badge {
+    display: none;
 }
 
 /* === Dedicated Profile & Settings Page (Ultra-Clean Dashboard) === */

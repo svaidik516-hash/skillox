@@ -13,7 +13,7 @@ require('dotenv').config();
 
 const speakeasy = require('speakeasy');
 const qrcode = require('qrcode');
-const { initDb, createUser, getUserByEmail, updateUserPassword, recordLoginSuccess, logLogin, getAllUsers, getLoginLogs, getStats, saveOtpRequest, getOtpRequest, deleteOtpRequest, incrementOtpAttempts, saveContactMessage, getContactMessages, markMessageRead, banUser, unbanUser, deleteUser, saveUserMessage, getUserMessages, markUserMessageRead, updateUser2FA, updateUserProfile, updateUserTOTP, getDecodedUserTOTP, saveUserSession, getUserSessions, revokeUserSession, revokeOtherUserSessions, deleteLoginLog } = require('./database');
+const { initDb, createUser, getUserByEmail, updateUserPassword, recordLoginSuccess, logLogin, getAllUsers, getLoginLogs, getStats, saveOtpRequest, getOtpRequest, deleteOtpRequest, incrementOtpAttempts, saveContactMessage, getContactMessages, markMessageRead, banUser, unbanUser, deleteUser, saveUserMessage, getUserMessages, markUserMessageRead, updateUser2FA, updateUserProfile, updateUserTOTP, getDecodedUserTOTP, saveUserSession, getUserSessions, revokeUserSession, revokeOtherUserSessions, deleteLoginLog, updateUserProfilePicture, updateUserOnboarding } = require('./database');
 
 function checkTotp(code, secret) {
     try {
@@ -80,7 +80,7 @@ app.use((req, res, next) => {
     // Content-Security-Policy — restricts what resources can load, mitigates XSS damage
     // SECURITY FIX: Removed 'unsafe-eval' — it neutralized XSS protection
     res.setHeader('Content-Security-Policy', 
-        "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.supabase.co https://*.ngrok-free.app https://*.ngrok.io blob:; worker-src 'self' blob: https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com; frame-ancestors 'none';");
+        "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com https://accounts.google.com https://apis.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.supabase.co https://*.ngrok-free.app https://*.ngrok.io https://accounts.google.com https://www.googleapis.com https://oauth2.googleapis.com blob:; frame-src https://accounts.google.com; worker-src 'self' blob: https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com; frame-ancestors 'none';");
     // HSTS — only on production (HTTPS)
     if (req.secure || req.headers['x-forwarded-proto'] === 'https') {
         res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
@@ -108,7 +108,7 @@ app.use(cors({
 }));
 
 // Body parser with size limit (prevents DoS via large payloads)
-app.use(express.json({ limit: '16kb' }));
+app.use(express.json({ limit: '2mb' })); // Increased limit to support base64 profile picture uploads
 
 // SECURITY FIX: Block access to sensitive server-side files before static middleware
 const ALLOWED_JS_FILES = new Set(['/script.js', '/config.js', '/sw.js', '/board-pages.js', '/contact.js', '/textbooks.js', '/revision.js', '/add_bottom_nav.js', '/three-showcase.js']);
@@ -296,9 +296,7 @@ app.post('/api/signup-request', otpRequestLimiter, async (req, res) => {
         // Check if user already exists
         const existing = await getUserByEmail(email);
         if (existing) {
-            // SECURITY FIX: Don't reveal whether an email is registered
-            // Return the same success message to prevent email enumeration
-            return res.json({ success: true, message: 'If this email is available, an OTP has been sent.' });
+            return res.status(400).json({ error: 'USER ALREADY EXIST TRY LOGGING IN' });
         }
 
         const otp = generateSecureOTP();
@@ -383,7 +381,7 @@ app.post('/api/signup-verify', otpVerifyLimiter, async (req, res) => {
             const isSecure = req.secure || req.headers['x-forwarded-proto'] === 'https';
             res.cookie('skillox_token', token, { httpOnly: true, secure: isSecure, sameSite: 'lax', maxAge: 24 * 60 * 60 * 1000 });
             
-            res.json({ success: true, message: 'Account created successfully' });
+            res.json({ success: true, message: 'Account created successfully', isNewUser: true, isOnboarded: false });
         } catch (error) {
             console.error('Signup Verify error:', error);
             res.status(500).json({ error: 'Failed to create account in database' });
@@ -509,7 +507,7 @@ app.post('/api/login', loginLimiter, async (req, res) => {
         
         if (!user) {
             await logLogin(email, ip, 'failed');
-            return res.status(400).json({ error: 'Invalid email or password' });
+            return res.status(400).json({ error: 'signup first' });
         }
 
         const isValid = await bcrypt.compare(password, user.password_hash);
@@ -574,7 +572,9 @@ app.post('/api/login', loginLimiter, async (req, res) => {
         res.json({ 
             success: true, 
             message: 'Logged in successfully',
-            user: { name: user.name, email: user.email }
+            user: { name: user.name, email: user.email },
+            isNewUser: false,
+            isOnboarded: true
         });
     } catch (error) {
         console.error('Login error:', error);
@@ -626,7 +626,7 @@ app.post('/api/login-verify-2fa', otpVerifyLimiter, async (req, res) => {
             const isSecure = req.secure || req.headers['x-forwarded-proto'] === 'https';
             res.cookie('skillox_token', token, { httpOnly: true, secure: isSecure, sameSite: 'lax', maxAge: 24 * 60 * 60 * 1000 });
 
-            return res.json({ success: true, message: '2FA verification successful', user: { name: user.name, email: user.email } });
+            return res.json({ success: true, message: '2FA verification successful', user: { name: user.name, email: user.email }, isOnboarded: true });
         } else {
             return res.status(400).json({ error: `Invalid OTP. ${MAX_OTP_ATTEMPTS - attempts} attempts remaining.` });
         }
@@ -660,7 +660,7 @@ app.post('/api/login-verify-totp', otpVerifyLimiter, async (req, res) => {
             const token = jwt.sign({ email: user.email, sessionId: sessionId }, process.env.JWT_SECRET, { expiresIn: '24h' });
             const isSecure = req.secure || req.headers['x-forwarded-proto'] === 'https';
             res.cookie('skillox_token', token, { httpOnly: true, secure: isSecure, sameSite: 'lax', maxAge: 24 * 60 * 60 * 1000 });
-            return res.json({ success: true, message: 'Authenticator Verified Successfully', user: { name: user.name, email: user.email } });
+            return res.json({ success: true, message: 'Authenticator Verified Successfully', user: { name: user.name, email: user.email }, isOnboarded: true });
         } else {
             return res.status(400).json({ error: 'Invalid authenticator verification code. Please try again.' });
         }
@@ -670,9 +670,152 @@ app.post('/api/login-verify-totp', otpVerifyLimiter, async (req, res) => {
     }
 });
 
+app.post('/api/auth/google', loginLimiter, async (req, res) => {
+    const { access_token, isSignup } = req.body;
+    if (!access_token) return res.status(400).json({ success: false, error: 'Missing access token' });
+
+    try {
+        // Verify with Google
+        const googleRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+            headers: { Authorization: `Bearer ${access_token}` }
+        });
+        const googleUser = await googleRes.json();
+        
+        if (!googleUser.email) {
+            return res.status(400).json({ success: false, error: 'Invalid Google token' });
+        }
+
+        const email = googleUser.email.toLowerCase();
+        let user = await getUserByEmail(email);
+
+        let isNewUser = false;
+        if (!user) {
+            if (!isSignup) {
+                // User is trying to login via Google but they don't have an account yet
+                return res.status(400).json({ success: false, error: 'signup first' });
+            }
+            // Auto-register the user if they don't exist and they are on signup page
+            await createUser(googleUser.name || 'Google User', email, 'none');
+            user = await getUserByEmail(email);
+            // Save their Google PFP to the database since they are new
+            if (googleUser.picture) {
+                await updateUserProfilePicture(email, googleUser.picture);
+                user.profile_picture = googleUser.picture;
+            }
+            isNewUser = true;
+        } else if (isSignup) {
+            // They clicked Google Sign up on the signup page, but they already exist
+            return res.status(400).json({ success: false, error: 'USER ALREADY EXIST TRY LOGGING IN' });
+        }
+
+        if (user.status === 'banned') {
+            return res.status(403).json({ success: false, error: 'Account has been banned.' });
+        }
+
+        // Generate session ID for Google login
+        const sessionId = crypto.randomUUID();
+        const deviceInfo = getDeviceInfo(req);
+        await saveUserSession(sessionId, email, deviceInfo, req.ip);
+
+        const token = jwt.sign(
+            { email: user.email, name: user.name, sessionId: sessionId }, 
+            process.env.JWT_SECRET, 
+            { expiresIn: '24h' }
+        );
+
+        const isSecure = process.env.NODE_ENV === 'production' || req.secure || req.headers['x-forwarded-proto'] === 'https';
+        res.cookie('skillox_token', token, { httpOnly: true, secure: isSecure, sameSite: 'lax', maxAge: 24 * 60 * 60 * 1000 });
+
+        await logLogin(email, req.ip || 'unknown', 'success');
+        await recordLoginSuccess(email);
+
+        res.json({ 
+            success: true, 
+            user: { email: user.email, name: user.name },
+            isNewUser: isNewUser,
+            isOnboarded: isNewUser ? false : true
+        });
+
+    } catch (err) {
+        console.error('Google Auth Error:', err);
+        res.status(500).json({ success: false, error: 'Internal server error during Google login' });
+    }
+});
+
 /* =============================================
    PERFORMANCE CACHING & SESSION VERIFICATION
    ============================================= */
+
+// Onboarding Data Endpoint
+app.post('/api/user/onboard', requireAuth, async (req, res) => {
+    const { age, address, qualification, firstName, lastName } = req.body;
+    const email = req.user.email;
+    
+    if (!age || !address || !qualification || !firstName || !lastName) {
+        return res.status(400).json({ error: 'All fields are required.' });
+    }
+    
+    try {
+        const fullName = `${firstName.trim()} ${lastName.trim()}`;
+        await updateUserOnboarding(email, parseInt(age, 10), address, qualification, fullName);
+        res.json({ success: true, message: 'Onboarding complete' });
+    } catch (err) {
+        console.error('Onboarding error:', err);
+        res.status(500).json({ error: 'Failed to save details' });
+    }
+});
+
+// Profile Picture Upload Endpoint
+app.post('/api/user/pfp', requireAuth, async (req, res) => {
+    const { pictureUrl } = req.body;
+    const email = req.user.email;
+    
+    if (!pictureUrl) {
+        return res.status(400).json({ error: 'Picture URL is required.' });
+    }
+    
+    try {
+        const urlToSave = pictureUrl === 'removed' ? null : pictureUrl;
+        await updateUserProfilePicture(email, urlToSave);
+        userVerificationCache.delete(email); // SECURITY FIX: Invalidate cache so check-auth gets fresh PFP
+        res.json({ success: true, message: 'Profile picture updated' });
+    } catch (err) {
+        console.error('PFP update error:', err);
+        res.status(500).json({ error: 'Failed to update profile picture' });
+    }
+});
+
+// Set Password Endpoint (for users who signed up with Google and want a local password)
+app.post('/api/user/set-password', requireAuth, async (req, res) => {
+    const { password } = req.body;
+    const email = req.user.email;
+    const user = req.user.user;
+
+    if (!password) {
+        return res.status(400).json({ error: 'Password is required' });
+    }
+    
+    if (user.password_hash !== 'none') {
+        return res.status(400).json({ error: 'You already have a password set. Use the forgot password page to reset it.' });
+    }
+
+    if (!isValidPassword(password)) {
+        return res.status(400).json({ error: 'Password must be 8-128 characters with at least one uppercase letter, one lowercase letter, and one digit' });
+    }
+
+    try {
+        const hashedPassword = await bcrypt.hash(password, 10);
+        await updateUserPassword(email, hashedPassword);
+        
+        // Invalidate cache since user data changed
+        userVerificationCache.delete(email);
+        
+        res.json({ success: true, message: 'Password set successfully. You can now login manually.' });
+    } catch (err) {
+        console.error('Error setting password:', err);
+        res.status(500).json({ error: 'Failed to set password' });
+    }
+});
 
 // High-speed TTL Memory Cache for user verifications (reduces database latency from ~100ms to <1ms)
 const userVerificationCache = new Map();
@@ -736,7 +879,12 @@ app.get('/api/check-auth', async (req, res) => {
             return res.json({ loggedIn: false, banned: true });
         }
         
-        return res.json({ loggedIn: true, email: decoded.email });
+        return res.json({ 
+            loggedIn: true, 
+            email: decoded.email,
+            name: user ? user.name : null,
+            profilePicture: user ? user.profile_picture : null
+        });
     } catch (err) {
         return res.json({ loggedIn: false });
     }
@@ -920,7 +1068,8 @@ app.get('/api/user/settings', requireAuth, async (req, res) => {
                 name: user.name,
                 email: user.email,
                 twoFactorEnabled: !!user.two_factor_enabled,
-                twoFactorEmail: user.two_factor_email || user.email
+                twoFactorEmail: user.two_factor_email || user.email,
+                hasLocalPassword: user.password_hash !== 'none'
             }
         });
     } catch (err) {
@@ -969,7 +1118,6 @@ app.post('/api/2fa/request-code', otpRequestLimiter, async (req, res) => {
         const email = decoded.email;
         const user = await getUserByEmail(email);
         if (!user) return res.status(404).json({ error: 'User not found' });
-
         // User can provide any custom email address to receive their 2FA OTP codes on!
         const targetEmail = req.body.target_email || user.two_factor_email || user.email;
         if (!targetEmail || !targetEmail.includes('@')) {
@@ -1280,6 +1428,7 @@ app.post('/api/admin/users/:email/unban', adminLimiter, verifyAdmin, async (req,
 app.delete('/api/admin/users/:email', adminLimiter, verifyAdmin, async (req, res) => {
     try {
         await deleteUser(req.params.email);
+        userVerificationCache.delete(req.params.email);
         res.json({ success: true, message: 'User deleted' });
     } catch (error) {
         console.error('Error deleting user:', error);

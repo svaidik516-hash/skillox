@@ -2,7 +2,174 @@
    SKILLOX — Main JavaScript
    ============================================= */
 
+// --- Google Identity Services (OAuth) Integration ---
+let tokenClient;
+
+// ---- Auth Error Popup Utility ----
+window.showAuthErrorPopup = function(message) {
+    if (message === 'signup first') {
+        const overlay = document.createElement('div');
+        overlay.style.position = 'fixed';
+        overlay.style.top = '0'; overlay.style.left = '0';
+        overlay.style.width = '100vw'; overlay.style.height = '100vh';
+        overlay.style.backgroundColor = 'rgba(15, 23, 42, 0.7)';
+        overlay.style.backdropFilter = 'blur(8px)';
+        overlay.style.zIndex = '999999';
+        overlay.style.display = 'flex';
+        overlay.style.alignItems = 'center';
+        overlay.style.justifyContent = 'center';
+        overlay.style.animation = 'fadeIn 0.2s ease';
+
+        overlay.innerHTML = `
+            <div style="background: white; padding: 32px; border-radius: 24px; width: 400px; max-width: 90%; text-align: center; font-family: 'Inter', sans-serif; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); animation: slideUp 0.3s ease;">
+                <div style="width: 64px; height: 64px; background: #e0e7ff; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#4f46e5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="8.5" cy="7" r="4"></circle>
+                        <line x1="20" y1="8" x2="20" y2="14"></line>
+                        <line x1="23" y1="11" x2="17" y2="11"></line>
+                    </svg>
+                </div>
+                <h2 style="margin: 0 0 12px 0; font-size: 20px; color: #0f172a; font-weight: 800;">Account Not Found</h2>
+                <p style="margin: 0 0 24px 0; color: #64748b; font-size: 15px; line-height: 1.5;">This email is not registered. Please sign up first to create an account.</p>
+                <div style="display: flex; gap: 12px; justify-content: center;">
+                    <button onclick="this.closest('div[style*=\\'position: fixed\\']').remove()" style="padding: 12px 24px; background: #f1f5f9; color: #475569; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; transition: 0.2s;">Cancel</button>
+                    <button onclick="window.location.href='signup.html'" style="padding: 12px 24px; background: #4f46e5; color: white; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25); transition: 0.2s;">Go to Sign Up</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+        return;
+    }
+
+    if (message !== 'USER ALREADY EXIST TRY LOGGING IN') {
+        if (typeof showCustomToast === 'function') {
+            showCustomToast(message, 'error');
+        } else {
+            alert(message);
+        }
+        return;
+    }
+
+    const overlay = document.createElement('div');
+    overlay.style.position = 'fixed';
+    overlay.style.top = '0'; overlay.style.left = '0';
+    overlay.style.width = '100vw'; overlay.style.height = '100vh';
+    overlay.style.backgroundColor = 'rgba(15, 23, 42, 0.7)';
+    overlay.style.backdropFilter = 'blur(8px)';
+    overlay.style.zIndex = '999999';
+    overlay.style.display = 'flex';
+    overlay.style.alignItems = 'center';
+    overlay.style.justifyContent = 'center';
+    overlay.style.animation = 'fadeIn 0.2s ease';
+
+    overlay.innerHTML = `
+        <div style="background: white; padding: 32px; border-radius: 24px; width: 400px; max-width: 90%; text-align: center; font-family: 'Inter', sans-serif; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); animation: slideUp 0.3s ease;">
+            <div style="width: 64px; height: 64px; background: #fee2e2; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+            </div>
+            <h2 style="margin: 0 0 12px 0; font-size: 20px; color: #0f172a; font-weight: 800;">Account Already Exists</h2>
+            <p style="margin: 0 0 24px 0; color: #64748b; font-size: 15px; line-height: 1.5;">This email is already registered with Skillox. Please proceed to the login page to access your account.</p>
+            <div style="display: flex; gap: 12px; justify-content: center;">
+                <button onclick="this.closest('div[style*=\'position: fixed\']').remove()" style="padding: 12px 24px; background: #f1f5f9; color: #475569; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; transition: 0.2s;">Cancel</button>
+                <button onclick="window.location.href='login.html'" style="padding: 12px 24px; background: #ea580c; color: white; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 12px rgba(234, 88, 12, 0.25); transition: 0.2s;">Go to Login</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(overlay);
+};
+
+window.handleGoogleTokenResponse = async (response) => {
+    if (response.error !== undefined) {
+        // User closed the popup or it failed
+        return;
+    }
+    try {
+        const baseUrl = typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : '';
+        const res = await fetch(baseUrl + '/api/auth/google', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                access_token: response.access_token, 
+                isSignup: window.location.pathname.includes('signup')
+            })
+        });
+        const data = await res.json();
+        if (data.success) {
+            localStorage.setItem('skillox_is_logged_in', 'true');
+            localStorage.setItem('skillox_auth_email', data.user.email);
+            if (data.user.name) localStorage.setItem('skillox_user_name', data.user.name);
+            
+            if (data.isOnboarded === false) {
+                window.showOnboardingModal();
+            } else {
+                window.location.href = 'index.html';
+            }
+        } else {
+            showAuthErrorPopup(data.error || 'Google Sign-In failed');
+        }
+    } catch (err) {
+        alert('Network error during Google Sign-In');
+    }
+};
+
+window.handleGoogleLogin = () => {
+    // If Google SDK is already loaded, proceed immediately
+    if (typeof google !== 'undefined') {
+        _initAndRequestToken();
+        return;
+    }
+    
+    // Otherwise, wait for it to load (up to 5 seconds)
+    const btn = document.getElementById('google-login-btn') || document.getElementById('google-signup-btn');
+    const originalText = btn ? btn.textContent : '';
+    if (btn) {
+        btn.textContent = 'Loading Google...';
+        btn.disabled = true;
+    }
+    
+    let elapsed = 0;
+    const interval = setInterval(() => {
+        elapsed += 200;
+        if (typeof google !== 'undefined') {
+            clearInterval(interval);
+            if (btn) { btn.textContent = originalText; btn.disabled = false; }
+            _initAndRequestToken();
+        } else if (elapsed >= 5000) {
+            clearInterval(interval);
+            if (btn) { btn.textContent = originalText; btn.disabled = false; }
+            if (typeof showCustomToast === 'function') {
+                showCustomToast('Google Sign-In failed to load. Please check your internet connection or disable ad-blockers and try again.', 'error');
+            } else {
+                alert('Google Sign-In failed to load. Please check your internet connection or disable ad-blockers and try again.');
+            }
+        }
+    }, 200);
+};
+
+function _initAndRequestToken() {
+    if (!tokenClient) {
+        tokenClient = google.accounts.oauth2.initTokenClient({
+            client_id: "259421479271-0nmsrf03u5t4cjm87a931u9qp55ent0p.apps.googleusercontent.com",
+            scope: 'https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile',
+            callback: window.handleGoogleTokenResponse,
+        });
+    }
+    tokenClient.requestAccessToken();
+}
+// ----------------------------------------------------
+
 document.addEventListener('DOMContentLoaded', () => {
+
+    // Attach Google Login to buttons (CSP safe) via DRY Array Loop (DSA Refactoring)
+    ['google-login-btn', 'google-signup-btn'].forEach(id => {
+        const btn = document.getElementById(id);
+        if (btn) btn.addEventListener('click', () => window.handleGoogleLogin && window.handleGoogleLogin());
+    });
 
     // ---- XSS Sanitization Utility ----
     window.escapeHtml = function(unsafe) {
@@ -49,7 +216,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ---- Inject Premium Top-Right Profile Avatar Circle on Mobile Navbar ----
-    if (!window.location.pathname.includes('login') && !window.location.pathname.includes('signup') && !window.location.pathname.includes('2fa')) {
+    const isUserLoggedIn = localStorage.getItem('skillox_is_logged_in') === 'true';
+    if (isUserLoggedIn && !window.location.pathname.includes('login') && !window.location.pathname.includes('signup') && !window.location.pathname.includes('2fa')) {
         const navbar = document.querySelector('.navbar');
         if (navbar && !navbar.querySelector('.mobile-top-avatar-badge')) {
             const badge = document.createElement('a');
@@ -173,7 +341,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else if (!data.loggedIn) {
                     localStorage.removeItem('skillox_is_logged_in');
                     localStorage.removeItem('skillox_auth_email');
+                    localStorage.removeItem('skillox_user_name');
+                    localStorage.removeItem('skillox_custom_avatar');
                     window.location.reload();
+                } else {
+                    if (data.name) localStorage.setItem('skillox_user_name', data.name);
+                    if (data.profilePicture) {
+                        localStorage.setItem('skillox_custom_avatar', data.profilePicture);
+                    } else {
+                        localStorage.removeItem('skillox_custom_avatar');
+                    }
+                    // Re-render auth buttons with fresh data
+                    updateAuthButtons();
                 }
             })
             .catch(console.error);
@@ -232,6 +411,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     try { await fetch((typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : '') + '/api/logout', { method: 'POST', credentials: 'include' }); } catch(err) {}
                     localStorage.removeItem('skillox_is_logged_in');
                     localStorage.removeItem('skillox_auth_email');
+                    localStorage.removeItem('skillox_custom_avatar');
                     sessionStorage.removeItem('2fa_verified');
                     window.location.reload();
                 });
@@ -253,6 +433,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     try { await fetch((typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : '') + '/api/logout', { method: 'POST', credentials: 'include' }); } catch(err) {}
                     localStorage.removeItem('skillox_is_logged_in');
                     localStorage.removeItem('skillox_auth_email');
+                    localStorage.removeItem('skillox_custom_avatar');
                     sessionStorage.removeItem('2fa_verified');
                     window.location.reload();
                 });
@@ -380,7 +561,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (isLoggedIn && (navAuthBtn || mobileAuthBtn)) {
         fetchUserMessages();
-        setInterval(fetchUserMessages, 30000);
+        if (window.userMessageInterval) clearInterval(window.userMessageInterval);
+        window.userMessageInterval = setInterval(fetchUserMessages, 30000);
     }
 
 
@@ -634,7 +816,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         if (firstOtp) firstOtp.focus();
                     }, 50);
                 } else {
-                    showCustomToast(data.error || 'Failed to send OTP', 'error');
+                    showAuthErrorPopup(data.error || 'Failed to send OTP');
                     btn.textContent = originalText;
                     btn.disabled = false;
                     btn.style.opacity = '1';
@@ -686,7 +868,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     localStorage.setItem('skillox_auth_email', currentSignupEmail);
 
                     setTimeout(() => {
-                        window.location.href = "index.html";
+                        if (data.isOnboarded === false) {
+                            window.showOnboardingModal();
+                        } else {
+                            window.location.href = "index.html";
+                        }
                     }, 1000);
                 } else {
                     showCustomToast(data.error || "Invalid OTP", "error");
@@ -805,10 +991,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     localStorage.setItem('skillox_auth_email', email);
 
                     setTimeout(() => {
-                        window.location.href = "index.html";
+                        if (data.isOnboarded === false) {
+                            window.showOnboardingModal();
+                        } else {
+                            window.location.href = "index.html";
+                        }
                     }, 1000);
                 } else {
-                    showCustomToast(data.error || 'Invalid email or password', 'error');
+                    if (typeof showAuthErrorPopup === 'function') {
+                        showAuthErrorPopup(data.error || 'Invalid email or password');
+                    } else {
+                        showCustomToast(data.error || 'Invalid email or password', 'error');
+                    }
                     btn.textContent = originalText;
                     btn.disabled = false;
                     btn.style.opacity = '1';
@@ -903,7 +1097,13 @@ document.addEventListener('DOMContentLoaded', () => {
                         btn.style.background = "#10b981";
                         localStorage.setItem('skillox_is_logged_in', 'true');
                         localStorage.setItem('skillox_auth_email', email);
-                        setTimeout(() => { window.location.href = "index.html"; }, 1000);
+                        setTimeout(() => {
+                            if (data.isOnboarded === false) {
+                                window.showOnboardingModal();
+                            } else {
+                                window.location.href = "index.html";
+                            }
+                        }, 1000);
                     } else {
                         showCustomToast(data.error || "Invalid verification code", "error");
                         btn.textContent = originalText;
@@ -1461,6 +1661,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 } catch (err) { /* Proceed with client-side cleanup even if server call fails */ }
                 localStorage.removeItem('skillox_is_logged_in');
                 localStorage.removeItem('skillox_auth_email');
+                localStorage.removeItem('skillox_custom_avatar');
                 sessionStorage.removeItem('2fa_verified');
                 window.location.href = 'login.html';
             });
@@ -1501,7 +1702,18 @@ document.addEventListener('DOMContentLoaded', () => {
             })
             .then(data => {
                 if (data.success && data.user) {
-                    const { name, email, twoFactorEnabled } = data.user;
+                    const { name, email, twoFactorEnabled, hasLocalPassword } = data.user;
+
+                    const passwordSecurityLink = document.getElementById('password-security-link');
+                    if (passwordSecurityLink && hasLocalPassword === false) {
+                        document.getElementById('password-security-title').textContent = 'Set Account Password';
+                        document.getElementById('password-security-desc').textContent = 'Add a local password to your Google account';
+                        passwordSecurityLink.href = '#';
+                        passwordSecurityLink.onclick = (e) => {
+                            e.preventDefault();
+                            window.showSetPasswordModal();
+                        };
+                    }
 
                     if (localStorage.getItem('skillox_2fa_toast') === 'enabled' || localStorage.getItem('skillox_2fa_toast') === 'enabled_totp') {
                         const isTotp = localStorage.getItem('skillox_2fa_toast') === 'enabled_totp';
@@ -1777,3 +1989,204 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 });
+
+window.showOnboardingModal = function() {
+    const overlay = document.createElement('div');
+    overlay.style.position = 'fixed';
+    overlay.style.top = '0'; overlay.style.left = '0';
+    overlay.style.width = '100vw'; overlay.style.height = '100vh';
+    overlay.style.backgroundColor = 'rgba(0,0,0,0.85)';
+    overlay.style.backdropFilter = 'blur(8px)';
+    overlay.style.zIndex = '999999';
+    overlay.style.display = 'flex';
+    overlay.style.alignItems = 'center';
+    overlay.style.justifyContent = 'center';
+    overlay.style.animation = 'fadeIn 0.3s ease';
+
+    overlay.innerHTML = `
+        <div style="background: var(--bg-card); padding: 30px; border-radius: 20px; width: 450px; max-width: 90%; max-height: 90vh; overflow-y: auto; font-family: 'Inter', sans-serif; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); border: 1px solid var(--border-color);">
+            <div style="text-align: center; margin-bottom: 25px;">
+                <div style="width: 50px; height: 50px; background: linear-gradient(135deg, #e8740c, #ff9500); border-radius: 14px; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 15px; box-shadow: 0 10px 20px rgba(232, 116, 12, 0.3);">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                </div>
+                <h2 style="margin: 0 0 10px 0; color: var(--text-primary); font-size: 24px; font-weight: 700;">Complete Your Profile</h2>
+                <p style="color: var(--text-secondary); margin: 0; font-size: 14px; line-height: 1.5;">Welcome to Skillox! Please provide a few basic details to personalize your experience.</p>
+            </div>
+            
+            <form id="onboarding-form" style="display: flex; flex-direction: column; gap: 16px;">
+                <div style="display: flex; gap: 15px;">
+                    <div style="flex: 1;">
+                        <label style="display: block; font-weight: 600; margin-bottom: 6px; color: var(--text-primary); font-size: 13px;">First Name</label>
+                        <div style="position: relative;">
+                            <input type="text" id="onboard-firstname" required style="width: 100%; padding: 12px 16px; border: 1px solid var(--border-color); border-radius: 12px; box-sizing: border-box; background: var(--bg-input); color: var(--text-primary); font-family: inherit; font-size: 14px; transition: all 0.2s;" placeholder="First">
+                        </div>
+                    </div>
+                    <div style="flex: 1;">
+                        <label style="display: block; font-weight: 600; margin-bottom: 6px; color: var(--text-primary); font-size: 13px;">Last Name</label>
+                        <div style="position: relative;">
+                            <input type="text" id="onboard-lastname" required style="width: 100%; padding: 12px 16px; border: 1px solid var(--border-color); border-radius: 12px; box-sizing: border-box; background: var(--bg-input); color: var(--text-primary); font-family: inherit; font-size: 14px; transition: all 0.2s;" placeholder="Last">
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <label style="display: block; font-weight: 600; margin-bottom: 6px; color: var(--text-primary); font-size: 13px;">Your Age</label>
+                    <div style="position: relative;">
+                        <input type="number" id="onboard-age" required min="10" max="120" style="width: 100%; padding: 12px 16px; border: 1px solid var(--border-color); border-radius: 12px; box-sizing: border-box; background: var(--bg-input); color: var(--text-primary); font-family: inherit; font-size: 14px; transition: all 0.2s;" placeholder="e.g. 21">
+                    </div>
+                </div>
+                
+                <div>
+                    <label style="display: block; font-weight: 600; margin-bottom: 6px; color: var(--text-primary); font-size: 13px;">Educational Qualification</label>
+                    <div style="position: relative;">
+                        <input type="text" id="onboard-qualification" required style="width: 100%; padding: 12px 16px; border: 1px solid var(--border-color); border-radius: 12px; box-sizing: border-box; background: var(--bg-input); color: var(--text-primary); font-family: inherit; font-size: 14px; transition: all 0.2s;" placeholder="e.g. B.Tech Computer Science">
+                    </div>
+                </div>
+
+                <div>
+                    <label style="display: block; font-weight: 600; margin-bottom: 6px; color: var(--text-primary); font-size: 13px;">Complete Address</label>
+                    <div style="position: relative;">
+                        <textarea id="onboard-address" required style="width: 100%; padding: 12px 16px; border: 1px solid var(--border-color); border-radius: 12px; box-sizing: border-box; background: var(--bg-input); color: var(--text-primary); font-family: inherit; font-size: 14px; resize: vertical; min-height: 80px; transition: all 0.2s;" placeholder="Enter your full residential address..."></textarea>
+                    </div>
+                </div>
+                
+                <button type="submit" style="width: 100%; padding: 14px; background: linear-gradient(135deg, #e8740c, #ff9500); color: white; border: none; border-radius: 12px; font-size: 15px; cursor: pointer; font-weight: 700; transition: all 0.2s; box-shadow: 0 8px 16px rgba(232, 116, 12, 0.25); margin-top: 5px;">
+                    Save & Continue
+                </button>
+            </form>
+        </div>
+    `;
+    document.body.appendChild(overlay);
+
+    // Add some basic dynamic styling for focus states since we're injecting raw HTML
+    const inputs = overlay.querySelectorAll('input, textarea');
+    inputs.forEach(input => {
+        input.addEventListener('focus', () => input.style.borderColor = '#e8740c');
+        input.addEventListener('blur', () => input.style.borderColor = 'var(--border-color)');
+    });
+
+    document.getElementById('onboarding-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const firstName = document.getElementById('onboard-firstname').value;
+        const lastName = document.getElementById('onboard-lastname').value;
+        const age = document.getElementById('onboard-age').value;
+        const address = document.getElementById('onboard-address').value;
+        const qual = document.getElementById('onboard-qualification').value;
+        
+        const btn = e.target.querySelector('button');
+        const originalContent = btn.innerHTML;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
+        btn.disabled = true;
+        btn.style.opacity = '0.7';
+
+        try {
+            const baseUrl = typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : '';
+            const res = await fetch(baseUrl + '/api/user/onboard', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ firstName, lastName, age, address, qualification: qual })
+            });
+            const data = await res.json();
+            
+            if (data.success) {
+                btn.innerHTML = '<i class="fa-solid fa-check"></i> Profile Complete!';
+                btn.style.background = '#10b981';
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 800);
+            } else {
+                if(typeof showCustomToast !== 'undefined') showCustomToast(data.error || 'Failed to save details', 'error');
+                else alert(data.error || 'Failed to save details');
+                
+                btn.innerHTML = originalContent;
+                btn.disabled = false;
+                btn.style.opacity = '1';
+            }
+        } catch (err) {
+            if(typeof showCustomToast !== 'undefined') showCustomToast('Network error while saving', 'error');
+            else alert('Network error while saving');
+            
+            btn.innerHTML = originalContent;
+            btn.disabled = false;
+            btn.style.opacity = '1';
+        }
+    });
+};
+
+window.showSetPasswordModal = function() {
+    const overlay = document.createElement('div');
+    overlay.style.position = 'fixed';
+    overlay.style.inset = '0';
+    overlay.style.background = 'rgba(0, 0, 0, 0.6)';
+    overlay.style.backdropFilter = 'blur(8px)';
+    overlay.style.zIndex = '999999';
+    overlay.style.display = 'flex';
+    overlay.style.alignItems = 'center';
+    overlay.style.justifyContent = 'center';
+    overlay.style.animation = 'fadeIn 0.3s ease';
+
+    overlay.innerHTML = `
+        <div style="background: var(--bg-card); padding: 30px; border-radius: 20px; width: 400px; max-width: 90%; font-family: 'Inter', sans-serif; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); border: 1px solid var(--border-color);">
+            <div style="text-align: center; margin-bottom: 25px;">
+                <div style="width: 50px; height: 50px; background: linear-gradient(135deg, #e8740c, #ff9500); border-radius: 14px; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 15px;">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                </div>
+                <h2 style="margin: 0 0 10px 0; color: var(--text-primary); font-size: 22px; font-weight: 700;">Set Local Password</h2>
+                <p style="color: var(--text-secondary); margin: 0; font-size: 14px; line-height: 1.5;">Create a password so you can log in with your email directly, instead of just Google.</p>
+            </div>
+            
+            <form id="set-password-form" style="display: flex; flex-direction: column; gap: 16px;">
+                <div>
+                    <div style="position: relative;">
+                        <input type="password" id="new-local-password" required minlength="8" style="width: 100%; padding: 12px 16px; border: 1px solid var(--border-color); border-radius: 12px; box-sizing: border-box; background: var(--bg-input); color: var(--text-primary); font-family: inherit; font-size: 14px;" placeholder="Enter new password">
+                    </div>
+                    <p style="font-size: 12px; color: var(--text-secondary); margin-top: 6px;">Must be at least 8 characters with 1 uppercase, 1 lowercase, and 1 digit.</p>
+                </div>
+                
+                <button type="submit" style="width: 100%; padding: 14px; background: linear-gradient(135deg, #e8740c, #ff9500); color: white; border: none; border-radius: 12px; font-size: 15px; cursor: pointer; font-weight: 700; margin-top: 5px;">
+                    Save Password
+                </button>
+                <button type="button" id="close-set-password" style="width: 100%; padding: 12px; background: transparent; color: var(--text-secondary); border: none; font-size: 14px; cursor: pointer; font-weight: 600;">
+                    Cancel
+                </button>
+            </form>
+        </div>
+    `;
+    document.body.appendChild(overlay);
+
+    document.getElementById('close-set-password').onclick = () => overlay.remove();
+
+    document.getElementById('set-password-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const password = document.getElementById('new-local-password').value;
+        const btn = e.target.querySelector('button[type="submit"]');
+        const originalContent = btn.innerHTML;
+        btn.innerHTML = 'Saving...';
+        btn.disabled = true;
+
+        try {
+            const baseUrl = typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : '';
+            const res = await fetch(baseUrl + '/api/user/set-password', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ password })
+            });
+            const data = await res.json();
+            
+            if (data.success) {
+                if(typeof showCustomToast !== 'undefined') showCustomToast(data.message, 'success');
+                else alert(data.message);
+                overlay.remove();
+                setTimeout(() => window.location.reload(), 1500);
+            } else {
+                if(typeof showCustomToast !== 'undefined') showCustomToast(data.error || 'Failed to set password', 'error');
+                else alert(data.error || 'Failed to set password');
+                btn.innerHTML = originalContent;
+                btn.disabled = false;
+            }
+        } catch (err) {
+            if(typeof showCustomToast !== 'undefined') showCustomToast('Network error', 'error');
+            btn.innerHTML = originalContent;
+            btn.disabled = false;
+        }
+    });
+};
